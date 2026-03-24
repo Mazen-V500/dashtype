@@ -1,0 +1,580 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DashType - الرئيسية</title>
+	<link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="photo/dashtype%20white%20logo.png">
+</head>
+<body>
+	<header class="top-controls logo-only">
+		<div class="logo-container">
+            <div class="logo-badge">
+                <img id="logoImg" src="photo/dashtype%20white%20logo.png" alt="DashType" class="app-logo">
+                <span class="logo-text">DashType</span>
+                <span class="logo-beta" id="betaLabel">بيتا</span>
+            </div>
+		</div>
+        <div class="top-controls-right">
+            <div id="userInfo" class="user-badge user-info">
+				<img id="userProfilePic" alt="Profile">
+				<span id="userName"></span>
+                <button id="settingsBtn" class="settings-btn btn-icon" type="button" aria-label="الإعدادات"><span class="icon icon-settings" aria-hidden="true"></span></button>
+                <button id="signOutBtn" class="btn-icon signout-btn" aria-label="تسجيل خروج"><span class="icon icon-logout" aria-hidden="true"></span></button>
+			</div>
+            <button id="googleSignInBtn" class="btn-icon signin-btn">
+                <span class="icon icon-login" aria-hidden="true"></span>
+                <span id="signInText">تسجيل دخول</span>
+            </button>
+		</div>
+	</header>
+
+    <div id="settingsModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+            <h3 id="settingsTitle" class="settings-title">الإعدادات</h3>
+            <div class="modal-field">
+                <label id="userIdLabel" for="userIdValue">المعرّف</label>
+                <div id="userIdValue" class="user-id-value">—</div>
+            </div>
+            <div class="modal-field">
+                <label id="nicknameLabel" for="nicknameInput">الاسم المستعار</label>
+                <input id="nicknameInput" type="text" placeholder="اكتب الاسم المستعار">
+            </div>
+            <div class="modal-actions">
+                <button id="settingsCancelBtn" class="btn-icon" type="button"><span class="icon icon-cancel" aria-hidden="true"></span><span id="settingsCancelText">إلغاء</span></button>
+                <button id="settingsSaveBtn" class="btn-icon" type="button"><span class="icon icon-save" aria-hidden="true"></span><span id="settingsSaveText">حفظ التغييرات</span></button>
+            </div>
+        </div>
+    </div>
+
+	<section class="welcome-card" id="welcomeScreen">
+		<div class="welcome-header">
+			<h1 id="welcomeTitle">اهلا بك في DashType</h1>
+            <p class="subtitle" id="welcomeSubtitle"></p>
+            <p class="subtitle" id="siteDescription">منصة تدريب على سرعة ودقة الكتابة بأساليب لعب ممتعة.</p>
+		</div>
+
+		<div class="welcome-layout">
+			<div class="mode-panel">
+				<h2 class="panel-title" id="modeTitleWelcome">اختيار النمط</h2>
+				<div class="mode-switch" role="group" aria-label="mode selection on welcome">
+					<a href="G1.html" class="mode-btn" id="welcomeSingleModeBtn">نمط كلمة واحدة</a>
+					<a href="G2.html" class="mode-btn" id="welcomeTripleModeBtn">نمط 3 كلمات معاً</a>
+                    <a href="G3.html" class="mode-btn" id="welcomeTripleSeqModeBtn">نمط 7 كلمات متتابعة</a>
+				</div>
+			</div>
+            <div class="extra-panel">
+                <a href="history.html" class="extra-btn btn-icon" id="welcomeHistoryBtn"><span class="icon icon-history" aria-hidden="true"></span><span id="historyText">السجل والإحصائيات</span></a>
+                <a href="global-leaderboard.html" class="extra-btn btn-icon" id="welcomeGlobalBtn"><span class="icon icon-global" aria-hidden="true"></span><span id="globalLeaderboardText">السجل العالمي</span></a>
+            </div>
+		</div>
+	</section>
+
+	<footer class="page-footer">
+		<div class="footer-controls">
+			<div class="control-group">
+				<label id="themeLabel">المظهر</label>
+				<div class="theme-switch" role="group" aria-label="theme selector">
+					<button id="themeOceanBtn" class="theme-dot active" type="button" data-theme="ocean" title="Blue Orange"></button>
+					<button id="themeSunsetBtn" class="theme-dot" type="button" data-theme="sunset" title="Sunset"></button>
+					<button id="themeForestBtn" class="theme-dot" type="button" data-theme="forest" title="Forest"></button>
+					<button id="themeBerryBtn" class="theme-dot" type="button" data-theme="berry" title="Berry"></button>
+					<button id="themeNeonBtn" class="theme-dot" type="button" data-theme="neon" title="Green & Yellow"></button>
+					<button id="themeVioletBtn" class="theme-dot" type="button" data-theme="violet" title="Purple & Pink"></button>
+                    <button id="themeBrownBtn" class="theme-dot" type="button" data-theme="brown" title="Brown"></button>
+				</div>
+			</div>
+
+			<div class="control-group">
+				<label id="colorModeLabel">الوضع</label>
+				<div class="color-mode-switch" role="group" aria-label="color mode selector">
+					<button id="colorModeDarkBtn" class="mode-dot mode-dark" type="button" data-color-mode="dark" title="Dark"></button>
+					<button id="colorModeBlurBtn" class="mode-dot mode-blur active" type="button" data-color-mode="blur" title="Blurred"></button>
+					<button id="colorModeLightBtn" class="mode-dot mode-light" type="button" data-color-mode="light" title="Light"></button>
+				</div>
+			</div>
+
+            <div class="control-group">
+                <label id="langLabel">اللغة</label>
+                <div class="lang-switch" role="group" aria-label="language selector">
+                    <button id="langArBtn" class="lang-btn active" type="button" data-lang="ar">العربية</button>
+                    <button id="langEnBtn" class="lang-btn" type="button" data-lang="en">English</button>
+                </div>
+            </div>
+		</div>
+
+        <div class="footer-credits">
+            <div class="footer-person">
+                <div id="mazenNameTxt" class="footer-person-name">مازن</div>
+                <div class="footer-links">
+                    <a href="https://x.com/mazen_v500" class="footer-link" target="_blank" rel="noopener" title="X/Twitter" aria-label="X/Twitter"><span class="icon icon-x" aria-hidden="true"></span></a>
+                    <a href="https://github.com/mazen-v500" class="footer-link" target="_blank" rel="noopener" title="GitHub" aria-label="GitHub"><span class="icon icon-github" aria-hidden="true"></span></a>
+                    <a href="https://t.me/mazen_v500" class="footer-link" target="_blank" rel="noopener" title="Telegram" aria-label="Telegram"><span class="icon icon-telegram" aria-hidden="true"></span></a>
+				</div>
+			</div>
+            <div class="footer-person">
+                <div id="ahmedNameTxt" class="footer-person-name">أحمد</div>
+                <div class="footer-links">
+                    <a href="https://x.com/ko_wll" class="footer-link" target="_blank" rel="noopener" title="X/Twitter" aria-label="X/Twitter"><span class="icon icon-x" aria-hidden="true"></span></a>
+                    <a href="https://instagram.com/zs_us" class="footer-link" target="_blank" rel="noopener" title="Instagram" aria-label="Instagram"><span class="icon icon-instagram" aria-hidden="true"></span></a>
+				</div>
+			</div>
+		</div>
+
+		<p class="footer-meta">
+            <span class="footer-meta-item">&copy; 2026 DashType. All rights reserved.</span>
+            <span class="footer-meta-item"><span id="contactLabel" class="footer-contact-label">للتواصل معنا</span> <a class="footer-contact" href="mailto:contact@dashtype.tech">contact@dashtype.tech</a></span>
+            <span class="footer-meta-item"><span id="versionLabel" class="footer-contact-label">الإصدار</span> <span class="footer-version">0.3.004</span></span>
+        </p>
+	</footer>
+
+    <script>
+        const textMap = {
+            ar: {
+                welcomeTitle: "أهلاً بك في DashType",
+                welcomeSubtitle: "",
+                siteDescription: "منصة تدريب على سرعة ودقة الكتابة بأساليب لعب ممتعة.",
+                modeTitleWelcome: "اختيار النمط",
+                modeSingle: "نمط كلمة واحدة",
+                modeTriple: "نمط 3 كلمات",
+                modeTripleSeq: "نمط 7 كلمات متتالية",
+                themeLabel: "المظهر",
+                colorModeLabel: "الوضع",
+                langLabel: "اللغة",
+                themeOcean: "أزرق وبرتقالي",
+                themeSunset: "وردي وأصفر",
+                themeForest: "أخضر وأزرق",
+                themeBerry: "بنفسجي ووردي",
+                themeNeon: "أخضر وأصفر",
+                themeViolet: "بنفسجي ووردي",
+                themeBrown: "بني",
+                darkMode: "داكن",
+                blurMode: "ضبابي",
+                lightMode: "فاتح",
+                langArabic: "العربية",
+                langEnglish: "English",
+                signIn: "تسجيل الدخول",
+                signOut: "تسجيل الخروج",
+                contactLabel: "للتواصل معنا",
+                versionLabel: "الإصدار",
+                history: "السجل الشخصي",
+                globalLeaderboard: "السجل العالمي",
+                settings: "الإعدادات",
+                betaLabel: "بيتا",
+                settingsTitle: "إعدادات الحساب",
+                userIdLabel: "المعرّف",
+                nicknameLabel: "الاسم المستعار",
+                saveChanges: "حفظ التغييرات",
+                cancel: "إلغاء",
+                mazenNameTxt: "مازن",
+                ahmedNameTxt: "أحمد"
+            },
+            en: {
+                welcomeTitle: "Welcome to DashType",
+                welcomeSubtitle: "",
+                siteDescription: "A focused training platform for typing speed and accuracy.",
+                modeTitleWelcome: "Choose Mode",
+                modeSingle: "Single Word Mode",
+                modeTriple: "3 Words Mode",
+                modeTripleSeq: "Sequential 7 Words Mode",
+                themeLabel: "Theme",
+                colorModeLabel: "Mode",
+                langLabel: "Language",
+                themeOcean: "Blue & Orange",
+                themeSunset: "Pink & Yellow",
+                themeForest: "Green & Blue",
+                themeBerry: "Purple & Pink",
+                themeNeon: "Green & Yellow",
+                themeViolet: "Purple & Pink",
+                themeBrown: "Brown",
+                darkMode: "Dark",
+                blurMode: "Blurred",
+                lightMode: "Light",
+                langArabic: "Arabic",
+                langEnglish: "English",
+                signIn: "Sign In",
+                signOut: "Sign Out",
+                contactLabel: "Contact us",
+                versionLabel: "Version",
+                history: "Round History",
+                globalLeaderboard: "Global Leaderboard",
+                settings: "Settings",
+                betaLabel: "Beta",
+                settingsTitle: "Account Settings",
+                userIdLabel: "User ID",
+                nicknameLabel: "Nickname",
+                saveChanges: "Save Changes",
+                cancel: "Cancel",
+                mazenNameTxt: "Mazen",
+                ahmedNameTxt: "Ahmed"
+            }
+        };
+
+        let currentLanguage = "ar";
+
+        function t(key) {
+            return textMap[currentLanguage][key];
+        }
+
+        function applyStaticTexts() {
+            document.documentElement.lang = currentLanguage;
+            document.documentElement.dir = currentLanguage === "ar" ? "rtl" : "ltr";
+            document.title = currentLanguage === "ar" ? "DashType - الرئيسية" : "DashType - Home";
+
+            document.getElementById("welcomeTitle").textContent = t("welcomeTitle");
+            document.getElementById("welcomeSubtitle").textContent = t("welcomeSubtitle");
+            document.getElementById("siteDescription").textContent = t("siteDescription");
+            document.getElementById("betaLabel").textContent = t("betaLabel");
+            document.getElementById("modeTitleWelcome").textContent = t("modeTitleWelcome");
+            document.getElementById("welcomeSingleModeBtn").textContent = t("modeSingle");
+            document.getElementById("welcomeTripleModeBtn").textContent = t("modeTriple");
+            document.getElementById("welcomeTripleSeqModeBtn").textContent = t("modeTripleSeq");
+
+            document.getElementById("themeLabel").textContent = t("themeLabel");
+            document.getElementById("colorModeLabel").textContent = t("colorModeLabel");
+            document.getElementById("langLabel").textContent = t("langLabel");
+            
+            document.getElementById("signInText").textContent = t("signIn");
+            const signOutBtn = document.getElementById("signOutBtn");
+            if (signOutBtn) signOutBtn.setAttribute("aria-label", t("signOut"));
+            document.getElementById("historyText").textContent = t("history");
+            document.getElementById("globalLeaderboardText").textContent = t("globalLeaderboard");
+            const settingsBtn = document.getElementById("settingsBtn");
+            if (settingsBtn) settingsBtn.setAttribute("aria-label", t("settings"));
+            document.getElementById("settingsTitle").textContent = t("settingsTitle");
+            document.getElementById("userIdLabel").textContent = t("userIdLabel");
+            document.getElementById("nicknameLabel").textContent = t("nicknameLabel");
+            document.getElementById("settingsSaveText").textContent = t("saveChanges");
+            document.getElementById("settingsCancelText").textContent = t("cancel");
+            document.getElementById("mazenNameTxt").textContent = t("mazenNameTxt");
+            document.getElementById("ahmedNameTxt").textContent = t("ahmedNameTxt");
+            const contactLabel = document.getElementById("contactLabel");
+            if (contactLabel) contactLabel.textContent = t("contactLabel");
+            const versionLabel = document.getElementById("versionLabel");
+            if (versionLabel) versionLabel.textContent = t("versionLabel");
+
+            const themeButtons = [
+                { el: document.getElementById("themeOceanBtn"), key: "themeOcean" },
+                { el: document.getElementById("themeSunsetBtn"), key: "themeSunset" },
+                { el: document.getElementById("themeForestBtn"), key: "themeForest" },
+                { el: document.getElementById("themeBerryBtn"), key: "themeBerry" },
+                { el: document.getElementById("themeNeonBtn"), key: "themeNeon" },
+                { el: document.getElementById("themeVioletBtn"), key: "themeViolet" },
+                { el: document.getElementById("themeBrownBtn"), key: "themeBrown" }
+            ];
+
+            themeButtons.forEach(({ el, key }) => {
+                el.title = t(key);
+                el.setAttribute("aria-label", t(key));
+            });
+
+            const colorModeButtons = [
+                { el: document.getElementById("colorModeDarkBtn"), key: "darkMode" },
+                { el: document.getElementById("colorModeBlurBtn"), key: "blurMode" },
+                { el: document.getElementById("colorModeLightBtn"), key: "lightMode" }
+            ];
+
+            colorModeButtons.forEach(({ el, key }) => {
+                el.title = t(key);
+                el.setAttribute("aria-label", t(key));
+            });
+
+            const langArBtn = document.getElementById("langArBtn");
+            const langEnBtn = document.getElementById("langEnBtn");
+            langArBtn.textContent = t("langArabic");
+            langEnBtn.textContent = t("langEnglish");
+            langArBtn.classList.toggle("active", currentLanguage === "ar");
+            langEnBtn.classList.toggle("active", currentLanguage === "en");
+        }
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute("data-theme", theme);
+            document.querySelectorAll(".theme-dot").forEach((btn) => {
+                btn.classList.toggle("active", btn.dataset.theme === theme);
+            });
+            savePreferences({ theme });
+        }
+
+        function setColorMode(colorMode) {
+            document.documentElement.setAttribute("data-color-mode", colorMode);
+            document.querySelectorAll(".color-mode-switch .mode-dot").forEach((btn) => {
+                btn.classList.toggle("active", btn.dataset.colorMode === colorMode);
+            });
+            savePreferences({ colorMode });
+        }
+
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            document.querySelectorAll(".lang-btn").forEach((btn) => {
+                btn.classList.toggle("active", btn.dataset.lang === lang);
+            });
+            savePreferences({ language: lang });
+            applyStaticTexts();
+        }
+
+        function savePreferences(updates) {
+            try {
+                const saved = JSON.parse(localStorage.getItem("typingGameState") || "{}");
+                if (updates.theme) saved.currentTheme = updates.theme;
+                if (updates.colorMode) saved.currentColorMode = updates.colorMode;
+                if (updates.language) saved.currentLanguage = updates.language;
+                localStorage.setItem("typingGameState", JSON.stringify(saved));
+            } catch (_error) {
+                // Ignore and continue
+            }
+        }
+
+        function loadPreferences() {
+            try {
+                const saved = JSON.parse(localStorage.getItem("typingGameState") || "{}");
+                return {
+                    theme: saved.currentTheme || "ocean",
+                    colorMode: saved.currentColorMode || "blur",
+                    language: saved.currentLanguage || "ar"
+                };
+            } catch (_error) {
+                return { theme: "ocean", colorMode: "blur", language: "ar" };
+            }
+        }
+
+        // Setup theme controls
+        document.querySelectorAll(".theme-dot").forEach((btn) => {
+            btn.addEventListener("click", () => setTheme(btn.dataset.theme));
+        });
+
+        // Setup color mode controls
+        document.querySelectorAll(".color-mode-switch .mode-dot").forEach((btn) => {
+            btn.addEventListener("click", () => setColorMode(btn.dataset.colorMode));
+        });
+
+        // Setup language controls
+        document.getElementById("langArBtn").addEventListener("click", () => setLanguage("ar"));
+        document.getElementById("langEnBtn").addEventListener("click", () => setLanguage("en"));
+
+        // Load saved preferences
+        const prefs = loadPreferences();
+        setTheme(prefs.theme);
+        setColorMode(prefs.colorMode);
+        setLanguage(prefs.language);
+        applyStaticTexts();
+
+        // Handle theme button clicks more robustly
+        function updateThemeButtons() {
+            const savedTheme = localStorage.getItem("typingGameState") 
+                ? JSON.parse(localStorage.getItem("typingGameState")).currentTheme 
+                : "ocean";
+            document.querySelectorAll(".theme-dot").forEach(btn => {
+                btn.classList.remove("active");
+                if (btn.dataset.theme === savedTheme) {
+                    btn.classList.add("active");
+                }
+            });
+        }
+        updateThemeButtons();
+    </script>
+        <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+        apiKey: "AIzaSyABT9cJ3H2e1YaljPhmFb8dgXfaV7cZEQs",
+        authDomain: "dashtype-9855c.firebaseapp.com",
+        projectId: "dashtype-9855c",
+        storageBucket: "dashtype-9855c.firebasestorage.app",
+        messagingSenderId: "758504188835",
+        appId: "1:758504188835:web:a75d6f9452f09a067f0816",
+        measurementId: "G-6H4ZYVWCWR",
+        databaseURL: "https://dashtype-9855c-default-rtdb.firebaseio.com"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    const provider = new GoogleAuthProvider();
+
+    // Elements
+    const googleSignInBtn = document.getElementById("googleSignInBtn");
+    const signOutBtn = document.getElementById("signOutBtn");
+    const userInfo = document.getElementById("userInfo");
+    const userName = document.getElementById("userName");
+    const userProfilePic = document.getElementById("userProfilePic");
+    const settingsBtn = document.getElementById("settingsBtn");
+    const settingsModal = document.getElementById("settingsModal");
+    const settingsSaveBtn = document.getElementById("settingsSaveBtn");
+    const settingsCancelBtn = document.getElementById("settingsCancelBtn");
+    const nicknameInput = document.getElementById("nicknameInput");
+    const userIdValue = document.getElementById("userIdValue");
+
+    let currentUserData = null;
+
+    async function handleUserLogin(user) {
+        let nickname = user.displayName;
+        const shortId = user.uid.substring(0, 6);
+        
+        try {
+            const profileRef = ref(db, `users/${user.uid}/profile`);
+            const snapshot = await get(profileRef);
+            
+            if (snapshot.exists()) {
+                nickname = snapshot.val().nickname;
+            } else {
+                // New user - prompt for nickname
+                const inputName = prompt("أهلاً بك! يرجى إدخال اسمك المستعار الذي سيظهر في السجل العالمي:");
+                if (inputName && inputName.trim() !== "") {
+                    nickname = inputName.trim();
+                } else {
+                    nickname = "مجهول";
+                }
+                
+                // Save profile
+                await set(profileRef, {
+                    nickname: nickname,
+                    email: user.email,
+                    shortId: shortId,
+                    joinedAt: Date.now()
+                });
+            }
+        } catch (err) {
+            console.error("Error fetching profile:", err);
+        }
+
+        // Save user info to localStorage
+        const userData = {
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName,
+            photoURL: user.photoURL,
+            nickname: nickname,
+            shortId: shortId
+        };
+        localStorage.setItem("dashTypeUser", JSON.stringify(userData));
+        
+        // Update UI
+        updateUserUI(userData);
+    }
+
+    function openSettingsModal() {
+        if (!currentUserData) return;
+        const fullId = currentUserData.uid || "";
+        const shortId = currentUserData.shortId || (fullId ? fullId.substring(0, 6) : "");
+        userIdValue.textContent = shortId ? `#${shortId}` : "—";
+        if (fullId) {
+            userIdValue.setAttribute("title", fullId);
+        }
+        nicknameInput.value = currentUserData.nickname || currentUserData.displayName || "";
+        settingsModal.classList.add("active");
+        settingsModal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeSettingsModal() {
+        settingsModal.classList.remove("active");
+        settingsModal.setAttribute("aria-hidden", "true");
+    }
+
+    async function saveSettings() {
+        if (!currentUserData || !currentUserData.uid) return;
+        const newNickname = nicknameInput.value.trim();
+        if (!newNickname) return;
+
+        try {
+            const profileRef = ref(db, `users/${currentUserData.uid}/profile`);
+            await update(profileRef, { nickname: newNickname });
+
+            const updated = {
+                ...currentUserData,
+                nickname: newNickname
+            };
+            localStorage.setItem("dashTypeUser", JSON.stringify(updated));
+            updateUserUI(updated);
+            closeSettingsModal();
+        } catch (error) {
+            console.error("Settings save error:", error);
+            alert("تعذر حفظ الاسم المستعار. حاول مرة أخرى.");
+        }
+    }
+
+    // Handle Google Sign-In
+    googleSignInBtn.addEventListener("click", async () => {
+        try {
+            const result = await signInWithPopup(auth, provider);
+            await handleUserLogin(result.user);
+        } catch (error) {
+            console.error("Sign-in error:", error);
+            alert("فشل دخول جوجل - " + (error.message || "حاول مرة أخرى"));
+        }
+    });
+
+    // Handle Sign-Out
+    signOutBtn.addEventListener("click", async () => {
+        try {
+            await signOut(auth);
+            localStorage.removeItem("dashTypeUser");
+            updateUserUI(null);
+        } catch (error) {
+            console.error("Sign-out error:", error);
+        }
+    });
+
+    settingsBtn.addEventListener("click", openSettingsModal);
+    settingsCancelBtn.addEventListener("click", closeSettingsModal);
+    settingsModal.addEventListener("click", (event) => {
+        if (event.target === settingsModal) {
+            closeSettingsModal();
+        }
+    });
+    settingsSaveBtn.addEventListener("click", saveSettings);
+
+    // Update UI based on user state
+    function updateUserUI(user) {
+        if (user) {
+            currentUserData = user;
+            googleSignInBtn.style.display = "none";
+            userInfo.style.display = "flex";
+            const displayName = user.nickname || user.displayName || user.email;
+            const shortId = user.shortId || (user.uid ? user.uid.substring(0,6) : "");
+            userName.textContent = "";
+            const nameSpan = document.createElement("span");
+            nameSpan.className = "user-display-name";
+            nameSpan.textContent = displayName || "";
+            const idSpan = document.createElement("span");
+            idSpan.className = "user-id";
+            idSpan.textContent = shortId ? `#${shortId}` : "";
+            userName.appendChild(nameSpan);
+            if (shortId) userName.appendChild(idSpan);
+            userProfilePic.src = user.photoURL || "https://via.placeholder.com/32";
+            settingsBtn.style.display = "inline-flex";
+        } else {
+            currentUserData = null;
+            googleSignInBtn.style.display = "flex";
+            userInfo.style.display = "none";
+            settingsBtn.style.display = "none";
+        }
+    }
+
+    // Check if user is already logged in
+    auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            const cachedUser = JSON.parse(localStorage.getItem("dashTypeUser"));
+            if (cachedUser && cachedUser.nickname) {
+                updateUserUI(cachedUser);
+            } else {
+                await handleUserLogin(user);
+            }
+        } else {
+            updateUserUI(null);
+        }
+    });
+    </script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DashType - السجل العالمي</title>
+	<link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="photo/dashtype%20white%20logo.png">
+	<style>
+		.leaderboard-container {
+			display: grid;
+			gap: 16px;
+		}
+
+		.mode-sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .leaderboard-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .leaderboard-header {
+            background: linear-gradient(120deg, var(--accent-a), var(--accent-b));
+            color: #07203a;
+            padding: 12px 16px;
+            font-weight: 800;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .rank-medal {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .rank-1 { background: #FFD700; color: #000; box-shadow: 0 0 10px #FFD700; }
+        .rank-2 { background: #C0C0C0; color: #000; }
+        .rank-3 { background: #CD7F32; color: #000; }
+        .rank-other { background: rgba(255,255,255,0.1); }
+
+        .loading-state {
+            grid-column: 1 / -1;
+        }
+	</style>
+</head>
+<body>
+	<header class="top-controls logo-only">
+		<div class="logo-container">
+            <a href="index.html" class="logo-badge">
+                <img id="logoImg" src="photo/dashtype%20white%20logo.png" alt="DashType" class="app-logo">
+                <span class="logo-text">DashType</span>
+                <span class="logo-beta" id="betaLabel">بيتا</span>
+            </a>
+		</div>
+	</header>
+
+	<main class="game-card" id="historyScreen">
+        <section class="game-top">
+            <div class="game-title-group">
+                <h1 id="pageTitle" class="history-title">السجل العالمي</h1>
+                <p class="subtitle" id="pageSubtitle">أسرع اللاعبين حول العالم</p>
+            </div>
+            <div class="history-back-wrap">
+                <a href="index.html" class="inline-link">
+                    <button id="backBtn" class="filter-btn active btn-icon history-back-btn"><span class="icon icon-back" aria-hidden="true"></span><span id="backBtnText">العودة للرئيسية</span></button>
+                </a>
+            </div>
+        </section>
+
+        <div class="mode-sections" id="leaderboardContent">
+            <div id="loadingState" class="loading-state">جاري جلب أسرع الأوقات العالمية...</div>
+        </div>
+	</main>
+
+    <footer class="page-footer">
+        <div class="footer-credits">
+            <div class="footer-person">
+                <div id="mazenNameTxt" class="footer-person-name">مازن</div>
+                <div class="footer-links">
+                    <a href="https://x.com/mazen_v500" class="footer-link" target="_blank" rel="noopener" title="X/Twitter" aria-label="X/Twitter"><span class="icon icon-x" aria-hidden="true"></span></a>
+                    <a href="https://github.com/mazen-v500" class="footer-link" target="_blank" rel="noopener" title="GitHub" aria-label="GitHub"><span class="icon icon-github" aria-hidden="true"></span></a>
+                    <a href="https://t.me/mazen_v500" class="footer-link" target="_blank" rel="noopener" title="Telegram" aria-label="Telegram"><span class="icon icon-telegram" aria-hidden="true"></span></a>
+                </div>
+            </div>
+            <div class="footer-person">
+                <div id="ahmedNameTxt" class="footer-person-name">أحمد</div>
+                <div class="footer-links">
+                    <a href="https://x.com/ko_wll" class="footer-link" target="_blank" rel="noopener" title="X/Twitter" aria-label="X/Twitter"><span class="icon icon-x" aria-hidden="true"></span></a>
+                    <a href="https://instagram.com/zs_us" class="footer-link" target="_blank" rel="noopener" title="Instagram" aria-label="Instagram"><span class="icon icon-instagram" aria-hidden="true"></span></a>
+                </div>
+            </div>
+        </div>
+		<p class="footer-meta">
+            <span class="footer-meta-item">&copy; 2026 DashType. All rights reserved.</span>
+            <span class="footer-meta-item"><span id="contactLabel" class="footer-contact-label">للتواصل معنا</span> <a class="footer-contact" href="mailto:contact@dashtype.tech">contact@dashtype.tech</a></span>
+            <span class="footer-meta-item"><span id="versionLabel" class="footer-contact-label">الإصدار</span> <span class="footer-version">0.3.004</span></span>
+        </p>
+    </footer>
+
+	<script type="module">
+		import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+		import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+		const firebaseConfig = {
+			apiKey: "AIzaSyABT9cJ3H2e1YaljPhmFb8dgXfaV7cZEQs",
+			authDomain: "dashtype-9855c.firebaseapp.com",
+			projectId: "dashtype-9855c",
+			storageBucket: "dashtype-9855c.firebasestorage.app",
+			messagingSenderId: "758504188835",
+			appId: "1:758504188835:web:a75d6f9452f09a067f0816",
+			databaseURL: "https://dashtype-9855c-default-rtdb.firebaseio.com"
+		};
+
+		const app = initializeApp(firebaseConfig);
+		const db = getDatabase(app);
+
+        const leaderboardContent = document.getElementById('leaderboardContent');
+
+        let currentLanguage = "ar";
+
+        const textMap = {
+            ar: {
+                pageTitle: "السجل العالمي",
+                pageSubtitle: "أسرع اللاعبين حول العالم",
+                backBtn: "العودة للرئيسية",
+                loading: "جاري جلب أسرع الأوقات العالمية...",
+                noData: "لا توجد بيانات متاحة حالياً.",
+                unknownPlayer: "لاعب مجهول",
+                statsHeader: "إحصائيات: أكثر الكلمات كتابةً عالمياً",
+                times: "مرة",
+                singleMode: "كلمة واحدة",
+                tripleMode: "3 كلمات",
+                seqMode: "7 كلمات متتابعة",
+                noRounds: "لا توجد جولات بعد",
+                sec: "ث",
+                rank: "المركز",
+                player: "اللاعب",
+                time: "الوقت",
+                date: "التاريخ",
+                errorLoad: "حدث خطأ أثناء الاتصال بقاعدة البيانات. تأكد من اتصالك بالإنترنت.",
+                mazenNameTxt: "مازن",
+                ahmedNameTxt: "أحمد",
+                contactLabel: "للتواصل معنا",
+                versionLabel: "الإصدار",
+                betaLabel: "بيتا"
+            },
+            en: {
+                pageTitle: "Global Leaderboard",
+                pageSubtitle: "Fastest Players Worldwide",
+                backBtn: "Back to Home",
+                loading: "Fetching fastest global times...",
+                noData: "No data available currently.",
+                unknownPlayer: "Unknown Player",
+                statsHeader: "Stats: Most Typed Words Globally",
+                times: "times",
+                singleMode: "Single Word",
+                tripleMode: "3 Words",
+                seqMode: "Sequential 7 Words",
+                noRounds: "No rounds yet",
+                sec: "s",
+                rank: "Rank",
+                player: "Player",
+                time: "Time",
+                date: "Date",
+                errorLoad: "Error trying to connect to the database. Make sure you are connected to the internet.",
+                mazenNameTxt: "Mazen",
+                ahmedNameTxt: "Ahmed",
+                contactLabel: "Contact us",
+                versionLabel: "Version",
+                betaLabel: "Beta"
+            }
+        };
+
+        function t(key) {
+            return textMap[currentLanguage][key];
+        }
+
+        async function loadGlobalLeaderboard() {
+            try {
+                const usersRef = ref(db, 'users');
+                const snapshot = await get(usersRef);
+                
+                if (!snapshot.exists()) {
+                    leaderboardContent.innerHTML = `<div class="loading-state">${t('noData')}</div>`;
+                    return;
+                }
+
+                const data = snapshot.val();
+                let allRounds = [];
+                let wordCounts = {};
+
+                // Extract all rounds attached to users
+                for (const uid in data) {
+                    const userProfile = data[uid].profile;
+                    const defaultName = t('unknownPlayer');
+                    const fallbackName = userProfile ? userProfile.nickname : defaultName;
+                    const fallbackId = userProfile ? userProfile.shortId : "";
+                    
+                    if (data[uid].rounds) {
+                        for (const roundId in data[uid].rounds) {
+                            const r = data[uid].rounds[roundId];
+                            if (r && r.timeTaken && r.mode) {
+                                allRounds.push({
+                                    playerName: r.playerName || fallbackName,
+                                    shortId: r.shortId || fallbackId,
+                                    timeTaken: parseFloat(r.timeTaken),
+                                    mode: r.mode,
+                                    word: r.word,
+                                    date: r.timestamp || 0
+                                });
+
+                                // Count words for global stats
+                                if (r.word) {
+                                    const words = r.word.split(' ');
+                                    words.forEach(w => {
+                                        let cleanWord = w.trim();
+                                        if (cleanWord) {
+                                            if (wordCounts[cleanWord]) {
+                                                wordCounts[cleanWord]++;
+                                            } else {
+                                                wordCounts[cleanWord] = 1;
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Prepare most typed words
+                const sortedWords = Object.keys(wordCounts).sort((a, b) => wordCounts[b] - wordCounts[a]).slice(0, 5);
+                let wordsHtml = '';
+                if (sortedWords.length > 0) {
+                    wordsHtml = `
+                    <div class="leaderboard-card" style="grid-column: 1 / -1; margin-bottom: 20px;">
+                        <div class="leaderboard-header" style="background: linear-gradient(120deg, #10b981, #059669); color: white;">${t('statsHeader')}</div>
+                        <div style="padding: 15px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+                            ${sortedWords.map((w, i) => `<span style="background: rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 20px; font-weight: bold;">${i+1}. ${w} <span style="font-size: 11px; opacity: 0.7;">(${wordCounts[w]} ${t('times')})</span></span>`).join('')}
+                        </div>
+                    </div>
+                    `;
+                }
+
+                // Group by mode
+                const modes = {
+                    'single': { title: t('singleMode'), rounds: [] },
+                    'triple': { title: t('tripleMode'), rounds: [] },
+                    'seq': { title: t('seqMode'), rounds: [] }
+                };
+
+                allRounds.forEach(r => {
+                    if (modes[r.mode]) {
+                        modes[r.mode].rounds.push(r);
+                    }
+                });
+
+                leaderboardContent.innerHTML = wordsHtml || '';
+
+                // Build UI for each mode
+                ['single', 'triple', 'seq'].forEach(modeKey => {
+                    const modeData = modes[modeKey];
+                    // Sort ascending by time
+                    modeData.rounds.sort((a, b) => a.timeTaken - b.timeTaken);
+                    
+                    // Take top 10 unique best times
+                    let top10 = [];
+                    let seenNames = new Set();
+                    for(let i = 0; i < modeData.rounds.length; i++) {
+                        let r = modeData.rounds[i];
+                        if(!seenNames.has(r.playerName + r.shortId + r.timeTaken)) {
+                            top10.push(r);
+                            seenNames.add(r.playerName + r.shortId + r.timeTaken);
+                        }
+                        if(top10.length >= 10) break; 
+                    }
+
+                    let tableRows = top10.length === 0 ? 
+                        `<tr><td colspan="4" style="text-align: center; opacity: 0.7;">${t('noRounds')}</td></tr>` : '';
+
+                    top10.forEach((r, index) => {
+                        const rank = index + 1;
+                        const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : 'rank-other';
+                        tableRows += `
+                            <tr>
+                                <td><div class="rank-medal ${rankClass}">${rank}</div></td>
+                                <td style="font-weight: bold; color: var(--accent-b); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${r.playerName} #${r.shortId}">${r.playerName} <span style="font-size:10px; opacity:0.6;">#${r.shortId}</span></td>
+                                <td style="font-family: monospace;">${r.timeTaken.toFixed(3)} ${t('sec')}</td>
+                                <td style="opacity: 0.8; font-size: 11px;">${new Date(r.date).toLocaleDateString(currentLanguage === 'ar' ? 'ar-EG' : 'en-US')}</td>
+                            </tr>
+                        `;
+                    });
+
+                    const modeCard = `
+                        <div class="leaderboard-card">
+                            <div class="leaderboard-header">${modeData.title}</div>
+                            <table class="history-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50px;">${t('rank')}</th>
+                                        <th>${t('player')}</th>
+                                        <th>${t('time')}</th>
+                                        <th>${t('date')}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${tableRows}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    leaderboardContent.innerHTML += modeCard;
+                });
+
+            } catch (error) {
+                console.error("Error loading global leaderboard:", error);
+                leaderboardContent.innerHTML = `<div class="loading-state">${t('errorLoad')}</div>`;
+            }
+        }
+
+        // Apply theme and language from localStorage if available
+        try {
+            const saved = JSON.parse(localStorage.getItem("typingGameState") || "{}");
+            currentLanguage = typeof saved.currentLanguage === "string" ? saved.currentLanguage : "ar";
+            
+            // Translate static page elements
+            document.documentElement.lang = currentLanguage;
+            document.documentElement.dir = currentLanguage === "ar" ? "rtl" : "ltr";
+            document.title = currentLanguage === "ar" ? "DashType - السجل العالمي" : "DashType - Global Leaderboard";
+            document.getElementById("pageTitle").textContent = t("pageTitle");
+            document.getElementById("pageSubtitle").textContent = t("pageSubtitle");
+            document.getElementById("backBtnText").textContent = t("backBtn");
+            const mazenTxt = document.getElementById("mazenNameTxt");
+            const ahmedTxt = document.getElementById("ahmedNameTxt");
+            if (mazenTxt) mazenTxt.textContent = t("mazenNameTxt");
+            if (ahmedTxt) ahmedTxt.textContent = t("ahmedNameTxt");
+            const contactLabel = document.getElementById("contactLabel");
+            if (contactLabel) contactLabel.textContent = t("contactLabel");
+            const versionLabel = document.getElementById("versionLabel");
+            if (versionLabel) versionLabel.textContent = t("versionLabel");
+            const betaLabel = document.getElementById("betaLabel");
+            if (betaLabel) betaLabel.textContent = t("betaLabel");
+            const loadingEl = document.getElementById("loadingState");
+            if (loadingEl) { loadingEl.textContent = t("loading"); }
+
+            const theme = typeof saved.currentTheme === "string" ? saved.currentTheme : "ocean";
+            const colorMode = typeof saved.currentColorMode === "string" ? saved.currentColorMode : "blur";
+            document.documentElement.setAttribute("data-theme", theme);
+            document.documentElement.setAttribute("data-color-mode", colorMode);
+            
+            const logoImg = document.getElementById("logoImg");
+            if (logoImg) {
+                logoImg.src = colorMode === "light" ? "photo/dashtype%20black%20logo.png" : "photo/dashtype%20white%20logo.png";
+            }
+        } catch(e){}
+
+        loadGlobalLeaderboard();
+	</script>
+</body>
+</html>

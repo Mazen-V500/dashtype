@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DashType - نمط كلمة واحدة</title>
+	<link rel="stylesheet" href="style.css">
+	<link rel="icon" type="image/png" href="photo/dashtype%20white%20logo.png">
+</head>
+<body>
+	<header class="top-controls logo-only">
+		<div class="logo-container">
+			<a href="index.html" class="logo-badge">
+				<img id="logoImg" src="photo/dashtype%20white%20logo.png" alt="DashType" class="app-logo">
+				<span class="logo-text">DashType</span>
+				<span class="logo-beta" id="betaLabel">بيتا</span>
+			</a>
+		</div>
+	</header>
+
+	<main class="game-card" id="gameScreen">
+		<section class="game-top">
+			<div class="game-title-group">
+				<h1 id="gameTitle">DashType - كلمة واحدة</h1>
+				<p class="subtitle" id="playerGreeting">اهلا</p>
+			</div>
+		</section>
+
+		<section class="game-shell">
+			<section class="play-layout">
+				<div class="play-main">
+					<div class="word-stage">
+						<div class="start-gate" id="startGate">
+							<button id="gateStartBtn" class="btn-icon" type="button"><span class="icon icon-play" aria-hidden="true"></span><span id="gateStartText">بدء الجولة</span></button>
+						</div>
+
+						<div class="word-box" id="wordBox">جاهز؟ اضغط بدء</div>
+					</div>
+
+					<input
+						type="text"
+						id="typingInput"
+						class="typing-box"
+						placeholder="اكتب هنا..."
+						autocapitalize="off"
+						autocorrect="off"
+						autocomplete="off"
+						spellcheck="false"
+					>
+
+					<div class="result" id="resultText">ابدأ الجولة الآن</div>
+				</div>
+
+				<aside class="status-panel">
+					<div class="status-card">
+						<div class="progress" id="progressText">النمط الحالي: كلمة واحدة</div>
+					</div>
+					<div class="status-card">
+						<div class="timer-wrap">
+							<span id="timerLabel">الوقت:</span>
+							<span id="timeValue">0.000</span>
+							<span id="timerUnit">ث</span>
+						</div>
+					</div>
+					<div class="status-card">
+						<div class="actions side-actions">
+							<button id="startBtn" class="btn-icon" type="button"><span class="icon icon-play" aria-hidden="true"></span><span id="startBtnText">بدء جولة</span></button>
+							<button id="nextBtn" class="btn-icon" type="button"><span class="icon icon-next" aria-hidden="true"></span><span id="nextBtnText">كلمة جديدة</span></button>
+							<button id="homeBtn" class="btn-icon" type="button"><span class="icon icon-home" aria-hidden="true"></span><span id="homeBtnText">الصفحة الرئيسية</span></button>
+						</div>
+					</div>
+				</aside>
+			</section>
+		</section>
+	</main>
+
+	<footer class="page-footer">
+		<div class="footer-controls">
+			<div class="control-group">
+				<label id="themeLabel">المظهر</label>
+				<div class="theme-switch" role="group" aria-label="theme selector">
+					<button id="themeOceanBtn" class="theme-dot" type="button" data-theme="ocean" title="Blue Orange"></button>
+					<button id="themeSunsetBtn" class="theme-dot" type="button" data-theme="sunset" title="Sunset"></button>
+					<button id="themeForestBtn" class="theme-dot" type="button" data-theme="forest" title="Forest"></button>
+					<button id="themeBerryBtn" class="theme-dot" type="button" data-theme="berry" title="Berry"></button>
+					<button id="themeNeonBtn" class="theme-dot" type="button" data-theme="neon" title="Green & Yellow"></button>
+					<button id="themeVioletBtn" class="theme-dot" type="button" data-theme="violet" title="Purple & Pink"></button>
+					<button id="themeBrownBtn" class="theme-dot" type="button" data-theme="brown" title="Brown"></button>
+				</div>
+			</div>
+
+			<div class="control-group">
+				<label id="colorModeLabel">الوضع</label>
+				<div class="color-mode-switch" role="group" aria-label="color mode selector">
+					<button id="colorModeDarkBtn" class="mode-dot mode-dark" type="button" data-color-mode="dark" title="Dark"></button>
+					<button id="colorModeBlurBtn" class="mode-dot mode-blur" type="button" data-color-mode="blur" title="Blur"></button>
+					<button id="colorModeLightBtn" class="mode-dot mode-light" type="button" data-color-mode="light" title="Light"></button>
+				</div>
+			</div>
+
+			<div class="control-group">
+				<label id="langLabel">اللغة</label>
+				<div class="lang-switch" role="group" aria-label="language selector">
+					<button id="langArBtn" class="lang-btn" type="button">العربية</button>
+					<button id="langEnBtn" class="lang-btn" type="button">English</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="footer-credits">
+			<div class="footer-person">
+				<div id="mazenNameTxt" class="footer-person-name">مازن</div>
+				<div class="footer-links">
+					<a href="https://x.com/mazen_v500" class="footer-link" target="_blank" rel="noopener" title="X/Twitter" aria-label="X/Twitter"><span class="icon icon-x" aria-hidden="true"></span></a>
+					<a href="https://github.com/mazen-v500" class="footer-link" target="_blank" rel="noopener" title="GitHub" aria-label="GitHub"><span class="icon icon-github" aria-hidden="true"></span></a>
+					<a href="https://t.me/mazen_v500" class="footer-link" target="_blank" rel="noopener" title="Telegram" aria-label="Telegram"><span class="icon icon-telegram" aria-hidden="true"></span></a>
+				</div>
+			</div>
+			<div class="footer-person">
+				<div id="ahmedNameTxt" class="footer-person-name">أحمد</div>
+				<div class="footer-links">
+					<a href="https://x.com/ko_wll" class="footer-link" target="_blank" rel="noopener" title="X/Twitter" aria-label="X/Twitter"><span class="icon icon-x" aria-hidden="true"></span></a>
+					<a href="https://instagram.com/zs_us" class="footer-link" target="_blank" rel="noopener" title="Instagram" aria-label="Instagram"><span class="icon icon-instagram" aria-hidden="true"></span></a>
+				</div>
+			</div>
+		</div>
+
+		<p class="footer-meta">
+			<span class="footer-meta-item">&copy; 2026 DashType. All rights reserved.</span>
+			<span class="footer-meta-item"><span id="contactLabel" class="footer-contact-label">للتواصل معنا</span> <a class="footer-contact" href="mailto:contact@dashtype.tech">contact@dashtype.tech</a></span>
+			<span class="footer-meta-item"><span id="versionLabel" class="footer-contact-label">الإصدار</span> <span class="footer-version">0.3.004</span></span>
+		</p>
+	</footer>
+
+	<script type="module" src="firebase-save.js"></script>
+	<script src="g1.js"></script>
+</body>
+</html>
