@@ -22,7 +22,7 @@
         .leaderboard-card {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--line);
-            border-radius: 16px;
+            border-radius: var(--radius-xl);
             overflow: hidden;
         }
 
@@ -249,7 +249,7 @@
                     <div class="leaderboard-card" style="grid-column: 1 / -1; margin-bottom: 20px;">
                         <div class="leaderboard-header" style="background: linear-gradient(120deg, #10b981, #059669); color: white;">${t('statsHeader')}</div>
                         <div style="padding: 15px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
-                            ${sortedWords.map((w, i) => `<span style="background: rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 20px; font-weight: bold;">${i+1}. ${w} <span style="font-size: 11px; opacity: 0.7;">(${wordCounts[w]} ${t('times')})</span></span>`).join('')}
+                            ${sortedWords.map((w, i) => `<span style="background: rgba(255,255,255,0.1); padding: 8px 16px; border-radius: var(--radius-pill); font-weight: bold;">${i+1}. ${w} <span style="font-size: 11px; opacity: 0.7;">(${wordCounts[w]} ${t('times')})</span></span>`).join('')}
                         </div>
                     </div>
                     `;
