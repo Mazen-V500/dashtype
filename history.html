@@ -1,11 +1,13 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>DashType - السجل الشخصي</title>
 	<link rel="stylesheet" href="style.css">
-	<link rel="icon" type="image/png" href="photo/dashtype%20white%20logo.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="photo/favicon-32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="photo/favicon-16.png">
+	<link rel="apple-touch-icon" href="photo/favicon-64.png">
 	<style>
 		.history-container {
 			display: grid;
@@ -36,13 +38,15 @@
 
 		.word-history-card {
 			width: min(820px, 100%);
-			background: rgba(10, 16, 26, 0.95);
-			border: 1px solid var(--line);
+			background: var(--panel);
+			border: 1px solid var(--glass-border);
 			border-radius: var(--radius-xl);
 			box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
 			display: grid;
 			gap: 12px;
 			padding: 18px;
+			-webkit-backdrop-filter: blur(16px) saturate(140%);
+			backdrop-filter: blur(16px) saturate(140%);
 		}
 
 		.word-history-header {
@@ -104,11 +108,13 @@
 		}
 
 		.stat-card {
-			background: rgba(255, 255, 255, 0.07);
-			border: 1px solid var(--line);
+			background: var(--glass-surface);
+			border: 1px solid var(--glass-border);
 			border-radius: var(--radius-xl);
 			padding: 16px;
 			text-align: center;
+			-webkit-backdrop-filter: blur(16px) saturate(140%);
+			backdrop-filter: blur(16px) saturate(140%);
 		}
 
 		.stat-value {
@@ -175,8 +181,7 @@
 	<header class="top-controls logo-only">
 		<div class="logo-container">
 			<a href="index.html" class="logo-badge">
-				<img id="logoImg" src="photo/dashtype%20white%20logo.png" alt="DashType" class="app-logo">
-				<span class="logo-text">DashType</span>
+				<img id="logoImg" src="photo/dashtype%20White%20Wordmark%20ar.png" alt="DashType" class="app-logo">
 				<span class="logo-beta" id="betaLabel">بيتا</span>
 			</a>
 		</div>
@@ -186,7 +191,7 @@
 		<section class="game-top">
 			<div class="game-title-group">
 				<h1 id="pageTitle" class="history-title">سجل الجولات</h1>
-				<p class="subtitle" id="pageSubtitle">إحصائيات الكتابة لديك</p>
+				<p class="subtitle" id="pageSubtitle">راجع تقدمك بدقة في الفردي والثلاثي والمتتابع والفقرة</p>
 			</div>
 			<div class="history-back-wrap">
 				<a href="index.html" class="inline-link">
@@ -227,9 +232,10 @@
 
 			<div class="filter-bar" id="filterBar">
 				<button class="filter-btn active" data-filter="all" id="filterAll">الكل</button>
-				<button class="filter-btn" data-filter="single" id="filterSingle">كلمة واحدة</button>
-				<button class="filter-btn" data-filter="triple" id="filterTriple">3 كلمات</button>
-				<button class="filter-btn" data-filter="seq" id="filterSeq">متتابعة</button>
+				<button class="filter-btn" data-filter="single" id="filterSingle">الفردي</button>
+				<button class="filter-btn" data-filter="triple" id="filterTriple">الثلاثي</button>
+				<button class="filter-btn" data-filter="seq" id="filterSeq">المتتابع</button>
+				<button class="filter-btn" data-filter="paragraph" id="filterParagraph">الفقرة</button>
 			</div>
 
 			<div id="tableContainer">
@@ -239,7 +245,7 @@
 							<th id="thDate">التاريخ</th>
 							<th id="thWord">الكلمات</th>
 							<th id="thTime">الوقت (ثانية)</th>
-							<th id="thMode">الوضع</th>
+							<th id="thMode">النمط</th>
 							<th id="thLanguage">اللغة</th>
 						</tr>
 					</thead>
@@ -341,7 +347,7 @@
 		<p class="footer-meta">
 			<span class="footer-meta-item">&copy; 2026 DashType. All rights reserved.</span>
 			<span class="footer-meta-item"><span id="contactLabel" class="footer-contact-label">للتواصل معنا</span> <a class="footer-contact" href="mailto:contact@dashtype.tech">contact@dashtype.tech</a></span>
-			<span class="footer-meta-item"><span id="versionLabel" class="footer-contact-label">الإصدار</span> <span class="footer-version">0.3.004</span></span>
+			<span class="footer-meta-item"><span id="versionLabel" class="footer-contact-label">الإصدار</span> <span class="footer-version">0.6.005</span></span>
 		</p>
 	</footer>
 
@@ -373,7 +379,7 @@
 		const textMap = {
 			ar: {
 				pageTitle: "سجل الجولات",
-				pageSubtitle: "إحصائيات الكتابة لديك",
+				pageSubtitle: "راجع تقدمك بدقة في الفردي والثلاثي والمتتابع والفقرة",
 				authMsg: "يرجى تسجيل الدخول عبر جوجل في الصفحة الرئيسية لعرض سجلك",
 				backBtn: "العودة للرئيسية",
 				signInLocal: "تسجيل الدخول هنا",
@@ -386,9 +392,11 @@
 				time: "الوقت (ثانية)",
 				mode: "النمط",
 				language: "اللغة",
-				singleMode: "كلمة واحدة",
-				tripleMode: "3 كلمات",
-				seqMode: "7 كلمات متتابعة",
+				singleMode: "الفردي",
+				tripleMode: "الثلاثي",
+				seqMode: "المتتابع",
+				paragraphMode: "الفقرة",
+				unknownPlayer: "لاعب",
 				wordHistoryTitle: "سجل كلمة",
 				wordHistoryMeta: "نتائج اللاعبين الذين كتبوا هذه الكلمة",
 				wordHistoryPlayer: "اللاعب",
@@ -422,7 +430,7 @@
 			},
 			en: {
 				pageTitle: "Round History",
-				pageSubtitle: "Your typing statistics",
+				pageSubtitle: "Track your progress across Single, Triple, Sequential, and Paragraph modes",
 				authMsg: "Please sign in with Google on the home page to view your history",
 				backBtn: "Back to Home",
 				signInLocal: "Sign in here",
@@ -435,9 +443,11 @@
 				time: "Time (seconds)",
 				mode: "Mode",
 				language: "Language",
-				singleMode: "Single Word",
-				tripleMode: "3 Words",
-				seqMode: "Sequential 7 Words",
+				singleMode: "Single",
+				tripleMode: "Triple",
+				seqMode: "Sequential",
+				paragraphMode: "Paragraph",
+				unknownPlayer: "Player",
 				wordHistoryTitle: "Word History",
 				wordHistoryMeta: "Players who typed this word",
 				wordHistoryPlayer: "Player",
@@ -512,6 +522,8 @@
 			currentLanguage = lang;
 			saveStateOption('currentLanguage', lang);
 			updateTexts();
+			const mode = document.documentElement.getAttribute("data-color-mode") || "blur";
+			updateLogo(mode);
 		}
 
 		function saveStateOption(key, value) {
@@ -525,7 +537,11 @@
 		function updateLogo(mode) {
 			const logoImg = document.getElementById("logoImg");
 			if (!logoImg) return;
-			logoImg.src = mode === "light" ? "photo/dashtype%20black%20logo.png" : "photo/dashtype%20white%20logo.png";
+			const lang = (document.documentElement.lang || currentLanguage || "ar").toLowerCase();
+			const isArabic = lang === "ar";
+			logoImg.src = mode === "light"
+				? (isArabic ? "photo/dashtype%20black%20Wordmark%20ar.png" : "photo/dashtype%20black%20Wordmark.png")
+				: (isArabic ? "photo/dashtype%20White%20Wordmark%20ar.png" : "photo/dashtype%20white%20Wordmark.png");
 		}
 
 		// Event listeners for theme and language
@@ -541,7 +557,7 @@
 		// Update UI text
 		function updateTexts() {
 			document.documentElement.lang = currentLanguage;
-			document.documentElement.dir = currentLanguage === "ar" ? "rtl" : "ltr";
+			document.documentElement.dir = "rtl";
 			document.title = currentLanguage === "ar" ? "DashType - السجل الشخصي" : "DashType - Round History";
 			
 			document.getElementById("pageTitle").textContent = t("pageTitle");
@@ -564,9 +580,10 @@
 			document.getElementById("thLanguage").textContent = t("language");
 			document.getElementById("emptyMsg").textContent = t("emptyMsg");
 			document.getElementById("filterAll").textContent = currentLanguage === "ar" ? "الكل" : "All";
-			document.getElementById("filterSingle").textContent = currentLanguage === "ar" ? "كلمة واحدة" : "Single";
-			document.getElementById("filterTriple").textContent = currentLanguage === "ar" ? "3 كلمات" : "Triple";
-			document.getElementById("filterSeq").textContent = currentLanguage === "ar" ? "متتابعة" : "Sequential";
+			document.getElementById("filterSingle").textContent = currentLanguage === "ar" ? "الفردي" : "Single";
+			document.getElementById("filterTriple").textContent = currentLanguage === "ar" ? "الثلاثي" : "Triple";
+			document.getElementById("filterSeq").textContent = currentLanguage === "ar" ? "المتتابع" : "Sequential";
+			document.getElementById("filterParagraph").textContent = currentLanguage === "ar" ? "الفقرة" : "Paragraph";
 
 			document.getElementById("themeLabel").textContent = t("themeLabel");
 			document.getElementById("colorModeLabel").textContent = t("colorModeLabel");
@@ -615,6 +632,7 @@
 			if (mode === "single") return t("singleMode");
 			if (mode === "triple") return t("tripleMode");
 			if (mode === "seq") return t("seqMode");
+			if (mode === "paragraph") return t("paragraphMode");
 			return mode;
 		}
 
@@ -694,8 +712,8 @@
 
 		async function loadWordHistory(word) {
 			try {
-				const usersRef = ref(database, "users");
-				const snapshot = await get(usersRef);
+				const roundsRef = ref(database, "publicRounds");
+				const snapshot = await get(roundsRef);
 				if (!snapshot.exists()) {
 					setWordHistoryEmpty();
 					return;
@@ -705,31 +723,25 @@
 				const results = [];
 				const normalizedWord = word.trim();
 
-				Object.keys(data).forEach(uid => {
-					const user = data[uid];
-					const profile = user.profile || {};
-					const playerName = profile.nickname || t("unknownPlayer") || "Player";
-					const shortId = profile.shortId || "";
-					const rounds = user.rounds || {};
+				Object.keys(data).forEach(roundId => {
+					const round = data[roundId];
+					if (!round || !round.word || typeof round.timeTaken !== "number") {
+						return;
+					}
 
-					Object.keys(rounds).forEach(roundId => {
-						const round = rounds[roundId];
-						if (!round || !round.word || typeof round.timeTaken !== "number") {
-							return;
-						}
-						const words = String(round.word)
-							.split(" ")
-							.map(w => w.trim())
-							.filter(Boolean);
-						if (!words.includes(normalizedWord)) {
-							return;
-						}
-						results.push({
-							playerName,
-							shortId,
-							mode: round.mode,
-							timeTaken: parseFloat(round.timeTaken)
-						});
+					const words = String(round.word)
+						.split(" ")
+						.map(w => w.trim())
+						.filter(Boolean);
+					if (!words.includes(normalizedWord)) {
+						return;
+					}
+
+					results.push({
+						playerName: round.playerName || t("unknownPlayer") || "Player",
+						shortId: round.shortId || "",
+						mode: round.mode,
+						timeTaken: parseFloat(round.timeTaken)
 					});
 				});
 
@@ -869,7 +881,7 @@
 
 		// Sign-in button handler
 		document.getElementById("signInLocalBtn").addEventListener("click", () => {
-			window.location.href = "index.html";
+			window.location.href = new URL("./index.html", import.meta.url).href;
 		});
 
 		// Load initial texts

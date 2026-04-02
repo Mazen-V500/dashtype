@@ -10,11 +10,11 @@
         const pathParts = (window.location.pathname || "/").split("/").filter(Boolean);
         const basePath = pathParts.length && !pathParts[0].includes(".") ? `/${pathParts[0]}/` : "/";
         const isLocalPreview = window.location.protocol === "file:" || host === "localhost" || host === "127.0.0.1" || host === "::1";
-        const target = isLocalPreview ? "./pages/sequential/index.html" : (isGitHubPages ? `${basePath}pages/sequential/index.html` : "/sequential");
+        const target = isLocalPreview ? "./pages/paragraph/index.html" : (isGitHubPages ? `${basePath}pages/paragraph/index.html` : "/paragraph");
         window.location.replace(target);
     </script>
 </head>
 <body>
-    <p>Redirecting to Sequential mode...</p>
+    <p>Redirecting to Paragraph mode...</p>
 </body>
 </html>

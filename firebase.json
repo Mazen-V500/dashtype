@@ -1,0 +1,40 @@
+{
+  "database": {
+    "rules": "database.rules.json"
+  },
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "cleanUrls": true,
+    "rewrites": [
+      {
+        "source": "/single",
+        "destination": "/pages/single/index.html"
+      },
+      {
+        "source": "/triple",
+        "destination": "/pages/triple/index.html"
+      },
+      {
+        "source": "/sequential",
+        "destination": "/pages/sequential/index.html"
+      },
+      {
+        "source": "/paragraph",
+        "destination": "/pages/paragraph/index.html"
+      },
+      {
+        "source": "/history",
+        "destination": "/history.html"
+      },
+      {
+        "source": "/leaderboard",
+        "destination": "/global-leaderboard.html"
+      }
+    ]
+  }
+}

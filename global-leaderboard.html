@@ -5,7 +5,9 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>DashType - السجل العالمي</title>
 	<link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/png" href="photo/dashtype%20white%20logo.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="photo/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="photo/favicon-16.png">
+    <link rel="apple-touch-icon" href="photo/favicon-64.png">
 	<style>
 		.leaderboard-container {
 			display: grid;
@@ -20,10 +22,12 @@
         }
 
         .leaderboard-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--line);
+            background: var(--glass-surface);
+            border: 1px solid var(--glass-border);
             border-radius: var(--radius-xl);
             overflow: hidden;
+            -webkit-backdrop-filter: blur(16px) saturate(140%);
+            backdrop-filter: blur(16px) saturate(140%);
         }
 
         .leaderboard-header {
@@ -49,7 +53,7 @@
         .rank-1 { background: #FFD700; color: #000; box-shadow: 0 0 10px #FFD700; }
         .rank-2 { background: #C0C0C0; color: #000; }
         .rank-3 { background: #CD7F32; color: #000; }
-        .rank-other { background: rgba(255,255,255,0.1); }
+        .rank-other { background: var(--glass-surface-strong); }
 
         .loading-state {
             grid-column: 1 / -1;
@@ -60,8 +64,7 @@
 	<header class="top-controls logo-only">
 		<div class="logo-container">
             <a href="index.html" class="logo-badge">
-                <img id="logoImg" src="photo/dashtype%20white%20logo.png" alt="DashType" class="app-logo">
-                <span class="logo-text">DashType</span>
+                <img id="logoImg" src="photo/dashtype%20White%20Wordmark%20ar.png" alt="DashType" class="app-logo">
                 <span class="logo-beta" id="betaLabel">بيتا</span>
             </a>
 		</div>
@@ -71,10 +74,10 @@
         <section class="game-top">
             <div class="game-title-group">
                 <h1 id="pageTitle" class="history-title">السجل العالمي</h1>
-                <p class="subtitle" id="pageSubtitle">أسرع اللاعبين حول العالم</p>
+                <p class="subtitle" id="pageSubtitle">ترتيب السرعة حسب الأنماط: الفردي، الثلاثي، المتتابع، والفقرة</p>
             </div>
             <div class="history-back-wrap">
-                <a href="index.html" class="inline-link">
+                    <a href="index.html" class="inline-link">
                     <button id="backBtn" class="filter-btn active btn-icon history-back-btn"><span class="icon icon-back" aria-hidden="true"></span><span id="backBtnText">العودة للرئيسية</span></button>
                 </a>
             </div>
@@ -106,7 +109,7 @@
 		<p class="footer-meta">
             <span class="footer-meta-item">&copy; 2026 DashType. All rights reserved.</span>
             <span class="footer-meta-item"><span id="contactLabel" class="footer-contact-label">للتواصل معنا</span> <a class="footer-contact" href="mailto:contact@dashtype.tech">contact@dashtype.tech</a></span>
-            <span class="footer-meta-item"><span id="versionLabel" class="footer-contact-label">الإصدار</span> <span class="footer-version">0.3.004</span></span>
+            <span class="footer-meta-item"><span id="versionLabel" class="footer-contact-label">الإصدار</span> <span class="footer-version">0.6.005</span></span>
         </p>
     </footer>
 
@@ -134,16 +137,17 @@
         const textMap = {
             ar: {
                 pageTitle: "السجل العالمي",
-                pageSubtitle: "أسرع اللاعبين حول العالم",
+                pageSubtitle: "ترتيب السرعة حسب الأنماط: الفردي، الثلاثي، المتتابع، والفقرة",
                 backBtn: "العودة للرئيسية",
                 loading: "جاري جلب أسرع الأوقات العالمية...",
                 noData: "لا توجد بيانات متاحة حالياً.",
                 unknownPlayer: "لاعب مجهول",
                 statsHeader: "إحصائيات: أكثر الكلمات كتابةً عالمياً",
                 times: "مرة",
-                singleMode: "كلمة واحدة",
-                tripleMode: "3 كلمات",
-                seqMode: "7 كلمات متتابعة",
+                singleMode: "الفردي",
+                tripleMode: "الثلاثي",
+                seqMode: "المتتابع",
+                paragraphMode: "الفقرة",
                 noRounds: "لا توجد جولات بعد",
                 sec: "ث",
                 rank: "المركز",
@@ -159,16 +163,17 @@
             },
             en: {
                 pageTitle: "Global Leaderboard",
-                pageSubtitle: "Fastest Players Worldwide",
+                pageSubtitle: "Speed ranking by modes: Single, Triple, Sequential, and Paragraph",
                 backBtn: "Back to Home",
                 loading: "Fetching fastest global times...",
                 noData: "No data available currently.",
                 unknownPlayer: "Unknown Player",
                 statsHeader: "Stats: Most Typed Words Globally",
                 times: "times",
-                singleMode: "Single Word",
-                tripleMode: "3 Words",
-                seqMode: "Sequential 7 Words",
+                singleMode: "Single",
+                tripleMode: "Triple",
+                seqMode: "Sequential",
+                paragraphMode: "Paragraph",
                 noRounds: "No rounds yet",
                 sec: "s",
                 rank: "Rank",
@@ -188,10 +193,102 @@
             return textMap[currentLanguage][key];
         }
 
+        function escapeHtml(value) {
+            return String(value ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#39;");
+        }
+
+        function decodeLatin1AsUtf8(value) {
+            const bytes = new Uint8Array(Array.from(String(value ?? ""), (ch) => ch.charCodeAt(0) & 0xff));
+            return new TextDecoder("utf-8").decode(bytes);
+        }
+
+        function repairPossibleMojibake(value) {
+            let text = String(value ?? "").trim();
+            if (!text) {
+                return "";
+            }
+
+            const looksCorrupted = /[ØÙÃÂÐÑ]/.test(text) || /[\u00C0-\u00FF]{2,}/.test(text);
+            if (!looksCorrupted) {
+                return text;
+            }
+
+            try {
+                for (let i = 0; i < 2; i += 1) {
+                    const decoded = decodeLatin1AsUtf8(text).trim();
+                    if (!decoded || decoded === text) {
+                        break;
+                    }
+                    text = decoded;
+                    if (/[\u0600-\u06FF]/.test(text)) {
+                        break;
+                    }
+                }
+            } catch (_error) {
+                // Keep original text if decoding fails.
+            }
+
+            return text;
+        }
+
+        function normalizeDisplayName(value) {
+            const normalized = repairPossibleMojibake(value)
+                .replace(/[\u200E\u200F\u202A-\u202E\u2066-\u2069]/g, "")
+                .trim()
+                .replace(/\s+/g, " ")
+                .normalize("NFC");
+            return normalized || t('unknownPlayer');
+        }
+
+        function normalizeShortId(value) {
+            return String(value ?? "").trim().replace(/[^a-zA-Z0-9]/g, "").slice(0, 12);
+        }
+
+        function normalizeStatWord(value) {
+            const repaired = repairPossibleMojibake(value)
+                .replace(/[\u200E\u200F\u202A-\u202E\u2066-\u2069]/g, "")
+                .trim()
+                .replace(/\s+/g, " ")
+                .normalize("NFC");
+
+            if (!repaired) {
+                return "";
+            }
+
+            const hasArabic = /[\u0600-\u06FF]/.test(repaired);
+            const hasEnglish = /[A-Za-z]/.test(repaired);
+            const hasBoxDrawing = /[\u2500-\u257F\u2580-\u259F]/.test(repaired);
+            const hasGarbleMarkers = /[╬╣╢╔╗╝┘┌┐]/.test(repaired);
+
+            if (hasBoxDrawing || hasGarbleMarkers) {
+                return "";
+            }
+
+            if (!hasArabic && !hasEnglish) {
+                return "";
+            }
+
+            return repaired;
+        }
+
+        function resolveWordmarkSrc(colorMode, lang) {
+            const normalizedLang = (lang || "ar").toLowerCase();
+            const isArabic = normalizedLang === "ar";
+            if (colorMode === "light") {
+                return isArabic ? "photo/dashtype%20black%20Wordmark%20ar.png" : "photo/dashtype%20black%20Wordmark.png";
+            }
+            return isArabic ? "photo/dashtype%20White%20Wordmark%20ar.png" : "photo/dashtype%20white%20Wordmark.png";
+        }
+
         async function loadGlobalLeaderboard() {
             try {
-                const usersRef = ref(db, 'users');
-                const snapshot = await get(usersRef);
+                const roundsRef = ref(db, 'publicRounds');
+                const snapshot = await get(roundsRef);
                 
                 if (!snapshot.exists()) {
                     leaderboardContent.innerHTML = `<div class="loading-state">${t('noData')}</div>`;
@@ -201,45 +298,43 @@
                 const data = snapshot.val();
                 let allRounds = [];
                 let wordCounts = {};
+                const defaultName = t('unknownPlayer');
 
-                // Extract all rounds attached to users
-                for (const uid in data) {
-                    const userProfile = data[uid].profile;
-                    const defaultName = t('unknownPlayer');
-                    const fallbackName = userProfile ? userProfile.nickname : defaultName;
-                    const fallbackId = userProfile ? userProfile.shortId : "";
-                    
-                    if (data[uid].rounds) {
-                        for (const roundId in data[uid].rounds) {
-                            const r = data[uid].rounds[roundId];
-                            if (r && r.timeTaken && r.mode) {
-                                allRounds.push({
-                                    playerName: r.playerName || fallbackName,
-                                    shortId: r.shortId || fallbackId,
-                                    timeTaken: parseFloat(r.timeTaken),
-                                    mode: r.mode,
-                                    word: r.word,
-                                    date: r.timestamp || 0
-                                });
-
-                                // Count words for global stats
-                                if (r.word) {
-                                    const words = r.word.split(' ');
-                                    words.forEach(w => {
-                                        let cleanWord = w.trim();
-                                        if (cleanWord) {
-                                            if (wordCounts[cleanWord]) {
-                                                wordCounts[cleanWord]++;
-                                            } else {
-                                                wordCounts[cleanWord] = 1;
-                                            }
-                                        }
-                                    });
-                                }
-                            }
-                        }
+                // Extract all rounds from the public index
+                Object.keys(data).forEach(roundId => {
+                    const r = data[roundId];
+                    if (!r || typeof r.mode !== 'string' || typeof r.timeTaken !== 'number') {
+                        return;
                     }
-                }
+
+                    const displayName = normalizeDisplayName(r.playerName);
+                    const shortId = normalizeShortId(r.shortId);
+
+                    allRounds.push({
+                        playerName: displayName || defaultName,
+                        shortId,
+                        timeTaken: parseFloat(r.timeTaken),
+                        mode: r.mode,
+                        word: r.word,
+                        date: r.timestamp || 0
+                    });
+
+                    // Count words for global stats
+                    if (r.word) {
+                        const words = String(r.word).split(' ');
+                        words.forEach(w => {
+                            const cleanWord = normalizeStatWord(w);
+                            if (!cleanWord) {
+                                return;
+                            }
+                            if (wordCounts[cleanWord]) {
+                                wordCounts[cleanWord]++;
+                            } else {
+                                wordCounts[cleanWord] = 1;
+                            }
+                        });
+                    }
+                });
 
                 // Prepare most typed words
                 const sortedWords = Object.keys(wordCounts).sort((a, b) => wordCounts[b] - wordCounts[a]).slice(0, 5);
@@ -249,7 +344,7 @@
                     <div class="leaderboard-card" style="grid-column: 1 / -1; margin-bottom: 20px;">
                         <div class="leaderboard-header" style="background: linear-gradient(120deg, #10b981, #059669); color: white;">${t('statsHeader')}</div>
                         <div style="padding: 15px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
-                            ${sortedWords.map((w, i) => `<span style="background: rgba(255,255,255,0.1); padding: 8px 16px; border-radius: var(--radius-pill); font-weight: bold;">${i+1}. ${w} <span style="font-size: 11px; opacity: 0.7;">(${wordCounts[w]} ${t('times')})</span></span>`).join('')}
+                            ${sortedWords.map((w, i) => `<span style="background: rgba(255,255,255,0.1); padding: 8px 16px; border-radius: var(--radius-pill); font-weight: bold;">${i+1}. ${escapeHtml(w)} <span style="font-size: 11px; opacity: 0.7;">(${wordCounts[w]} ${t('times')})</span></span>`).join('')}
                         </div>
                     </div>
                     `;
@@ -259,7 +354,8 @@
                 const modes = {
                     'single': { title: t('singleMode'), rounds: [] },
                     'triple': { title: t('tripleMode'), rounds: [] },
-                    'seq': { title: t('seqMode'), rounds: [] }
+                    'seq': { title: t('seqMode'), rounds: [] },
+                    'paragraph': { title: t('paragraphMode'), rounds: [] }
                 };
 
                 allRounds.forEach(r => {
@@ -271,7 +367,7 @@
                 leaderboardContent.innerHTML = wordsHtml || '';
 
                 // Build UI for each mode
-                ['single', 'triple', 'seq'].forEach(modeKey => {
+                ['single', 'triple', 'seq', 'paragraph'].forEach(modeKey => {
                     const modeData = modes[modeKey];
                     // Sort ascending by time
                     modeData.rounds.sort((a, b) => a.timeTaken - b.timeTaken);
@@ -294,10 +390,16 @@
                     top10.forEach((r, index) => {
                         const rank = index + 1;
                         const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : 'rank-other';
+                        const playerNameSafe = escapeHtml(r.playerName);
+                        const shortIdSafe = escapeHtml(r.shortId);
+                        const fullTitle = shortIdSafe ? `${playerNameSafe} #${shortIdSafe}` : playerNameSafe;
+                        const shortIdTag = shortIdSafe
+                            ? `<span style="font-size:10px; opacity:0.6; direction:ltr; unicode-bidi:isolate;"> #${shortIdSafe}</span>`
+                            : "";
                         tableRows += `
                             <tr>
                                 <td><div class="rank-medal ${rankClass}">${rank}</div></td>
-                                <td style="font-weight: bold; color: var(--accent-b); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${r.playerName} #${r.shortId}">${r.playerName} <span style="font-size:10px; opacity:0.6;">#${r.shortId}</span></td>
+                                <td style="font-weight: bold; color: var(--accent-b); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${fullTitle}"><span style="unicode-bidi:isolate;" dir="auto">${playerNameSafe}</span>${shortIdTag}</td>
                                 <td style="font-family: monospace;">${r.timeTaken.toFixed(3)} ${t('sec')}</td>
                                 <td style="opacity: 0.8; font-size: 11px;">${new Date(r.date).toLocaleDateString(currentLanguage === 'ar' ? 'ar-EG' : 'en-US')}</td>
                             </tr>
@@ -338,7 +440,7 @@
             
             // Translate static page elements
             document.documentElement.lang = currentLanguage;
-            document.documentElement.dir = currentLanguage === "ar" ? "rtl" : "ltr";
+            document.documentElement.dir = "rtl";
             document.title = currentLanguage === "ar" ? "DashType - السجل العالمي" : "DashType - Global Leaderboard";
             document.getElementById("pageTitle").textContent = t("pageTitle");
             document.getElementById("pageSubtitle").textContent = t("pageSubtitle");
@@ -363,7 +465,7 @@
             
             const logoImg = document.getElementById("logoImg");
             if (logoImg) {
-                logoImg.src = colorMode === "light" ? "photo/dashtype%20black%20logo.png" : "photo/dashtype%20white%20logo.png";
+                logoImg.src = resolveWordmarkSrc(colorMode, currentLanguage);
             }
         } catch(e){}
 

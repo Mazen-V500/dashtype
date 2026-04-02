@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DashType - نمط الفقرة</title>
+    <link rel="stylesheet" href="../../style.css">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../photo/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../photo/favicon-16.png">
+    <link rel="apple-touch-icon" href="../../photo/favicon-64.png">
+</head>
+<body class="mode4-page">
+    <header class="top-controls logo-only">
+        <div class="logo-container">
+            <a href="../../index.html" class="logo-badge">
+                <img id="logoImg" src="../../photo/dashtype%20White%20Wordmark%20ar.png" alt="DashType" class="app-logo">
+                <span class="logo-beta" id="betaLabel">بيتا</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="game-card" id="gameScreen">
+        <section class="game-top">
+            <div class="game-title-group">
+                <h1 id="gameTitle">DashType - نمط الفقرة</h1>
+                <p class="subtitle" id="playerGreeting">الفقرة: أنشئ نصك أو اختر من مكتبتك وابدأ التحدي.</p>
+            </div>
+        </section>
+
+        <section class="game-shell">
+            <section class="play-layout mode4-layout">
+                <div class="play-main mode4-primary">
+                    <div class="status-card mode4-window mode4-test-window mode4-surface-main">
+                        <div class="mode4-window-head mode4-test-head">
+                            <h2 id="typingWindowTitle" class="mode4-window-title">اختبار الكتابة</h2>
+                            <div class="mode4-inline-stats" aria-live="polite">
+                                <div class="mode4-stat-chip">
+                                    <span id="progressText">0 / 0 كلمة</span>
+                                </div>
+                                <div class="mode4-stat-chip mode4-time-chip">
+                                    <span id="timerLabel">الوقت:</span>
+                                    <span id="timeValue">0.000</span>
+                                    <span id="timerUnit">ث</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="word-stage">
+                            <div class="start-gate" id="startGate">
+                                <button id="gateStartBtn" class="btn-icon" type="button"><span class="icon icon-play" aria-hidden="true"></span><span id="gateStartText">بدء الجولة</span></button>
+                            </div>
+                            <div class="word-box paragraph-word-box" id="wordBox">لا يوجد نص للعب بعد</div>
+                        </div>
+
+                        <textarea
+                            id="typingInput"
+                            class="typing-box paragraph-typing"
+                            placeholder="ابدأ كتابة الفقرة هنا..."
+                            autocorrect="off"
+                            autocomplete="off"
+                            spellcheck="false"
+                        ></textarea>
+
+                        <div class="actions mode4-main-actions">
+                            <button id="startBtn" class="btn-icon" type="button"><span class="icon icon-play" aria-hidden="true"></span><span id="startBtnText">بدء جولة</span></button>
+                            <button id="nextBtn" class="btn-icon" type="button"><span class="icon icon-next" aria-hidden="true"></span><span id="nextBtnText">إعادة المحاولة</span></button>
+                            <button id="homeBtn" class="btn-icon" type="button"><span class="icon icon-home" aria-hidden="true"></span><span id="homeBtnText">الصفحة الرئيسية</span></button>
+                        </div>
+
+                        <div class="result" id="resultText">اختر أو أنشئ فقرة أولاً</div>
+
+                        <div class="leaderboard-mini" id="paragraphLeaderboard">
+                            <h3 id="paragraphLeaderboardTitle">أسرع اللاعبين في هذه الفقرة</h3>
+                            <ol id="paragraphLeaderboardList"></ol>
+                        </div>
+                    </div>
+                </div>
+
+                <aside class="status-panel mode4-sidebar">
+                    <div id="libraryWindow" class="status-card paragraph-tools mode4-window mode4-library-window mode4-surface-side">
+                        <div class="mode4-window-head">
+                            <h2 id="builderWindowTitle" class="mode4-window-title">مكتبتي</h2>
+                        </div>
+                        <div class="progress" id="builderHint">اكتب فقرة جديدة للبدء</div>
+
+                        <div id="libraryPanel" class="paragraph-subpanel">
+                            <div class="progress paragraph-list-title" id="myTextsHint">نصوصك السابقة</div>
+                            <select id="publicParagraphSelect" class="paragraph-select" title="Public paragraph list" aria-label="Public paragraph list"></select>
+                            <div class="actions paragraph-actions">
+                                <button id="loadPublicParagraphBtn" class="btn-icon" type="button"><span class="icon icon-play" aria-hidden="true"></span><span id="loadPublicText">فتح النص المحدد</span></button>
+                            </div>
+                        </div>
+
+                        <div class="actions paragraph-actions">
+                            <button id="toggleCreatePanelBtn" class="btn-icon" type="button" aria-expanded="false"><span class="icon icon-next" aria-hidden="true"></span><span id="toggleCreatePanelText">إنشاء نص جديد</span></button>
+                        </div>
+                    </div>
+
+                    <div id="composeWindow" class="status-card mode4-window mode4-compose-window mode4-surface-side hidden">
+                        <div class="mode4-window-head">
+                            <h2 id="createWindowTitle" class="mode4-window-title">إنشاء نص جديد</h2>
+                        </div>
+                        <div id="composePanel" class="paragraph-subpanel">
+                            <textarea id="paragraphInput" class="paragraph-input" placeholder="اكتب فقرتك هنا... (حد أقصى 1000 كلمة)"></textarea>
+                            <div class="paragraph-meta" id="paragraphMetaRow">
+                                <span class="meta-pill" id="paragraphWordsMeta">الكلمات: 0</span>
+                                <span class="meta-pill" id="paragraphCharsMeta">الأحرف: 0</span>
+                                <span class="meta-pill" id="paragraphQualityMeta">الجودة: —</span>
+                            </div>
+                            <div class="control-group">
+                                <label id="visibilityLabel">الظهور</label>
+                                <div class="lang-switch" role="group" aria-label="paragraph visibility selector">
+                                    <button id="visibilityPublicBtn" class="lang-btn active" type="button">عام</button>
+                                    <button id="visibilityPrivateBtn" class="lang-btn" type="button">خاص</button>
+                                </div>
+                            </div>
+                            <div class="actions paragraph-actions">
+                                <button id="generateParagraphBtn" class="btn-icon" type="button"><span class="icon icon-next" aria-hidden="true"></span><span id="generateParagraphText">توليد فقرة عشوائية</span></button>
+                                <button id="saveParagraphBtn" class="btn-icon" type="button"><span class="icon icon-save" aria-hidden="true"></span><span id="saveParagraphText">حفظ الفقرة</span></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="raceWindow" class="status-card mode4-window mode4-race-window mode4-surface-side">
+                        <div class="mode4-window-head">
+                            <h2 id="raceWindowTitle" class="mode4-window-title">الرابط والتحدي</h2>
+                        </div>
+                        <div class="actions paragraph-actions">
+                            <button id="createRaceBtn" class="btn-icon" type="button"><span class="icon icon-global" aria-hidden="true"></span><span id="createRaceText">إنشاء تحدي مباشر</span></button>
+                        </div>
+                        <input id="shareLinkInput" class="paragraph-select" type="text" title="Share link" placeholder="Share link" readonly>
+                        <div id="shareGuideText" class="mode4-helper">رابط النص يعمل تلقائياً عند تشغيل الموقع عبر رابط ويب.</div>
+                        <div class="race-chip" id="raceStateText">لا يوجد تحدي مباشر حالياً.</div>
+                        <div class="result" id="paragraphSaveResult">احفظ فقرتك ثم ابدأ الجولة.</div>
+                    </div>
+                </aside>
+            </section>
+        </section>
+    </main>
+
+    <footer class="page-footer">
+        <div class="footer-controls">
+            <div class="control-group">
+                <label id="themeLabel">المظهر</label>
+                <div class="theme-switch" role="group" aria-label="theme selector">
+                    <button id="themeOceanBtn" class="theme-dot" type="button" data-theme="ocean" title="Blue Orange"></button>
+                    <button id="themeSunsetBtn" class="theme-dot" type="button" data-theme="sunset" title="Sunset"></button>
+                    <button id="themeForestBtn" class="theme-dot" type="button" data-theme="forest" title="Forest"></button>
+                    <button id="themeBerryBtn" class="theme-dot" type="button" data-theme="berry" title="Berry"></button>
+                    <button id="themeNeonBtn" class="theme-dot" type="button" data-theme="neon" title="Green & Yellow"></button>
+                    <button id="themeVioletBtn" class="theme-dot" type="button" data-theme="violet" title="Purple & Pink"></button>
+                    <button id="themeBrownBtn" class="theme-dot" type="button" data-theme="brown" title="Brown"></button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label id="colorModeLabel">الوضع</label>
+                <div class="color-mode-switch" role="group" aria-label="color mode selector">
+                    <button id="colorModeDarkBtn" class="mode-dot mode-dark" type="button" data-color-mode="dark" title="Dark"></button>
+                    <button id="colorModeBlurBtn" class="mode-dot mode-blur" type="button" data-color-mode="blur" title="Blur"></button>
+                    <button id="colorModeLightBtn" class="mode-dot mode-light" type="button" data-color-mode="light" title="Light"></button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label id="langLabel">اللغة</label>
+                <div class="lang-switch" role="group" aria-label="language selector">
+                    <button id="langArBtn" class="lang-btn" type="button">العربية</button>
+                    <button id="langEnBtn" class="lang-btn" type="button">English</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-credits">
+            <div class="footer-person">
+                <div id="mazenNameTxt" class="footer-person-name">مازن</div>
+                <div class="footer-links">
+                    <a href="https://x.com/mazen_v500" class="footer-link" target="_blank" rel="noopener" title="X/Twitter" aria-label="X/Twitter"><span class="icon icon-x" aria-hidden="true"></span></a>
+                    <a href="https://github.com/mazen-v500" class="footer-link" target="_blank" rel="noopener" title="GitHub" aria-label="GitHub"><span class="icon icon-github" aria-hidden="true"></span></a>
+                    <a href="https://t.me/mazen_v500" class="footer-link" target="_blank" rel="noopener" title="Telegram" aria-label="Telegram"><span class="icon icon-telegram" aria-hidden="true"></span></a>
+                </div>
+            </div>
+            <div class="footer-person">
+                <div id="ahmedNameTxt" class="footer-person-name">أحمد</div>
+                <div class="footer-links">
+                    <a href="https://x.com/ko_wll" class="footer-link" target="_blank" rel="noopener" title="X/Twitter" aria-label="X/Twitter"><span class="icon icon-x" aria-hidden="true"></span></a>
+                    <a href="https://instagram.com/zs_us" class="footer-link" target="_blank" rel="noopener" title="Instagram" aria-label="Instagram"><span class="icon icon-instagram" aria-hidden="true"></span></a>
+                </div>
+            </div>
+        </div>
+
+        <p class="footer-meta">
+            <span class="footer-meta-item">&copy; 2026 DashType. All rights reserved.</span>
+            <span class="footer-meta-item"><span id="contactLabel" class="footer-contact-label">للتواصل معنا</span> <a class="footer-contact" href="mailto:contact@dashtype.tech">contact@dashtype.tech</a></span>
+            <span class="footer-meta-item"><span id="versionLabel" class="footer-contact-label">الإصدار</span> <span class="footer-version">0.6.005</span></span>
+        </p>
+    </footer>
+
+    <script type="module" src="../../scripts/firebase-save.js"></script>
+    <script type="module" src="../../scripts/g4.js"></script>
+</body>
+</html>

@@ -1,14 +1,16 @@
+﻿import { loadUserPreferences, saveUserPreferences } from "./firebase-save.js";
+
 window.TypingGame = (() => {
-    const wordsByLanguage = {
-        ar: ["برمجة", "تحدي", "مطور", "سرعة", "متصفح", "انجاز", "مستقبل", "واجهة", "ابداع", "تقنية"],
-        en: ["code", "game", "speed", "logic", "play", "input", "timer", "fast", "skill", "debug"]
+    const wordsByLanguage = window.DashTypeWordBank || {
+        ar: ["برمجة", "تحدي", "مطور", "سرعة"],
+        en: ["code", "game", "speed", "logic"]
     };
 
     const textMap = {
         ar: {
-            pageTitle: "DashType - نمط كلمة واحدة",
-            gameTitle: "DashType - نمط كلمة واحدة",
-            greeting: "مرحباً {name}! استعد للتحدي.",
+            pageTitle: "DashType - النمط المتتابع",
+            gameTitle: "DashType - النمط المتتابع",
+            greeting: "المتتابع: أكمل 7 كلمات بالتسلسل دون توقف للحفاظ على التركيز.",
             startRound: "بدء جولة",
             startGate: "بدء الجولة",
             newWord: "كلمة جديدة",
@@ -16,19 +18,19 @@ window.TypingGame = (() => {
             typingPlaceholder: "اكتب هنا...",
             timerLabel: "الوقت:",
             timerUnit: "ث",
-            progressSingle: "النمط الحالي: كلمة واحدة",
-            progressTriple: "النمط الحالي: 3 كلمات (مجموع 14 حرفاً)",
-            progressTripleSeq: "الكلمة {index} من 3 (المجموع 14 حرفاً)",
+            progressSingle: "النمط الحالي: الفردي",
+            progressTriple: "النمط الحالي: الثلاثي ({count} كلمات)",
+            progressTripleSeq: "النمط الحالي: المتتابع - الكلمة {index} من {count}",
             readyWordBox: "جاهز؟ اضغط بدء",
             endedWordBox: "انتهت الجولة",
-            resultStart: "ابدأ الجولة الآن",
+            resultStart: "اضغط بدء الجولة لبدء سلسلة الـ 7 كلمات",
             resultStartTyping: "بدأ الوقت!",
             resultGoodContinue: "ممتاز، استمر",
             resultWrong: "يوجد خطأ، حاول التصحيح",
             resultNextWord: "ممتاز، الكلمة التالية",
             resultDoneSingle: "ممتاز! أنهيت الكلمة في {time} ثانية",
-            resultDoneTriple: "ممتاز! أنهيت 3 كلمات (14 حرفاً) خلال {time} ثانية",
-            resultDoneTripleSeq: "ممتاز! أنهيت 3 كلمات متتالية (14 حرفاً) خلال {time} ثانية",
+            resultDoneTriple: "ممتاز! أنهيت {count} كلمات خلال {time} ثانية",
+            resultDoneTripleSeq: "ممتاز! أنهيت {count} كلمات متتالية خلال {time} ثانية",
             themeLabel: "المظهر",
             colorModeLabel: "الوضع",
             langLabel: "اللغة",
@@ -36,16 +38,24 @@ window.TypingGame = (() => {
             themeSunset: "وردي وأصفر",
             themeForest: "أخضر وأزرق",
             themeBerry: "بنفسجي ووردي",
+            themeNeon: "أخضر وأصفر",
+            themeViolet: "بنفسجي ووردي",
+            themeBrown: "بني",
             darkMode: "داكن",
             blurMode: "ضبابي",
             lightMode: "فاتح",
             langArabic: "العربية",
-            langEnglish: "English"
+            langEnglish: "English",
+            mazenNameTxt: "مازن",
+            ahmedNameTxt: "أحمد",
+            contactLabel: "للتواصل معنا",
+            versionLabel: "الإصدار",
+            betaLabel: "بيتا"
         },
         en: {
-            pageTitle: "DashType - Single Word Challenge",
-            gameTitle: "DashType - Single Word",
-            greeting: "Welcome, {name}! Get ready.",
+            pageTitle: "DashType - Sequential Mode",
+            gameTitle: "DashType - Sequential Mode",
+            greeting: "Sequential mode: complete 7 words in order with one continuous timer.",
             startRound: "Start Round",
             startGate: "Start Round",
             newWord: "New Word",
@@ -53,19 +63,19 @@ window.TypingGame = (() => {
             typingPlaceholder: "Type here...",
             timerLabel: "Time:",
             timerUnit: "s",
-            progressSingle: "Current Mode: Single Word",
-            progressTriple: "Current Mode: 3 Words (Total 14 letters)",
-            progressTripleSeq: "Word {index} of 3 (Total 14 letters)",
+            progressSingle: "Current Mode: Single",
+            progressTriple: "Current Mode: Triple ({count} words)",
+            progressTripleSeq: "Current Mode: Sequential - Word {index} of {count}",
             readyWordBox: "Ready? Press start",
             endedWordBox: "Round Ended",
-            resultStart: "Start a round now",
+            resultStart: "Press Start Round to begin the 7-word sequence",
             resultStartTyping: "Timer started!",
             resultGoodContinue: "Great, keep going",
             resultWrong: "There is a mistake, correct it",
             resultNextWord: "Great, next word",
             resultDoneSingle: "Great! You finished the word in {time} seconds",
-            resultDoneTriple: "Great! You finished 3 words (14 letters) in {time} seconds",
-            resultDoneTripleSeq: "Great! You finished 3 sequential words (14 letters) in {time} seconds",
+            resultDoneTriple: "Great! You finished {count} words in {time} seconds",
+            resultDoneTripleSeq: "Great! You finished {count} sequential words in {time} seconds",
             themeLabel: "Theme",
             colorModeLabel: "Mode",
             langLabel: "Language",
@@ -73,11 +83,19 @@ window.TypingGame = (() => {
             themeSunset: "Pink & Yellow",
             themeForest: "Green & Blue",
             themeBerry: "Purple & Pink",
+            themeNeon: "Green & Yellow",
+            themeViolet: "Purple & Pink",
+            themeBrown: "Brown",
             darkMode: "Dark",
             blurMode: "Blurred",
             lightMode: "Light",
             langArabic: "Arabic",
-            langEnglish: "English"
+            langEnglish: "English",
+            mazenNameTxt: "Mazen",
+            ahmedNameTxt: "Ahmed",
+            contactLabel: "Contact us",
+            versionLabel: "Version",
+            betaLabel: "Beta"
         }
     };
 
@@ -85,6 +103,7 @@ window.TypingGame = (() => {
         const mode = config.mode;
         const tripleTotalLetters = 14;
         const tripleWordCount = 3;
+        const seqWordCount = 7;
 
         const wordBox = document.getElementById("wordBox");
         const typingInput = document.getElementById("typingInput");
@@ -109,11 +128,14 @@ window.TypingGame = (() => {
         const themeSunsetBtn = document.getElementById("themeSunsetBtn");
         const themeForestBtn = document.getElementById("themeForestBtn");
         const themeBerryBtn = document.getElementById("themeBerryBtn");
+        const themeNeonBtn = document.getElementById("themeNeonBtn");
+        const themeVioletBtn = document.getElementById("themeVioletBtn");
+        const themeBrownBtn = document.getElementById("themeBrownBtn");
         const colorModeDarkBtn = document.getElementById("colorModeDarkBtn");
         const colorModeBlurBtn = document.getElementById("colorModeBlurBtn");
         const colorModeLightBtn = document.getElementById("colorModeLightBtn");
 
-        const themeButtons = [themeOceanBtn, themeSunsetBtn, themeForestBtn, themeBerryBtn];
+        const themeButtons = [themeOceanBtn, themeSunsetBtn, themeForestBtn, themeBerryBtn, themeNeonBtn, themeVioletBtn, themeBrownBtn];
         const colorModeButtons = [colorModeDarkBtn, colorModeBlurBtn, colorModeLightBtn];
 
         let playerName = "لاعب";
@@ -125,6 +147,7 @@ window.TypingGame = (() => {
         let rafId = null;
         let sequentialWords = [];
         let sequentialIndex = 0;
+        let isApplyingRemotePreferences = false;
 
         function t(key) {
             return textMap[currentLanguage][key];
@@ -147,6 +170,14 @@ window.TypingGame = (() => {
                 selectedMode: mode
             };
             localStorage.setItem("typingGameState", JSON.stringify(state));
+
+            if (!isApplyingRemotePreferences) {
+                void saveUserPreferences({
+                    theme: state.currentTheme,
+                    colorMode: state.currentColorMode,
+                    language: state.currentLanguage
+                });
+            }
         }
 
         function setTheme(theme) {
@@ -170,7 +201,11 @@ window.TypingGame = (() => {
             const logoImg = document.getElementById("logoImg");
             if (!logoImg) return;
             const colorMode = document.documentElement.getAttribute("data-color-mode") || "blur";
-            const logoSrc = colorMode === "light" ? "photo/dashtype%20black%20logo.png" : "photo/dashtype%20white%20logo.png";
+            const lang = (document.documentElement.lang || currentLanguage || "ar").toLowerCase();
+            const isArabic = lang === "ar";
+            const logoSrc = colorMode === "light"
+                ? (isArabic ? "photo/dashtype%20black%20Wordmark%20ar.png" : "photo/dashtype%20black%20Wordmark.png")
+                : (isArabic ? "photo/dashtype%20White%20Wordmark%20ar.png" : "photo/dashtype%20white%20Wordmark.png");
             logoImg.src = logoSrc;
         }
 
@@ -193,6 +228,35 @@ window.TypingGame = (() => {
             }
         }
 
+        async function applyRemotePreferences() {
+            try {
+                const remote = await loadUserPreferences();
+                if (!remote || typeof remote !== "object") {
+                    return;
+                }
+
+                isApplyingRemotePreferences = true;
+
+                if (typeof remote.theme === "string") {
+                    setTheme(remote.theme);
+                }
+
+                if (typeof remote.colorMode === "string") {
+                    setColorMode(remote.colorMode);
+                }
+
+                if (remote.language === "ar" || remote.language === "en") {
+                    currentLanguage = remote.language;
+                }
+
+                setLanguage(currentLanguage);
+            } catch (error) {
+                console.warn("Remote preferences sync failed:", error);
+            } finally {
+                isApplyingRemotePreferences = false;
+            }
+        }
+
         function getWords() {
             return wordsByLanguage[currentLanguage];
         }
@@ -200,6 +264,10 @@ window.TypingGame = (() => {
         function getRandomWord() {
             const words = getWords();
             return words[Math.floor(Math.random() * words.length)];
+        }
+
+        function getWordSet(count) {
+            return Array.from({ length: count }, () => getRandomWord());
         }
 
         function getThreeWordsWithTotalLetters(totalLetters) {
@@ -270,11 +338,11 @@ window.TypingGame = (() => {
 
         function renderProgress() {
             if (mode === "triple") {
-                progressText.textContent = t("progressTriple");
+                progressText.textContent = format(t("progressTriple"), { count: tripleWordCount });
                 return;
             }
             if (mode === "triple-seq") {
-                progressText.textContent = format(t("progressTripleSeq"), { index: sequentialIndex + 1 });
+                progressText.textContent = format(t("progressTripleSeq"), { index: sequentialIndex + 1, count: seqWordCount });
                 return;
             }
             progressText.textContent = t("progressSingle");
@@ -304,7 +372,7 @@ window.TypingGame = (() => {
             if (mode === "triple") {
                 currentWord = getThreeWordsWithTotalLetters(tripleTotalLetters);
             } else if (mode === "triple-seq") {
-                sequentialWords = getThreeWordSetWithTotalLetters(tripleTotalLetters);
+                sequentialWords = getWordSet(seqWordCount);
                 sequentialIndex = 0;
                 currentWord = sequentialWords[sequentialIndex];
             } else {
@@ -324,7 +392,7 @@ window.TypingGame = (() => {
         }
 
         function goToNextWordOrFinish() {
-            if (mode === "triple-seq" && sequentialIndex < tripleWordCount - 1) {
+            if (mode === "triple-seq" && sequentialIndex < seqWordCount - 1) {
                 sequentialIndex += 1;
                 currentWord = sequentialWords[sequentialIndex];
                 wordBox.textContent = currentWord;
@@ -337,9 +405,9 @@ window.TypingGame = (() => {
 
             stopTimer();
             if (mode === "triple") {
-                resultText.textContent = format(t("resultDoneTriple"), { time: finalTime.toFixed(3) });
+                resultText.textContent = format(t("resultDoneTriple"), { time: finalTime.toFixed(3), count: tripleWordCount });
             } else if (mode === "triple-seq") {
-                resultText.textContent = format(t("resultDoneTripleSeq"), { time: finalTime.toFixed(3) });
+                resultText.textContent = format(t("resultDoneTripleSeq"), { time: finalTime.toFixed(3), count: seqWordCount });
             } else {
                 resultText.textContent = format(t("resultDoneSingle"), { time: finalTime.toFixed(3) });
             }
@@ -347,17 +415,28 @@ window.TypingGame = (() => {
             wordBox.textContent = t("endedWordBox");
             typingInput.value = "";
             typingInput.blur();
+            
+            // Save round data to Firebase if user is logged in
+            callSaveRound();
+            
             showStartGate();
+        }
+
+        function callSaveRound() {
+            let wordToSave = (typeof sequentialWords !== 'undefined' && Array.isArray(sequentialWords)) ? sequentialWords.join(" ") : currentWord;
+            if (window.saveRoundDataToFirebase) {
+                window.saveRoundDataToFirebase(wordToSave, finalTime, "seq", currentLanguage);
+            }
         }
 
         function applyTexts() {
             document.title = t("pageTitle");
             gameTitle.textContent = t("gameTitle");
             playerGreeting.textContent = format(t("greeting"), { name: playerName });
-            startBtn.textContent = t("startRound");
-            gateStartBtn.textContent = t("startGate");
-            nextBtn.textContent = t("newWord");
-            homeBtn.textContent = t("home");
+            document.getElementById("startBtnText").textContent = t("startRound");
+            document.getElementById("gateStartText").textContent = t("startGate");
+            document.getElementById("nextBtnText").textContent = t("newWord");
+            document.getElementById("homeBtnText").textContent = t("home");
             typingInput.placeholder = t("typingPlaceholder");
             timerLabel.textContent = t("timerLabel");
             timerUnit.textContent = t("timerUnit");
@@ -368,10 +447,16 @@ window.TypingGame = (() => {
             themeSunsetBtn.title = t("themeSunset");
             themeForestBtn.title = t("themeForest");
             themeBerryBtn.title = t("themeBerry");
+            themeNeonBtn.title = t("themeNeon");
+            themeVioletBtn.title = t("themeViolet");
+            themeBrownBtn.title = t("themeBrown");
             themeOceanBtn.setAttribute("aria-label", t("themeOcean"));
             themeSunsetBtn.setAttribute("aria-label", t("themeSunset"));
             themeForestBtn.setAttribute("aria-label", t("themeForest"));
             themeBerryBtn.setAttribute("aria-label", t("themeBerry"));
+            themeNeonBtn.setAttribute("aria-label", t("themeNeon"));
+            themeVioletBtn.setAttribute("aria-label", t("themeViolet"));
+            themeBrownBtn.setAttribute("aria-label", t("themeBrown"));
             colorModeDarkBtn.title = t("darkMode");
             colorModeBlurBtn.title = t("blurMode");
             colorModeLightBtn.title = t("lightMode");
@@ -380,6 +465,18 @@ window.TypingGame = (() => {
             colorModeLightBtn.setAttribute("aria-label", t("lightMode"));
             langArBtn.textContent = t("langArabic");
             langEnBtn.textContent = t("langEnglish");
+
+            const mazenElem = document.getElementById("mazenNameTxt");
+            const ahmedElem = document.getElementById("ahmedNameTxt");
+            if (mazenElem) mazenElem.textContent = t("mazenNameTxt");
+            if (ahmedElem) ahmedElem.textContent = t("ahmedNameTxt");
+            const contactLabel = document.getElementById("contactLabel");
+            if (contactLabel) contactLabel.textContent = t("contactLabel");
+            const versionLabel = document.getElementById("versionLabel");
+            if (versionLabel) versionLabel.textContent = t("versionLabel");
+            const betaLabel = document.getElementById("betaLabel");
+            if (betaLabel) betaLabel.textContent = t("betaLabel");
+
             renderProgress();
             if (
                 !timerStarted
@@ -392,27 +489,42 @@ window.TypingGame = (() => {
         function setLanguage(lang) {
             currentLanguage = lang;
             document.documentElement.lang = lang;
-            document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+            document.documentElement.dir = "rtl";
             langArBtn.classList.toggle("active", lang === "ar");
             langEnBtn.classList.toggle("active", lang === "en");
             applyTexts();
+            updateLogo();
             resetRoundState();
             showStartGate();
             saveState();
         }
 
+        function getHomeUrl() {
+            return new URL("./index.html", import.meta.url).href;
+        }
+
         function goHome() {
             saveState();
-            window.location.href = "index.html";
+            window.location.href = getHomeUrl();
+        }
+
+        function normalizeInput(value) {
+            if (currentLanguage === "en") {
+                return value.toLowerCase();
+            }
+            return value;
         }
 
         typingInput.addEventListener("input", () => {
-            if (typingInput.value === currentWord) {
+            const typedValue = normalizeInput(typingInput.value);
+            const targetValue = normalizeInput(currentWord);
+
+            if (typedValue === targetValue) {
                 goToNextWordOrFinish();
                 return;
             }
 
-            if (!currentWord.startsWith(typingInput.value)) {
+            if (!targetValue.startsWith(typedValue)) {
                 resultText.textContent = t("resultWrong");
                 resultText.className = "result warning";
                 return;
@@ -437,6 +549,18 @@ window.TypingGame = (() => {
             startRound();
         });
 
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                if (startGate.classList.contains("hidden")) {
+                    startRound();
+                } else {
+                    hideStartGate();
+                    startRound();
+                }
+            }
+        });
+
         homeBtn.addEventListener("click", goHome);
 
         langArBtn.addEventListener("click", () => setLanguage("ar"));
@@ -453,9 +577,12 @@ window.TypingGame = (() => {
         loadState();
         setLanguage(currentLanguage);
         showStartGate();
+        void applyRemotePreferences();
     }
 
     return {
         initGamePage
     };
 })();
+
+window.TypingGame.initGamePage({ mode: "triple-seq" });

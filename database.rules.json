@@ -1,0 +1,33 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+    "publicRounds": {
+      ".read": true,
+      "$roundId": {
+        ".write": "auth != null && newData.child('uid').val() === auth.uid",
+        ".validate": "newData.hasChildren(['uid','playerName','shortId','mode','timeTaken','timestamp']) && newData.child('uid').isString() && newData.child('playerName').isString() && newData.child('shortId').isString() && newData.child('mode').isString() && newData.child('timeTaken').isNumber() && newData.child('timestamp').isNumber()"
+      }
+    },
+    "paragraphs": {
+      ".read": true,
+      "$paragraphId": {
+        ".write": "auth != null && (!data.exists() ? newData.child('ownerUid').val() === auth.uid : data.child('ownerUid').val() === auth.uid)",
+        ".validate": "newData.hasChildren(['paragraphId','text','wordCount','language','isPublic','ownerUid','ownerName','createdAt']) && newData.child('paragraphId').val() === $paragraphId && newData.child('text').isString() && newData.child('text').val().length > 0 && newData.child('wordCount').isNumber() && newData.child('language').isString() && newData.child('isPublic').isBoolean() && newData.child('ownerUid').isString() && newData.child('ownerName').isString() && newData.child('createdAt').isNumber()"
+      }
+    },
+    "paragraphRaces": {
+      ".read": true,
+      "$raceId": {
+        ".write": "auth != null && (!data.exists() ? newData.child('createdBy').val() === auth.uid : true)",
+        ".validate": "newData.hasChildren(['raceId','text','language','status','createdAt','createdBy','participants']) && newData.child('raceId').val() === $raceId"
+      }
+    }
+  }
+}
