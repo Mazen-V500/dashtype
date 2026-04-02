@@ -136,6 +136,12 @@
 			margin-bottom: 16px;
 		}
 
+		#tableContainer {
+			border: 1px solid var(--glass-border);
+			border-radius: var(--radius-xl);
+			overflow-x: auto;
+		}
+
 		.word-cell {
 			font-weight: 600;
 			color: var(--accent-b);
@@ -158,13 +164,78 @@
 
 
 		@media (max-width: 768px) {
+			.filter-bar {
+				gap: 8px;
+			}
+
+			.filter-btn {
+				padding: 7px 10px;
+				font-size: 12px;
+			}
+
 			.history-table {
 				font-size: 12px;
+				min-width: 0;
+				border-spacing: 0 10px;
+			}
+
+			.history-table thead {
+				display: none;
+			}
+
+			.history-table tbody {
+				display: grid;
+				gap: 10px;
+			}
+
+			.history-table tbody tr {
+				display: grid;
+				gap: 8px;
+				padding: 12px;
+				border: 1px solid var(--glass-border);
+				border-radius: var(--radius-lg);
+				background: var(--glass-surface-soft);
 			}
 
 			.history-table th,
 			.history-table td {
-				padding: 8px;
+				padding: 0;
+				white-space: normal;
+			}
+
+			.history-table td {
+				display: flex;
+				justify-content: space-between;
+				align-items: flex-start;
+				gap: 10px;
+				border: 0;
+				font-size: 13px;
+				text-align: start;
+			}
+
+			.history-table td::before {
+				content: attr(data-label);
+				font-size: 12px;
+				font-weight: 700;
+				opacity: 0.74;
+				flex: 0 0 auto;
+			}
+
+			.history-table td .word-cell,
+			.history-table td .mode-badge {
+				margin-inline-start: auto;
+			}
+
+			.history-table td .word-cell {
+				max-width: 65%;
+				white-space: normal;
+				word-break: break-word;
+			}
+
+			#tableContainer {
+				border: 0;
+				background: transparent;
+				overflow: visible;
 			}
 
 			.stat-card {
@@ -173,6 +244,11 @@
 
 			.stat-value {
 				font-size: 18px;
+			}
+
+			.word-history-card {
+				padding: 14px;
+				border-radius: var(--radius-lg);
 			}
 		}
 	</style>
@@ -524,6 +600,8 @@
 			updateTexts();
 			const mode = document.documentElement.getAttribute("data-color-mode") || "blur";
 			updateLogo(mode);
+			const activeFilter = document.querySelector(".filter-btn.active")?.dataset.filter || "all";
+			displayHistory(activeFilter);
 		}
 
 		function saveStateOption(key, value) {
@@ -782,9 +860,11 @@
 			filteredRounds.forEach(round => {
 				const row = document.createElement("tr");
 				const dateCell = document.createElement("td");
+				dateCell.setAttribute("data-label", t("date"));
 				dateCell.textContent = formatDate(round.timestamp || 0);
 
 				const wordCell = document.createElement("td");
+				wordCell.setAttribute("data-label", t("words"));
 				const wordBtn = document.createElement("button");
 				wordBtn.className = "word-cell";
 				wordBtn.type = "button";
@@ -793,15 +873,18 @@
 				wordCell.appendChild(wordBtn);
 
 				const timeCell = document.createElement("td");
+				timeCell.setAttribute("data-label", t("time"));
 				timeCell.textContent = (round.timeTaken || 0).toFixed(3);
 
 				const modeCell = document.createElement("td");
+				modeCell.setAttribute("data-label", t("mode"));
 				const modeBadge = document.createElement("span");
 				modeBadge.className = "mode-badge";
 				modeBadge.textContent = getModeLabel(round.mode);
 				modeCell.appendChild(modeBadge);
 
 				const langCell = document.createElement("td");
+				langCell.setAttribute("data-label", t("language"));
 				langCell.textContent = round.language === "ar" ? "العربية" : "English";
 
 				row.appendChild(dateCell);

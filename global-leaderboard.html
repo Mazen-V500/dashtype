@@ -25,7 +25,8 @@
             background: var(--glass-surface);
             border: 1px solid var(--glass-border);
             border-radius: var(--radius-xl);
-            overflow: hidden;
+            overflow-x: auto;
+            overflow-y: hidden;
             -webkit-backdrop-filter: blur(16px) saturate(140%);
             backdrop-filter: blur(16px) saturate(140%);
         }
@@ -57,6 +58,27 @@
 
         .loading-state {
             grid-column: 1 / -1;
+        }
+
+        @media (max-width: 768px) {
+            .mode-sections {
+                grid-template-columns: 1fr;
+                gap: 14px;
+                margin-top: 14px;
+            }
+
+            .leaderboard-header {
+                font-size: 15px;
+                padding: 10px 12px;
+            }
+
+            .leaderboard-card {
+                border-radius: var(--radius-lg);
+            }
+
+            .history-table {
+                min-width: 620px;
+            }
         }
 	</style>
 </head>
