@@ -282,29 +282,29 @@
             const githubBase = getGitHubPagesBasePath();
             const routeTargets = localPreview
                 ? {
-                    welcomeSingleModeBtn: "./G1.html",
-                    welcomeTripleModeBtn: "./G2.html",
-                    welcomeTripleSeqModeBtn: "./G3.html",
-                    welcomeParagraphModeBtn: "./G4.html",
+                    welcomeSingleModeBtn: "./pages/single/index.html",
+                    welcomeTripleModeBtn: "./pages/triple/index.html",
+                    welcomeTripleSeqModeBtn: "./pages/sequential/index.html",
+                    welcomeParagraphModeBtn: "./pages/paragraph/index.html",
                     welcomeHistoryBtn: "./history.html",
                     welcomeGlobalBtn: "./global-leaderboard.html"
                 }
                 : githubPages
                     ? {
-                        welcomeSingleModeBtn: `${githubBase}G1.html`,
-                        welcomeTripleModeBtn: `${githubBase}G2.html`,
-                        welcomeTripleSeqModeBtn: `${githubBase}G3.html`,
-                        welcomeParagraphModeBtn: `${githubBase}G4.html`,
+                        welcomeSingleModeBtn: `${githubBase}pages/single/index.html`,
+                        welcomeTripleModeBtn: `${githubBase}pages/triple/index.html`,
+                        welcomeTripleSeqModeBtn: `${githubBase}pages/sequential/index.html`,
+                        welcomeParagraphModeBtn: `${githubBase}pages/paragraph/index.html`,
                         welcomeHistoryBtn: `${githubBase}history.html`,
                         welcomeGlobalBtn: `${githubBase}global-leaderboard.html`
                     }
                 : {
-                    welcomeSingleModeBtn: "/single",
-                    welcomeTripleModeBtn: "/triple",
-                    welcomeTripleSeqModeBtn: "/sequential",
-                    welcomeParagraphModeBtn: "/paragraph",
-                    welcomeHistoryBtn: "/history",
-                    welcomeGlobalBtn: "/leaderboard"
+                    welcomeSingleModeBtn: "./pages/single/index.html",
+                    welcomeTripleModeBtn: "./pages/triple/index.html",
+                    welcomeTripleSeqModeBtn: "./pages/sequential/index.html",
+                    welcomeParagraphModeBtn: "./pages/paragraph/index.html",
+                    welcomeHistoryBtn: "./history.html",
+                    welcomeGlobalBtn: "./global-leaderboard.html"
                 };
 
             Object.entries(routeTargets).forEach(([id, href]) => {
