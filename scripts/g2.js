@@ -495,7 +495,7 @@ window.TypingGame = (() => {
         }
 
         function getHomeUrl() {
-            return new URL("./index.html", import.meta.url).href;
+            return new URL("../index.html", import.meta.url).href;
         }
 
         function goHome() {
