@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DashType - دليل المستخدم</title>
+    <meta name="description" content="دليل DashType الكامل: شرح الأنماط، النقاط، المستويات، وأفضل ممارسات التدريب.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://dashtype.tech/guide">
+    <meta property="og:title" content="DashType - دليل المستخدم">
+    <meta property="og:description" content="ابدأ بسرعة في DashType مع شرح عملي للأنماط والتقدم.">
+    <meta property="og:url" content="https://dashtype.tech/guide">
+    <link rel="stylesheet" href="../style.css">
+    <link rel="manifest" href="../manifest.webmanifest">
+    <link rel="icon" type="image/png" sizes="32x32" href="../photo/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../photo/favicon-16.png">
+    <link rel="apple-touch-icon" href="../photo/favicon-64.png">
+    <style>
+        .guide-layout {
+            display: grid;
+            gap: 14px;
+        }
+
+        .guide-section {
+            display: grid;
+            gap: 12px;
+        }
+
+        .guide-title {
+            margin: 0;
+            font-size: clamp(20px, 2.2vw, 28px);
+            font-weight: 800;
+        }
+
+        .guide-subtitle {
+            margin: 0;
+            opacity: 0.84;
+            line-height: 1.75;
+        }
+
+        .guide-list {
+            margin: 0;
+            padding: 0 22px 0 0;
+            display: grid;
+            gap: 8px;
+            line-height: 1.8;
+            opacity: 0.96;
+        }
+
+        .mode-guide-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 12px;
+        }
+
+        .mode-guide-card {
+            background: var(--glass-surface-soft);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 12px;
+            display: grid;
+            gap: 8px;
+            -webkit-backdrop-filter: blur(14px) saturate(130%);
+            backdrop-filter: blur(14px) saturate(130%);
+        }
+
+        .mode-guide-name {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--accent-b);
+        }
+
+        .mode-guide-desc,
+        .mode-guide-points {
+            margin: 0;
+            line-height: 1.7;
+            opacity: 0.92;
+            font-size: 14px;
+        }
+
+        .mode-guide-link {
+            justify-self: start;
+            text-decoration: none;
+        }
+
+        .faq-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .faq-item {
+            border: 1px solid var(--glass-border);
+            background: var(--glass-surface-soft);
+            border-radius: var(--radius-md);
+            padding: 10px 12px;
+        }
+
+        .faq-item summary {
+            cursor: pointer;
+            font-weight: 700;
+            line-height: 1.6;
+        }
+
+        .faq-answer {
+            margin-top: 8px;
+            line-height: 1.8;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .mode-guide-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .guide-list {
+                padding-right: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="#guideMain" class="skip-link">تخطي إلى المحتوى</a>
+    <header class="top-controls logo-only">
+        <div class="logo-container">
+            <a href="../index.html" class="logo-badge" id="homeLogoLink">
+                <img id="logoImg" src="../photo/dashtype%20White%20Wordmark%20ar.png" alt="DashType" class="app-logo">
+                <span class="logo-beta" id="betaLabel">بيتا</span>
+            </a>
+        </div>
+    </header>
+
+    <main id="guideMain" class="game-card">
+        <section class="game-top">
+            <div class="game-title-group">
+                <h1 class="history-title" id="guideTitle">دليل المستخدم</h1>
+                <p class="subtitle" id="guideSubtitle">دليل سريع للمستخدم الجديد: كيف تبدأ، كيف تربح نقاط أكثر، وما الفرق بين الأنماط.</p>
+            </div>
+            <div class="history-back-wrap">
+                <a href="../index.html" class="inline-link" id="homeBackLink">
+                    <button class="filter-btn active btn-icon history-back-btn" id="backBtn" type="button"><span class="icon icon-back" aria-hidden="true"></span><span id="backBtnText">العودة للرئيسية</span></button>
+                </a>
+            </div>
+        </section>
+
+        <div class="guide-layout">
+            <section class="status-card guide-section">
+                <h2 class="guide-title" id="quickStartTitle">كيف تبدأ بسرعة</h2>
+                <ol class="guide-list" id="quickStartList"></ol>
+            </section>
+
+            <section class="status-card guide-section">
+                <h2 class="guide-title" id="modesTitle">شرح الأنماط</h2>
+                <p class="guide-subtitle" id="modesSubtitle">كل نمط يعطيك تجربة مختلفة. ابدأ بالفردي ثم ارفع الصعوبة تدريجيًا.</p>
+                <div class="mode-guide-grid" id="modeGuideGrid"></div>
+            </section>
+
+            <section class="status-card guide-section">
+                <h2 class="guide-title" id="mode4DeepTitle">شرح متقدم للنمط الرابع (الفقرة)</h2>
+                <p class="guide-subtitle" id="mode4DeepSubtitle">هذا النمط هو الأكثر تعقيدًا لأنه يجمع الإنشاء، التحدي، المتابعة، والسجل العام في نفس الشاشة.</p>
+                <ol class="guide-list" id="mode4DeepList"></ol>
+                <ul class="guide-list" id="mode4DeepTips"></ul>
+            </section>
+
+            <section class="status-card guide-section">
+                <h2 class="guide-title" id="pointsTitle">نظام النقاط والمستويات</h2>
+                <ul class="guide-list" id="pointsList"></ul>
+            </section>
+
+            <section class="status-card guide-section">
+                <h2 class="guide-title" id="faqTitle">الأسئلة الشائعة</h2>
+                <div class="faq-list" id="faqList"></div>
+            </section>
+
+            <section class="status-card guide-section">
+                <h2 class="guide-title" id="tipsTitle">نصائح مهمة قبل اللعب</h2>
+                <ul class="guide-list" id="tipsList"></ul>
+            </section>
+        </div>
+    </main>
+
+    <footer class="page-footer">
+        <div class="footer-controls">
+            <div class="control-group">
+                <label id="themeLabel">المظهر</label>
+                <div class="theme-switch" role="group" aria-label="theme selector">
+                    <button id="themeOceanBtn" class="theme-dot" type="button" data-theme="ocean" title="Blue Orange"></button>
+                    <button id="themeSunsetBtn" class="theme-dot" type="button" data-theme="sunset" title="Sunset"></button>
+                    <button id="themeForestBtn" class="theme-dot" type="button" data-theme="forest" title="Forest"></button>
+                    <button id="themeBerryBtn" class="theme-dot" type="button" data-theme="berry" title="Berry"></button>
+                    <button id="themeNeonBtn" class="theme-dot" type="button" data-theme="neon" title="Green & Yellow"></button>
+                    <button id="themeVioletBtn" class="theme-dot" type="button" data-theme="violet" title="Purple & Pink"></button>
+                    <button id="themeBrownBtn" class="theme-dot" type="button" data-theme="brown" title="Brown"></button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label id="colorModeLabel">الوضع</label>
+                <div class="color-mode-switch" role="group" aria-label="color mode selector">
+                    <button id="colorModeDarkBtn" class="mode-dot mode-dark" type="button" data-color-mode="dark" title="Dark"></button>
+                    <button id="colorModeBlurBtn" class="mode-dot mode-blur" type="button" data-color-mode="blur" title="Blurred"></button>
+                    <button id="colorModeLightBtn" class="mode-dot mode-light" type="button" data-color-mode="light" title="Light"></button>
+                </div>
+            </div>
+
+            <div class="control-group lang-control">
+                <label id="langLabel">اللغة</label>
+                <div class="lang-switch" role="group" aria-label="language selector">
+                    <button id="langArBtn" class="lang-btn" type="button" data-lang="ar">العربية</button>
+                    <button id="langEnBtn" class="lang-btn" type="button" data-lang="en">English</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-credits">
+            <div class="footer-person">
+                <div id="mazenNameTxt" class="footer-person-name">مازن</div>
+                <div class="footer-links">
+                    <a href="https://x.com/mazen_v500" class="footer-link" target="_blank" rel="noopener noreferrer" title="X/Twitter" aria-label="X/Twitter"><span class="icon icon-x" aria-hidden="true"></span></a>
+                    <a href="https://github.com/mazen-v500" class="footer-link" target="_blank" rel="noopener noreferrer" title="GitHub" aria-label="GitHub"><span class="icon icon-github" aria-hidden="true"></span></a>
+                    <a href="https://t.me/mazen_v500" class="footer-link" target="_blank" rel="noopener noreferrer" title="Telegram" aria-label="Telegram"><span class="icon icon-telegram" aria-hidden="true"></span></a>
+                </div>
+            </div>
+            <div class="footer-person">
+                <div id="ahmedNameTxt" class="footer-person-name">أحمد</div>
+                <div class="footer-links">
+                    <a href="https://x.com/ko_wll" class="footer-link" target="_blank" rel="noopener noreferrer" title="X/Twitter" aria-label="X/Twitter"><span class="icon icon-x" aria-hidden="true"></span></a>
+                    <a href="https://instagram.com/zs_us" class="footer-link" target="_blank" rel="noopener noreferrer" title="Instagram" aria-label="Instagram"><span class="icon icon-instagram" aria-hidden="true"></span></a>
+                </div>
+            </div>
+        </div>
+
+        <p class="footer-meta">
+            <span class="footer-meta-item">&copy; 2026 DashType. All rights reserved.</span>
+            <span class="footer-meta-item"><span id="contactLabel" class="footer-contact-label">للتواصل معنا</span> <a class="footer-contact" href="mailto:contact@dashtype.tech">contact@dashtype.tech</a></span>
+            <span class="footer-meta-item"><span id="versionLabel" class="footer-contact-label">الإصدار</span> <span class="footer-version">0.7.000</span></span>
+        </p>
+    </footer>
+
+    <script type="module">
+        import { readTypingGameState, writeTypingGameState } from "../scripts/app-state.js";
+        import { resolveRuntimeRoute } from "../scripts/route-context.js";
+
+        const textMap = {
+            ar: {
+                pageTitle: "DashType - دليل المستخدم",
+                guideTitle: "دليل المستخدم",
+                guideSubtitle: "دليل سريع للمستخدم الجديد: كيف تبدأ، كيف تربح نقاط أكثر، وما الفرق بين الأنماط.",
+                backBtnText: "العودة للرئيسية",
+                quickStartTitle: "كيف تبدأ بسرعة",
+                modesTitle: "شرح الأنماط",
+                modesSubtitle: "كل نمط يعطيك تجربة مختلفة. ابدأ بالفردي ثم ارفع الصعوبة تدريجيًا.",
+                mode4DeepTitle: "شرح متقدم للنمط الرابع (الفقرة)",
+                mode4DeepSubtitle: "هذا النمط هو الأكثر تعقيدًا لأنه يجمع الإنشاء، التحدي، المتابعة، والسجل العام في نفس الشاشة.",
+                pointsTitle: "نظام النقاط والمستويات",
+                faqTitle: "الأسئلة الشائعة",
+                tipsTitle: "نصائح مهمة قبل اللعب",
+                modeGo: "ابدأ الآن",
+                themeLabel: "المظهر",
+                colorModeLabel: "الوضع",
+                langLabel: "اللغة",
+                themeOcean: "أزرق وبرتقالي",
+                themeSunset: "وردي وأصفر",
+                themeForest: "أخضر وأزرق",
+                themeBerry: "بنفسجي ووردي",
+                themeNeon: "أخضر وأصفر",
+                themeViolet: "بنفسجي ووردي",
+                themeBrown: "بني",
+                darkMode: "داكن",
+                blurMode: "ضبابي",
+                lightMode: "فاتح",
+                langArabic: "العربية",
+                langEnglish: "English",
+                contactLabel: "للتواصل معنا",
+                versionLabel: "الإصدار",
+                betaLabel: "بيتا",
+                mazenNameTxt: "مازن",
+                ahmedNameTxt: "أحمد",
+                quickSteps: [
+                    "افتح أي نمط من الصفحة الرئيسية، ثم جرّب جولة سريعة لفهم الواجهة.",
+                    "ركز على الدقة أولاً: الخطأ يستهلك وقتك ويقلل مكافأة السرعة.",
+                    "راقب السجل الشخصي بعد كل مجموعة جولات لمعرفة أين يتحسن أداؤك.",
+                    "فعّل تسجيل الدخول لحفظ النقاط والمستوى والسجل على حسابك بشكل دائم.",
+                    "غيّر المظهر/الوضع بما يناسب عينيك قبل جلسة تدريب طويلة."
+                ],
+                modes: [
+                    { key: "single", name: "الفردي", desc: "جولة بكلمة واحدة. مناسب لتثبيت الدقة وبناء أساس قوي.", points: "الأفضل لتقليل الأخطاء وبناء ثقة البداية." },
+                    { key: "triple", name: "الثلاثي", desc: "3 كلمات في جولة واحدة. يختبر الانتقال السريع بين الكلمات.", points: "ممتاز لرفع سرعة التبديل بين الكلمات." },
+                    { key: "sequential", name: "المتتابع", desc: "7 كلمات متتالية. يحتاج تركيز مستمر وإيقاع ثابت.", points: "يبني الاستمرارية والثبات تحت الضغط." },
+                    { key: "paragraph", name: "الفقرة", desc: "تكتب فقرة كاملة مع خيارات إنشاء ومشاركة وتحديات عامة.", points: "الأقوى لرفع التحمل والتحكم في السرعة على نصوص طويلة." }
+                ],
+                mode4DeepSteps: [
+                    "اختر مصدر الفقرة: إما مكتبة جاهزة أو إنشاء فقرة جديدة من طرفك.",
+                    "إذا أنشأت فقرة جديدة، حدّد اللغة ثم اكتب النص واحفظه كفقرة عامة أو خاصة.",
+                    "ابدأ الجولة من زر البدء، وسيظهر تقدّمك كلمة بكلمة مع الزمن المباشر.",
+                    "بعد الإنهاء تُحسب النتيجة وتُسجل، ويمكن مشاركة رابط الفقرة كتحدي.",
+                    "في التحديات العامة: كل لاعب يكتب نفس الفقرة، والسرعة الأفضل تصعد في الترتيب."
+                ],
+                mode4Tips: [
+                    "النمط الرابع يحتاج تنظيم نفس: لا تسرع في أول السطر ثم تنهار في النهاية.",
+                    "قسم الفقرة ذهنيًا إلى مقاطع قصيرة، وركّز على إيقاع ثابت.",
+                    "إذا أخطأت، صحح بسرعة ثم ارجع للإيقاع بدل التوتر.",
+                    "استخدمه بعد تسخين قصير بنمط الفردي أو الثلاثي لتحصل نتيجة أفضل."
+                ],
+                pointsItems: [
+                    "لكل كلمة صحيحة تحصل على نقطة أساسية.",
+                    "تأخذ مكافأة سرعة حسب ثانية/كلمة: <=0.10 (x50)، <=0.20 (x30)، <=0.50 (x10)، <=1.00 (x5)، <=2.00 (x2)، أكثر من 2.00 (x1).",
+                    "نقاط الجولة = النقاط الأساسية + نقاط مكافأة السرعة.",
+                    "كل 100 نقطة ترفعك مستوى واحد تلقائيًا.",
+                    "يتم حفظ نقاط أسبوعية وشهرية تلقائيًا للمقارنة والتقدم."
+                ],
+                faq: [
+                    { q: "هل يلزم تسجيل الدخول للعب؟", a: "لا، يمكنك اللعب مباشرة. لكن تسجيل الدخول مهم لحفظ التقدم، النقاط، والمستوى على حسابك." },
+                    { q: "لماذا نتيجتي أقل رغم أنني أنهيت الجولة؟", a: "لأن نظام التقييم يعتمد على عاملين: عدد الكلمات الصحيحة وسرعة الكتابة (ثانية/كلمة)." },
+                    { q: "كيف أظهر في السجل العالمي؟", a: "النتائج العامة تظهر عند اللعب بجولات عامة، ثم يتم ترتيبك حسب أفضل وقت." },
+                    { q: "ما أفضل ترتيب للتدريب؟", a: "ابدأ بالفردي، ثم الثلاثي، ثم المتتابع، وبعدها الفقرة لبناء التحمل." }
+                ],
+                tips: [
+                    "ركّز على الدقة أولًا، ثم زد السرعة تدريجيًا.",
+                    "استخدم لوحة مفاتيح مريحة وقلّل تبديل النظر بين اليد والشاشة.",
+                    "كرر النمط الذي يسبب لك أخطاء حتى يتحسن ثابتك.",
+                    "تابع السجل الشخصي أسبوعيًا لمعرفة نمطك الأفضل والأضعف."
+                ]
+            },
+            en: {
+                pageTitle: "DashType - User Guide",
+                guideTitle: "User Guide",
+                guideSubtitle: "Quick onboarding for new players: how to start, score more points, and understand each mode.",
+                backBtnText: "Back to Home",
+                quickStartTitle: "Quick Start",
+                modesTitle: "Mode Overview",
+                modesSubtitle: "Each mode has a different challenge. Start with Single and increase difficulty gradually.",
+                mode4DeepTitle: "Advanced Guide for Mode 4 (Paragraph)",
+                mode4DeepSubtitle: "This is the most complex mode because it combines creation, challenge flow, tracking, and public ranking in one experience.",
+                pointsTitle: "Points and Levels",
+                faqTitle: "Frequently Asked Questions",
+                tipsTitle: "Important Tips",
+                modeGo: "Play now",
+                themeLabel: "Theme",
+                colorModeLabel: "Mode",
+                langLabel: "Language",
+                themeOcean: "Blue & Orange",
+                themeSunset: "Pink & Yellow",
+                themeForest: "Green & Blue",
+                themeBerry: "Purple & Pink",
+                themeNeon: "Green & Yellow",
+                themeViolet: "Purple & Pink",
+                themeBrown: "Brown",
+                darkMode: "Dark",
+                blurMode: "Blurred",
+                lightMode: "Light",
+                langArabic: "Arabic",
+                langEnglish: "English",
+                contactLabel: "Contact us",
+                versionLabel: "Version",
+                betaLabel: "Beta",
+                mazenNameTxt: "Mazen",
+                ahmedNameTxt: "Ahmed",
+                quickSteps: [
+                    "Pick any mode from home, then run a short warm-up round.",
+                    "Prioritize accuracy first to avoid speed-bonus loss.",
+                    "Check Personal History after each session to track patterns.",
+                    "Sign in to keep points, level, and progress synced.",
+                    "Tune theme and mode before long sessions for comfort."
+                ],
+                modes: [
+                    { key: "single", name: "Single", desc: "One-word rounds. Best for accuracy and control.", points: "Best entry mode for reducing mistakes." },
+                    { key: "triple", name: "Triple", desc: "3 words per round. Tests quick transitions.", points: "Great for improving switching speed." },
+                    { key: "sequential", name: "Sequential", desc: "7 words in sequence. Requires focus and rhythm.", points: "Builds consistency under pressure." },
+                    { key: "paragraph", name: "Paragraph", desc: "Full text typing with authoring and challenge sharing options.", points: "Best for endurance and long-text pacing." }
+                ],
+                mode4DeepSteps: [
+                    "Choose paragraph source: library or create your own.",
+                    "If you create one, set language and save as public/private challenge.",
+                    "Start the run and monitor real-time word progress and timer.",
+                    "After finish, score is stored and a shareable challenge link is available.",
+                    "In public challenge flows, all players type the same paragraph and compete on time."
+                ],
+                mode4Tips: [
+                    "Do not over-rush early lines then lose control later.",
+                    "Chunk long text mentally into short rhythm blocks.",
+                    "Recover quickly after mistakes and return to steady pace.",
+                    "Warm up with Single or Triple before Paragraph for better output."
+                ],
+                pointsItems: [
+                    "Each correct word gives 1 base point.",
+                    "Speed bonus depends on seconds/word: <=0.10 (x50), <=0.20 (x30), <=0.50 (x10), <=1.00 (x5), <=2.00 (x2), over 2.00 (x1).",
+                    "Round points = base points + speed bonus points.",
+                    "Every 100 points increases your level by 1.",
+                    "Weekly and monthly points are saved automatically for progression tracking."
+                ],
+                faq: [
+                    { q: "Do I need to sign in to play?", a: "No. You can play instantly, but sign-in is required to save profile progress and level." },
+                    { q: "Why is my score lower than expected?", a: "Scoring depends on both accuracy and typing speed (seconds per word)." },
+                    { q: "How do I appear on the global leaderboard?", a: "Play public rounds and improve your best times to rank higher." },
+                    { q: "What is the best training order?", a: "Single, then Triple, then Sequential, then Paragraph for endurance." }
+                ],
+                tips: [
+                    "Prioritize accuracy first, then increase speed gradually.",
+                    "Use a comfortable keyboard posture and reduce eye switching.",
+                    "Repeat the mode where your mistakes are frequent.",
+                    "Review your history weekly to identify weak areas."
+                ]
+            }
+        };
+
+        let currentLanguage = "ar";
+        let currentTheme = "ocean";
+        let currentColorMode = "blur";
+
+        function getModeHref(modeKey) {
+            const routeMap = {
+                single: "single/",
+                triple: "triple/",
+                sequential: "sequential/",
+                paragraph: "paragraph/"
+            };
+            const target = routeMap[modeKey] || "index.html";
+            return resolveRuntimeRoute(target, { localPrefix: "../" });
+        }
+
+        function getHomeHref() {
+            return resolveRuntimeRoute("", { localPrefix: "../" });
+        }
+
+        function savePreferences() {
+            const saved = readTypingGameState();
+            saved.currentTheme = currentTheme;
+            saved.currentColorMode = currentColorMode;
+            saved.currentLanguage = currentLanguage;
+            writeTypingGameState(saved);
+        }
+
+        function loadPreferences() {
+            const saved = readTypingGameState();
+            currentTheme = saved.currentTheme || "ocean";
+            currentColorMode = saved.currentColorMode || "blur";
+            currentLanguage = saved.currentLanguage || "ar";
+        }
+
+        function applyThemeState() {
+            document.documentElement.setAttribute("data-theme", currentTheme);
+            document.documentElement.setAttribute("data-color-mode", currentColorMode);
+            document.querySelectorAll(".theme-dot").forEach((btn) => {
+                btn.classList.toggle("active", btn.dataset.theme === currentTheme);
+            });
+            document.querySelectorAll(".color-mode-switch .mode-dot").forEach((btn) => {
+                btn.classList.toggle("active", btn.dataset.colorMode === currentColorMode);
+            });
+        }
+
+        function renderModeCards() {
+            const modeContainer = document.getElementById("modeGuideGrid");
+            modeContainer.replaceChildren();
+            textMap[currentLanguage].modes.forEach((mode) => {
+                const card = document.createElement("article");
+                card.className = "mode-guide-card";
+
+                const modeTitle = document.createElement("h3");
+                modeTitle.className = "mode-guide-name";
+                modeTitle.textContent = mode.name;
+
+                const modeDesc = document.createElement("p");
+                modeDesc.className = "mode-guide-desc";
+                modeDesc.textContent = mode.desc;
+
+                const modePoints = document.createElement("p");
+                modePoints.className = "mode-guide-points";
+                modePoints.textContent = mode.points;
+
+                const link = document.createElement("a");
+                link.className = "mode-guide-link inline-link";
+                link.href = getModeHref(mode.key);
+
+                const button = document.createElement("button");
+                button.className = "filter-btn btn-icon";
+                button.type = "button";
+                const icon = document.createElement("span");
+                icon.className = "icon icon-play";
+                icon.setAttribute("aria-hidden", "true");
+                const label = document.createElement("span");
+                label.textContent = textMap[currentLanguage].modeGo;
+                button.appendChild(icon);
+                button.appendChild(label);
+                link.appendChild(button);
+
+                card.appendChild(modeTitle);
+                card.appendChild(modeDesc);
+                card.appendChild(modePoints);
+                card.appendChild(link);
+                modeContainer.appendChild(card);
+            });
+        }
+
+        function renderTextList(targetId, items, ordered) {
+            const list = document.getElementById(targetId);
+            list.replaceChildren();
+            const listTag = ordered ? "ol" : "ul";
+            if (list.tagName.toLowerCase() !== listTag) return;
+            items.forEach((itemText) => {
+                const item = document.createElement("li");
+                item.textContent = itemText;
+                list.appendChild(item);
+            });
+        }
+
+        function renderFaqList() {
+            const container = document.getElementById("faqList");
+            container.replaceChildren();
+            textMap[currentLanguage].faq.forEach((entry) => {
+                const details = document.createElement("details");
+                details.className = "faq-item";
+
+                const summary = document.createElement("summary");
+                summary.textContent = entry.q;
+
+                const answer = document.createElement("div");
+                answer.className = "faq-answer";
+                answer.textContent = entry.a;
+
+                details.appendChild(summary);
+                details.appendChild(answer);
+                container.appendChild(details);
+            });
+        }
+
+        function applyStaticTexts() {
+            const t = textMap[currentLanguage];
+            document.documentElement.lang = currentLanguage;
+            document.documentElement.dir = "rtl";
+            document.title = t.pageTitle;
+
+            document.getElementById("guideTitle").textContent = t.guideTitle;
+            document.getElementById("guideSubtitle").textContent = t.guideSubtitle;
+            document.getElementById("backBtnText").textContent = t.backBtnText;
+            document.getElementById("quickStartTitle").textContent = t.quickStartTitle;
+            document.getElementById("modesTitle").textContent = t.modesTitle;
+            document.getElementById("modesSubtitle").textContent = t.modesSubtitle;
+            document.getElementById("mode4DeepTitle").textContent = t.mode4DeepTitle;
+            document.getElementById("mode4DeepSubtitle").textContent = t.mode4DeepSubtitle;
+            document.getElementById("pointsTitle").textContent = t.pointsTitle;
+            document.getElementById("faqTitle").textContent = t.faqTitle;
+            document.getElementById("tipsTitle").textContent = t.tipsTitle;
+            document.getElementById("themeLabel").textContent = t.themeLabel;
+            document.getElementById("colorModeLabel").textContent = t.colorModeLabel;
+            document.getElementById("langLabel").textContent = t.langLabel;
+            document.getElementById("langArBtn").textContent = t.langArabic;
+            document.getElementById("langEnBtn").textContent = t.langEnglish;
+            document.getElementById("contactLabel").textContent = t.contactLabel;
+            document.getElementById("versionLabel").textContent = t.versionLabel;
+            document.getElementById("betaLabel").textContent = t.betaLabel;
+            document.getElementById("mazenNameTxt").textContent = t.mazenNameTxt;
+            document.getElementById("ahmedNameTxt").textContent = t.ahmedNameTxt;
+
+            document.getElementById("langArBtn").classList.toggle("active", currentLanguage === "ar");
+            document.getElementById("langEnBtn").classList.toggle("active", currentLanguage === "en");
+
+            const themeButtons = [
+                { id: "themeOceanBtn", key: "themeOcean" },
+                { id: "themeSunsetBtn", key: "themeSunset" },
+                { id: "themeForestBtn", key: "themeForest" },
+                { id: "themeBerryBtn", key: "themeBerry" },
+                { id: "themeNeonBtn", key: "themeNeon" },
+                { id: "themeVioletBtn", key: "themeViolet" },
+                { id: "themeBrownBtn", key: "themeBrown" }
+            ];
+            themeButtons.forEach(({ id, key }) => {
+                const btn = document.getElementById(id);
+                btn.title = t[key];
+                btn.setAttribute("aria-label", t[key]);
+            });
+
+            const colorButtons = [
+                { id: "colorModeDarkBtn", key: "darkMode" },
+                { id: "colorModeBlurBtn", key: "blurMode" },
+                { id: "colorModeLightBtn", key: "lightMode" }
+            ];
+            colorButtons.forEach(({ id, key }) => {
+                const btn = document.getElementById(id);
+                btn.title = t[key];
+                btn.setAttribute("aria-label", t[key]);
+            });
+
+            renderTextList("quickStartList", t.quickSteps, true);
+            renderTextList("mode4DeepList", t.mode4DeepSteps, true);
+            renderTextList("mode4DeepTips", t.mode4Tips, false);
+            renderTextList("pointsList", t.pointsItems, false);
+            renderTextList("tipsList", t.tips, false);
+            renderModeCards();
+            renderFaqList();
+        }
+
+        function applyRuntimeLinks() {
+            const homeHref = getHomeHref();
+            document.getElementById("homeLogoLink").setAttribute("href", homeHref);
+            document.getElementById("homeBackLink").setAttribute("href", homeHref);
+        }
+
+        function setTheme(theme) {
+            currentTheme = theme;
+            applyThemeState();
+            savePreferences();
+        }
+
+        function setColorMode(colorMode) {
+            currentColorMode = colorMode;
+            applyThemeState();
+            savePreferences();
+        }
+
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            savePreferences();
+            applyStaticTexts();
+        }
+
+        document.querySelectorAll(".theme-dot").forEach((btn) => {
+            btn.addEventListener("click", () => setTheme(btn.dataset.theme));
+        });
+
+        document.querySelectorAll(".color-mode-switch .mode-dot").forEach((btn) => {
+            btn.addEventListener("click", () => setColorMode(btn.dataset.colorMode));
+        });
+
+        document.getElementById("langArBtn").addEventListener("click", () => setLanguage("ar"));
+        document.getElementById("langEnBtn").addEventListener("click", () => setLanguage("en"));
+
+        loadPreferences();
+        applyThemeState();
+        applyRuntimeLinks();
+        applyStaticTexts();
+    </script>
+    <script src="../scripts/pwa-register.js"></script>
+</body>
+</html>

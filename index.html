@@ -4,12 +4,37 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DashType - الرئيسية</title>
+    <meta name="description" content="DashType منصة تدريب سرعة الكتابة بالعربية والإنجليزية مع تتبع المستوى والنقاط والسجل العالمي والتحديات.">
+    <meta name="keywords" content="DashType, typing game, Arabic typing, English typing, سرعة الكتابة, تدريب الكتابة, لوحة مفاتيح, typing speed test">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <link rel="canonical" href="https://dashtype.tech/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="DashType - تدريب سرعة الكتابة">
+    <meta property="og:description" content="تدريب احترافي على سرعة ودقة الكتابة بالعربية والإنجليزية مع تتبع التقدم.">
+    <meta property="og:url" content="https://dashtype.tech/">
+    <meta property="og:site_name" content="DashType">
+    <meta property="og:image" content="https://dashtype.tech/photo/favicon-64.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="DashType - تدريب سرعة الكتابة">
+    <meta name="twitter:description" content="درب دقتك وسرعتك في أربعة أنماط مع سجل شخصي وعالمي.">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "DashType",
+      "url": "https://dashtype.tech/",
+      "inLanguage": ["ar", "en"],
+      "description": "Arabic and English typing speed training platform with progress tracking and leaderboards."
+    }
+    </script>
 	<link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" type="image/png" sizes="32x32" href="photo/favicon-32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="photo/favicon-16.png">
     <link rel="apple-touch-icon" href="photo/favicon-64.png">
 </head>
 <body class="home-page">
+    <a href="#welcomeScreen" class="skip-link">تخطي إلى المحتوى</a>
 	<header class="top-controls logo-only">
 		<div class="logo-container">
             <div class="logo-badge">
@@ -30,6 +55,12 @@
                 <label id="nicknameLabel" for="nicknameInput">الاسم المستعار</label>
                 <input id="nicknameInput" type="text" placeholder="اكتب الاسم المستعار">
             </div>
+            <div class="modal-field">
+                <label id="adminPanelToggleLabel" class="admin-toggle-row" for="adminPanelToggle">
+                    <span id="adminPanelToggleText">تفعيل لوحة الجودة</span>
+                    <input id="adminPanelToggle" type="checkbox">
+                </label>
+            </div>
             <div class="modal-actions">
                 <button id="settingsCancelBtn" class="btn-icon" type="button"><span class="icon icon-cancel" aria-hidden="true"></span><span id="settingsCancelText">إلغاء</span></button>
                 <button id="settingsSaveBtn" class="btn-icon" type="button"><span class="icon icon-save" aria-hidden="true"></span><span id="settingsSaveText">حفظ التغييرات</span></button>
@@ -48,25 +79,25 @@
 			<div class="mode-panel">
 				<h2 class="panel-title" id="modeTitleWelcome">اختيار النمط</h2>
 				<div class="mode-switch" role="group" aria-label="mode selection on welcome">
-                    <a href="pages/single/index.html" class="mode-btn" id="welcomeSingleModeBtn">
+                    <a href="single/" class="mode-btn" id="welcomeSingleModeBtn">
                         <span class="mode-btn-copy">
                             <span class="mode-btn-title" id="welcomeSingleModeName">الفردي</span>
                             <span class="mode-btn-description" id="welcomeSingleModeDesc">كلمة واحدة بدقة كاملة</span>
                         </span>
                     </a>
-                    <a href="pages/triple/index.html" class="mode-btn" id="welcomeTripleModeBtn">
+                    <a href="triple/" class="mode-btn" id="welcomeTripleModeBtn">
                         <span class="mode-btn-copy">
                             <span class="mode-btn-title" id="welcomeTripleModeName">الثلاثي</span>
                             <span class="mode-btn-description" id="welcomeTripleModeDesc">3 كلمات في محاولة واحدة</span>
                         </span>
                     </a>
-                    <a href="pages/sequential/index.html" class="mode-btn" id="welcomeTripleSeqModeBtn">
+                    <a href="sequential/" class="mode-btn" id="welcomeTripleSeqModeBtn">
                         <span class="mode-btn-copy">
                             <span class="mode-btn-title" id="welcomeTripleSeqModeName">المتتابع</span>
                             <span class="mode-btn-description" id="welcomeTripleSeqModeDesc">7 كلمات بتركيز مستمر</span>
                         </span>
                     </a>
-                    <a href="pages/paragraph/index.html" class="mode-btn" id="welcomeParagraphModeBtn">
+                    <a href="paragraph/" class="mode-btn" id="welcomeParagraphModeBtn">
                         <span class="mode-btn-copy">
                             <span class="mode-btn-title" id="welcomeParagraphModeName">الفقرة</span>
                             <span class="mode-btn-description" id="welcomeParagraphModeDesc">أنشئ نصك وشارك التحدي</span>
@@ -83,14 +114,21 @@
                         <button id="settingsBtn" class="settings-btn btn-icon" type="button" aria-label="الإعدادات"><span class="icon icon-settings" aria-hidden="true"></span></button>
                         <button id="signOutBtn" class="btn-icon signout-btn" aria-label="تسجيل خروج"><span class="icon icon-logout" aria-hidden="true"></span></button>
 					</span>
+                    <a id="profileStatsCard" class="profile-quick-link is-hidden" aria-live="polite" href="history/" aria-label="عرض التقدم والانتقال للسجل الشخصي" title="عرض التقدم والانتقال للسجل الشخصي">
+                        <span class="profile-level-orb" aria-hidden="true">
+                            <span class="profile-level-core"><span id="levelValue" class="profile-level-number">1</span></span>
+                        </span>
+					</a>
 				</div>
                 <button id="googleSignInBtn" class="btn-icon signin-btn">
                     <span class="icon icon-login" aria-hidden="true"></span>
                     <span id="signInText">تسجيل دخول</span>
                 </button>
                 <div class="extra-panel account-links">
-                    <a href="history.html" class="extra-btn btn-icon" id="welcomeHistoryBtn"><span class="icon icon-history" aria-hidden="true"></span><span id="historyText">السجل الشخصي</span></a>
-                    <a href="global-leaderboard.html" class="extra-btn btn-icon" id="welcomeGlobalBtn"><span class="icon icon-global" aria-hidden="true"></span><span id="globalLeaderboardText">السجل العالمي</span></a>
+                    <a href="history/" class="extra-btn btn-icon" id="welcomeHistoryBtn"><span class="icon icon-history" aria-hidden="true"></span><span id="historyText">السجل الشخصي</span></a>
+                    <a href="leaderboard/" class="extra-btn btn-icon" id="welcomeGlobalBtn"><span class="icon icon-global" aria-hidden="true"></span><span id="globalLeaderboardText">السجل العالمي</span></a>
+                    <a href="guide/" class="extra-btn btn-icon" id="welcomeGuideBtn"><span class="icon icon-guide" aria-hidden="true"></span><span id="userGuideText">دليل المستخدم</span></a>
+                    <a href="admin/" class="extra-btn btn-icon is-hidden" id="welcomeAdminBtn"><span class="icon icon-settings" aria-hidden="true"></span><span id="adminPanelText">لوحة الجودة</span></a>
                 </div>
             </div>
 		</div>
@@ -120,7 +158,7 @@
 				</div>
 			</div>
 
-            <div class="control-group">
+            <div class="control-group lang-control">
                 <label id="langLabel">اللغة</label>
                 <div class="lang-switch" role="group" aria-label="language selector">
                     <button id="langArBtn" class="lang-btn active" type="button" data-lang="ar">العربية</button>
@@ -133,16 +171,16 @@
             <div class="footer-person">
                 <div id="mazenNameTxt" class="footer-person-name">مازن</div>
                 <div class="footer-links">
-                    <a href="https://x.com/mazen_v500" class="footer-link" target="_blank" rel="noopener" title="X/Twitter" aria-label="X/Twitter"><span class="icon icon-x" aria-hidden="true"></span></a>
-                    <a href="https://github.com/mazen-v500" class="footer-link" target="_blank" rel="noopener" title="GitHub" aria-label="GitHub"><span class="icon icon-github" aria-hidden="true"></span></a>
-                    <a href="https://t.me/mazen_v500" class="footer-link" target="_blank" rel="noopener" title="Telegram" aria-label="Telegram"><span class="icon icon-telegram" aria-hidden="true"></span></a>
+                    <a href="https://x.com/mazen_v500" class="footer-link" target="_blank" rel="noopener noreferrer" title="X/Twitter" aria-label="X/Twitter"><span class="icon icon-x" aria-hidden="true"></span></a>
+                    <a href="https://github.com/mazen-v500" class="footer-link" target="_blank" rel="noopener noreferrer" title="GitHub" aria-label="GitHub"><span class="icon icon-github" aria-hidden="true"></span></a>
+                    <a href="https://t.me/mazen_v500" class="footer-link" target="_blank" rel="noopener noreferrer" title="Telegram" aria-label="Telegram"><span class="icon icon-telegram" aria-hidden="true"></span></a>
 				</div>
 			</div>
             <div class="footer-person">
                 <div id="ahmedNameTxt" class="footer-person-name">أحمد</div>
                 <div class="footer-links">
-                    <a href="https://x.com/ko_wll" class="footer-link" target="_blank" rel="noopener" title="X/Twitter" aria-label="X/Twitter"><span class="icon icon-x" aria-hidden="true"></span></a>
-                    <a href="https://instagram.com/zs_us" class="footer-link" target="_blank" rel="noopener" title="Instagram" aria-label="Instagram"><span class="icon icon-instagram" aria-hidden="true"></span></a>
+                    <a href="https://x.com/ko_wll" class="footer-link" target="_blank" rel="noopener noreferrer" title="X/Twitter" aria-label="X/Twitter"><span class="icon icon-x" aria-hidden="true"></span></a>
+                    <a href="https://instagram.com/zs_us" class="footer-link" target="_blank" rel="noopener noreferrer" title="Instagram" aria-label="Instagram"><span class="icon icon-instagram" aria-hidden="true"></span></a>
 				</div>
 			</div>
 		</div>
@@ -150,11 +188,15 @@
 		<p class="footer-meta">
             <span class="footer-meta-item">&copy; 2026 DashType. All rights reserved.</span>
             <span class="footer-meta-item"><span id="contactLabel" class="footer-contact-label">للتواصل معنا</span> <a class="footer-contact" href="mailto:contact@dashtype.tech">contact@dashtype.tech</a></span>
-        <span class="footer-meta-item"><span id="versionLabel" class="footer-contact-label">الإصدار</span> <span class="footer-version">0.6.005</span></span>
+        <span class="footer-meta-item"><span id="versionLabel" class="footer-contact-label">الإصدار</span> <span class="footer-version">0.7.000</span></span>
         </p>
 	</footer>
 
-    <script>
+    <script type="module">
+        import { createUiToneShiftRunner } from "./scripts/ui-utils.js";
+        import { resolveRuntimeRoute } from "./scripts/route-context.js";
+        import { readTypingGameState, writeTypingGameState } from "./scripts/app-state.js";
+
         const textMap = {
             ar: {
                 welcomeTitle: "أهلاً بك",
@@ -190,14 +232,21 @@
                 versionLabel: "الإصدار",
                 history: "السجل الشخصي",
                 globalLeaderboard: "السجل العالمي",
+                userGuide: "دليل المستخدم",
+                adminPanel: "لوحة الجودة",
                 settings: "الإعدادات",
                 betaLabel: "بيتا",
                 settingsTitle: "إعدادات الحساب",
                 userIdLabel: "المعرّف",
                 nicknameLabel: "الاسم المستعار",
+                adminPanelToggleText: "إظهار زر لوحة الجودة (لحسابات المسؤول فقط)",
                 saveChanges: "حفظ التغييرات",
                 cancel: "إلغاء",
                 accountPanelTitle: "الحساب",
+                levelLabel: "المستوى",
+                pointsLabel: "النقاط",
+                levelProgressLabel: "التقدم للمستوى التالي",
+                profileQuickAria: "عرض التقدم والانتقال للسجل الشخصي",
                 mazenNameTxt: "مازن",
                 ahmedNameTxt: "أحمد"
             },
@@ -235,14 +284,21 @@
                 versionLabel: "Version",
                 history: "Round History",
                 globalLeaderboard: "Global Leaderboard",
+                userGuide: "User Guide",
+                adminPanel: "Quality Supervisor",
                 settings: "Settings",
                 betaLabel: "Beta",
                 settingsTitle: "Account Settings",
                 userIdLabel: "User ID",
                 nicknameLabel: "Nickname",
+                adminPanelToggleText: "Show Quality Dashboard button (supervisor accounts only)",
                 saveChanges: "Save Changes",
                 cancel: "Cancel",
                 accountPanelTitle: "Account",
+                levelLabel: "Level",
+                pointsLabel: "Points",
+                levelProgressLabel: "Progress to next level",
+                profileQuickAria: "View progress and open personal history",
                 mazenNameTxt: "Mazen",
                 ahmedNameTxt: "Ahmed"
             }
@@ -250,66 +306,61 @@
 
         let currentLanguage = "ar";
         let isApplyingPreferenceState = false;
+        let adminPanelEnabled = false;
+        let adminPanelExpiresAt = 0;
+        let adminDbVerified = false;
+        let adminDbRole = false;
+        const sharedUiToneShift = createUiToneShiftRunner({ durationMs: 460 });
+
+        function setAdminPanelButtonVisibility(isSignedIn) {
+            const adminBtn = document.getElementById("welcomeAdminBtn");
+            if (!adminBtn) return;
+            adminBtn.classList.toggle("is-hidden", !(isSignedIn && adminDbVerified && adminDbRole));
+        }
+
+        function setAdminDbState(state = {}) {
+            adminDbVerified = Boolean(state.verified);
+            adminDbRole = Boolean(state.isAdmin);
+            setAdminPanelButtonVisibility(Boolean(window.__dashTypeSignedIn));
+        }
+
+        function setAdminPanelEnabled(enabled, options = {}) {
+            adminPanelEnabled = Boolean(enabled);
+            adminPanelExpiresAt = adminPanelEnabled ? Math.max(0, Number(options.expiresAt || adminPanelExpiresAt || 0)) : 0;
+            const toggle = document.getElementById("adminPanelToggle");
+            if (toggle) {
+                toggle.checked = adminPanelEnabled;
+            }
+            savePreferences({ adminPanelEnabled, adminPanelExpiresAt });
+            setAdminPanelButtonVisibility(Boolean(window.__dashTypeSignedIn));
+        }
+
+        window.setAdminPanelEnabled = setAdminPanelEnabled;
+        window.setAdminPanelButtonVisibility = setAdminPanelButtonVisibility;
+        window.setAdminDbState = setAdminDbState;
+        window.getAdminDbState = () => ({ verified: adminDbVerified, isAdmin: adminDbRole });
 
         function t(key) {
             return textMap[currentLanguage][key];
         }
 
-        function isLocalPreviewContext() {
-            const host = window.location.hostname || "";
-            return window.location.protocol === "file:" || host === "localhost" || host === "127.0.0.1" || host === "::1";
-        }
-
-        function isGitHubPagesContext() {
-            const host = (window.location.hostname || "").toLowerCase();
-            return host.endsWith("github.io");
-        }
-
-        function getGitHubPagesBasePath() {
-            const segments = (window.location.pathname || "/").split("/").filter(Boolean);
-            if (!segments.length) {
-                return "/";
-            }
-            if (segments[0].includes(".")) {
-                return "/";
-            }
-            return `/${segments[0]}/`;
-        }
-
         function applyRuntimeRouteTargets() {
-            const localPreview = isLocalPreviewContext();
-            const githubPages = isGitHubPagesContext();
-            const githubBase = getGitHubPagesBasePath();
-            const routeTargets = localPreview
-                ? {
-                    welcomeSingleModeBtn: "./pages/single/index.html",
-                    welcomeTripleModeBtn: "./pages/triple/index.html",
-                    welcomeTripleSeqModeBtn: "./pages/sequential/index.html",
-                    welcomeParagraphModeBtn: "./pages/paragraph/index.html",
-                    welcomeHistoryBtn: "./history.html",
-                    welcomeGlobalBtn: "./global-leaderboard.html"
-                }
-                : githubPages
-                    ? {
-                        welcomeSingleModeBtn: `${githubBase}pages/single/index.html`,
-                        welcomeTripleModeBtn: `${githubBase}pages/triple/index.html`,
-                        welcomeTripleSeqModeBtn: `${githubBase}pages/sequential/index.html`,
-                        welcomeParagraphModeBtn: `${githubBase}pages/paragraph/index.html`,
-                        welcomeHistoryBtn: `${githubBase}history.html`,
-                        welcomeGlobalBtn: `${githubBase}global-leaderboard.html`
-                    }
-                : {
-                    welcomeSingleModeBtn: "./pages/single/index.html",
-                    welcomeTripleModeBtn: "./pages/triple/index.html",
-                    welcomeTripleSeqModeBtn: "./pages/sequential/index.html",
-                    welcomeParagraphModeBtn: "./pages/paragraph/index.html",
-                    welcomeHistoryBtn: "./history.html",
-                    welcomeGlobalBtn: "./global-leaderboard.html"
-                };
+            const routeTargets = {
+                welcomeSingleModeBtn: "single/",
+                welcomeTripleModeBtn: "triple/",
+                welcomeTripleSeqModeBtn: "sequential/",
+                welcomeParagraphModeBtn: "paragraph/",
+                welcomeHistoryBtn: "history/",
+                welcomeGlobalBtn: "leaderboard/",
+                welcomeGuideBtn: "guide/",
+                welcomeAdminBtn: "admin/",
+                profileStatsCard: "history/"
+            };
 
-            Object.entries(routeTargets).forEach(([id, href]) => {
+            Object.entries(routeTargets).forEach(([id, routePath]) => {
                 const element = document.getElementById(id);
                 if (element) {
+                    const href = resolveRuntimeRoute(routePath, { localPrefix: "./" });
                     element.setAttribute("href", href);
                 }
             });
@@ -343,14 +394,28 @@
             if (signOutBtn) signOutBtn.setAttribute("aria-label", t("signOut"));
             document.getElementById("historyText").textContent = t("history");
             document.getElementById("globalLeaderboardText").textContent = t("globalLeaderboard");
+            const userGuideText = document.getElementById("userGuideText");
+            if (userGuideText) userGuideText.textContent = t("userGuide");
+            const adminPanelText = document.getElementById("adminPanelText");
+            if (adminPanelText) adminPanelText.textContent = t("adminPanel");
             const settingsBtn = document.getElementById("settingsBtn");
             if (settingsBtn) settingsBtn.setAttribute("aria-label", t("settings"));
             document.getElementById("settingsTitle").textContent = t("settingsTitle");
             document.getElementById("userIdLabel").textContent = t("userIdLabel");
             document.getElementById("nicknameLabel").textContent = t("nicknameLabel");
+            const adminPanelToggleText = document.getElementById("adminPanelToggleText");
+            if (adminPanelToggleText) adminPanelToggleText.textContent = t("adminPanelToggleText");
             document.getElementById("settingsSaveText").textContent = t("saveChanges");
             document.getElementById("settingsCancelText").textContent = t("cancel");
             document.getElementById("accountPanelTitle").textContent = t("accountPanelTitle");
+            const levelLabel = document.getElementById("levelLabel");
+            if (levelLabel) levelLabel.textContent = t("levelLabel");
+            const pointsLabel = document.getElementById("pointsLabel");
+            if (pointsLabel) pointsLabel.textContent = t("pointsLabel");
+            const levelProgressLabel = document.getElementById("levelProgressLabel");
+            if (levelProgressLabel) levelProgressLabel.textContent = t("levelProgressLabel");
+            const profileStatsCard = document.getElementById("profileStatsCard");
+            if (profileStatsCard) profileStatsCard.setAttribute("aria-label", t("profileQuickAria"));
             document.getElementById("mazenNameTxt").textContent = t("mazenNameTxt");
             document.getElementById("ahmedNameTxt").textContent = t("ahmedNameTxt");
             const contactLabel = document.getElementById("contactLabel");
@@ -392,19 +457,29 @@
             langEnBtn.classList.toggle("active", currentLanguage === "en");
         }
 
-        function setTheme(theme) {
+        function triggerUiToneShift() {
+            sharedUiToneShift();
+        }
+
+        function setTheme(theme, options = {}) {
             document.documentElement.setAttribute("data-theme", theme);
             document.querySelectorAll(".theme-dot").forEach((btn) => {
                 btn.classList.toggle("active", btn.dataset.theme === theme);
             });
+            if (options.animate !== false) {
+                triggerUiToneShift();
+            }
             savePreferences({ theme });
         }
 
-        function setColorMode(colorMode) {
+        function setColorMode(colorMode, options = {}) {
             document.documentElement.setAttribute("data-color-mode", colorMode);
             document.querySelectorAll(".color-mode-switch .mode-dot").forEach((btn) => {
                 btn.classList.toggle("active", btn.dataset.colorMode === colorMode);
             });
+            if (options.animate !== false) {
+                triggerUiToneShift();
+            }
             savePreferences({ colorMode });
         }
 
@@ -415,46 +490,47 @@
             });
             savePreferences({ language: lang });
             applyStaticTexts();
+            window.dispatchEvent(new CustomEvent("dashType:language-changed", { detail: { language: lang } }));
         }
 
         function savePreferences(updates) {
-            try {
-                const saved = JSON.parse(localStorage.getItem("typingGameState") || "{}");
-                if (updates.theme) saved.currentTheme = updates.theme;
-                if (updates.colorMode) saved.currentColorMode = updates.colorMode;
-                if (updates.language) saved.currentLanguage = updates.language;
-                localStorage.setItem("typingGameState", JSON.stringify(saved));
+            const saved = readTypingGameState();
+            if (updates.theme) saved.currentTheme = updates.theme;
+            if (updates.colorMode) saved.currentColorMode = updates.colorMode;
+            if (updates.language) saved.currentLanguage = updates.language;
+            if (typeof updates.adminPanelEnabled === "boolean") saved.currentAdminPanelEnabled = updates.adminPanelEnabled;
+            if (typeof updates.adminPanelExpiresAt === "number") saved.currentAdminPanelExpiresAt = updates.adminPanelExpiresAt;
+            writeTypingGameState(saved);
 
-                if (!isApplyingPreferenceState && typeof window.saveProfilePreferences === "function") {
-                    window.saveProfilePreferences({
-                        theme: saved.currentTheme || "ocean",
-                        colorMode: saved.currentColorMode || "blur",
-                        language: saved.currentLanguage || "ar"
-                    });
-                }
-            } catch (_error) {
-                // Ignore and continue
+            if (!isApplyingPreferenceState && typeof window.saveProfilePreferences === "function") {
+                window.saveProfilePreferences({
+                    theme: saved.currentTheme || "ocean",
+                    colorMode: saved.currentColorMode || "blur",
+                    language: saved.currentLanguage || "ar",
+                    adminPanelEnabled: Boolean(saved.currentAdminPanelEnabled),
+                    adminPanelExpiresAt: Number(saved.currentAdminPanelExpiresAt || 0)
+                });
             }
         }
 
         function loadPreferences() {
-            try {
-                const saved = JSON.parse(localStorage.getItem("typingGameState") || "{}");
-                return {
-                    theme: saved.currentTheme || "ocean",
-                    colorMode: saved.currentColorMode || "blur",
-                    language: saved.currentLanguage || "ar"
-                };
-            } catch (_error) {
-                return { theme: "ocean", colorMode: "blur", language: "ar" };
-            }
+            const saved = readTypingGameState();
+            return {
+                theme: saved.currentTheme || "ocean",
+                colorMode: saved.currentColorMode || "blur",
+                language: saved.currentLanguage || "ar",
+                adminPanelEnabled: Boolean(saved.currentAdminPanelEnabled),
+                adminPanelExpiresAt: Number(saved.currentAdminPanelExpiresAt || 0)
+            };
         }
 
         function getCurrentPreferenceState() {
             return {
                 theme: document.documentElement.getAttribute("data-theme") || "ocean",
                 colorMode: document.documentElement.getAttribute("data-color-mode") || "blur",
-                language: currentLanguage
+                language: currentLanguage,
+                adminPanelEnabled,
+                adminPanelExpiresAt
             };
         }
 
@@ -462,12 +538,15 @@
             const nextTheme = typeof preferences.theme === "string" ? preferences.theme : (document.documentElement.getAttribute("data-theme") || "ocean");
             const nextColorMode = typeof preferences.colorMode === "string" ? preferences.colorMode : (document.documentElement.getAttribute("data-color-mode") || "blur");
             const nextLanguage = preferences.language === "ar" || preferences.language === "en" ? preferences.language : currentLanguage;
+            const nextAdminPanelEnabled = typeof preferences.adminPanelEnabled === "boolean" ? preferences.adminPanelEnabled : adminPanelEnabled;
+            const nextAdminPanelExpiresAt = Number(preferences.adminPanelExpiresAt || adminPanelExpiresAt || 0);
 
             isApplyingPreferenceState = Boolean(options.silent);
 
-            setTheme(nextTheme);
-            setColorMode(nextColorMode);
+            setTheme(nextTheme, { animate: !options.silent });
+            setColorMode(nextColorMode, { animate: !options.silent });
             setLanguage(nextLanguage);
+            setAdminPanelEnabled(nextAdminPanelEnabled, { expiresAt: nextAdminPanelExpiresAt });
 
             isApplyingPreferenceState = false;
         }
@@ -488,10 +567,10 @@
         // Setup language controls
         document.getElementById("langArBtn").addEventListener("click", () => setLanguage("ar"));
         document.getElementById("langEnBtn").addEventListener("click", () => setLanguage("en"));
-
         // Load saved preferences
         const prefs = loadPreferences();
         applyPreferenceState(prefs, { silent: true });
+        setAdminPanelButtonVisibility(false);
         applyRuntimeRouteTargets();
 
         function updateLogoScrollState() {
@@ -504,12 +583,16 @@
         window.addEventListener("resize", updateLogoScrollState, { passive: true });
         updateLogoScrollState();
     </script>
-        <script type="module">
+    <script type="module" src="scripts/firebase-save.js"></script>
+    <script src="scripts/pwa-register.js"></script>
+    <script type="module">
     // Import the functions you need from the SDKs you need
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics.js";
+    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getAnalytics, isSupported as isAnalyticsSupported } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
     import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+    import { readTypingGameState } from "./scripts/app-state.js";
+    import { hasAdminRoleFromUserNode } from "./scripts/role-utils.js";
 
     // Your web app's Firebase configuration
     // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -524,9 +607,16 @@
         databaseURL: "https://dashtype-9855c-default-rtdb.firebaseio.com"
     };
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
+    // Initialize Firebase once to avoid breaking auth handlers on duplicate app errors.
+    const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+    let analytics = null;
+    try {
+        if (await isAnalyticsSupported()) {
+            analytics = getAnalytics(app);
+        }
+    } catch (_error) {
+        analytics = null;
+    }
     const auth = getAuth(app);
     const db = getDatabase(app);
     const provider = new GoogleAuthProvider();
@@ -542,10 +632,78 @@
     const settingsSaveBtn = document.getElementById("settingsSaveBtn");
     const settingsCancelBtn = document.getElementById("settingsCancelBtn");
     const nicknameInput = document.getElementById("nicknameInput");
+    const adminPanelToggle = document.getElementById("adminPanelToggle");
     const userIdValue = document.getElementById("userIdValue");
+    const profileStatsCard = document.getElementById("profileStatsCard");
+    const levelValue = document.getElementById("levelValue");
+    const FALLBACK_PROFILE_PIC = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='32' fill='%231f2937'/%3E%3Ccircle cx='32' cy='24' r='12' fill='%239ca3af'/%3E%3Cpath d='M14 54c2-10 10-16 18-16s16 6 18 16' fill='%239ca3af'/%3E%3C/svg%3E";
+    const ADMIN_ACCESS_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
     let currentUserData = null;
     let activePreferencesUid = null;
+    let settingsReturnFocusEl = null;
+    let cachedProfileStats = null;
+    let settingsAdminPrevEnabled = false;
+    let settingsAdminPrevExpiresAt = 0;
+    let isCurrentUserAdmin = false;
+    let hasAdminRoleCheckDone = false;
+
+    async function fetchAdminRole(uid) {
+        if (!uid) return false;
+        try {
+            const userSnapshot = await get(ref(db, `users/${uid}`));
+            if (!userSnapshot.exists()) {
+                return false;
+            }
+            return hasAdminRoleFromUserNode(userSnapshot.val() || {});
+        } catch (_error) {
+            return false;
+        }
+    }
+
+    function getCurrentLanguageSafe() {
+        const saved = readTypingGameState();
+        return saved.currentLanguage === "en" ? "en" : "ar";
+    }
+
+    function formatNumber(value, language) {
+        const num = Number(value || 0);
+        return new Intl.NumberFormat(language === "en" ? "en-US" : "ar-SA", {
+            maximumFractionDigits: 0
+        }).format(num);
+    }
+
+    function renderProfileStats(stats) {
+        if (!profileStatsCard || !stats) return;
+
+        const language = getCurrentLanguageSafe();
+        const totalPoints = Number(stats.totalPoints || 0);
+        const level = Number(stats.level || 1);
+        const progress = totalPoints % 100;
+
+        levelValue.textContent = formatNumber(level, language);
+        if (profileStatsCard) {
+            profileStatsCard.style.setProperty("--level-progress", `${Math.min(100, Math.max(0, progress))}%`);
+        }
+        profileStatsCard.classList.remove("is-hidden");
+    }
+
+    async function loadProfileStats(uid) {
+        if (!uid) return;
+        try {
+            const snapshot = await get(ref(db, `users/${uid}/profile/stats`));
+            cachedProfileStats = snapshot.exists() ? snapshot.val() : {
+                totalPoints: 0,
+                level: 1,
+                weeklyPoints: {},
+                monthlyPoints: {},
+                badges: []
+            };
+            renderProfileStats(cachedProfileStats);
+        } catch (error) {
+            console.warn("Could not load profile stats:", error);
+        }
+    }
 
     function normalizePreferences(input) {
         const source = input && typeof input === "object" ? input : {};
@@ -554,6 +712,8 @@
         if (typeof source.theme === "string") normalized.theme = source.theme;
         if (typeof source.colorMode === "string") normalized.colorMode = source.colorMode;
         if (source.language === "ar" || source.language === "en") normalized.language = source.language;
+        if (typeof source.adminPanelEnabled === "boolean") normalized.adminPanelEnabled = source.adminPanelEnabled;
+        if (typeof source.adminPanelExpiresAt === "number") normalized.adminPanelExpiresAt = source.adminPanelExpiresAt;
 
         return normalized;
     }
@@ -661,29 +821,111 @@
             userIdValue.setAttribute("title", fullId);
         }
         nicknameInput.value = currentUserData.nickname || currentUserData.displayName || "";
+        if (adminPanelToggle && typeof window.getCurrentPreferenceState === "function") {
+            const state = window.getCurrentPreferenceState();
+            adminPanelToggle.checked = Boolean(state.adminPanelEnabled);
+            settingsAdminPrevEnabled = Boolean(state.adminPanelEnabled);
+            settingsAdminPrevExpiresAt = Number(state.adminPanelExpiresAt || 0);
+
+            const currentLang = getCurrentLanguageSafe();
+            adminPanelToggle.disabled = false;
+            adminPanelToggle.title = currentLang === "en"
+                ? "Visible only for verified supervisor accounts."
+                : "يظهر فقط لحسابات المسؤول الموثقة.";
+        }
+        settingsReturnFocusEl = document.activeElement;
         settingsModal.classList.add("active");
         settingsModal.setAttribute("aria-hidden", "false");
+        settingsModal.addEventListener("keydown", handleSettingsModalKeydown);
+        setTimeout(() => nicknameInput.focus(), 0);
     }
 
     function closeSettingsModal() {
         settingsModal.classList.remove("active");
         settingsModal.setAttribute("aria-hidden", "true");
+        settingsModal.removeEventListener("keydown", handleSettingsModalKeydown);
+        if (settingsReturnFocusEl && typeof settingsReturnFocusEl.focus === "function") {
+            settingsReturnFocusEl.focus();
+        }
+        settingsReturnFocusEl = null;
+    }
+
+    function handleSettingsModalKeydown(event) {
+        if (event.key === "Escape") {
+            event.preventDefault();
+            closeSettingsModal();
+            return;
+        }
+
+        if (event.key !== "Tab") {
+            return;
+        }
+
+        const focusables = settingsModal.querySelectorAll(
+            "button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex='-1'])"
+        );
+
+        if (!focusables.length) {
+            return;
+        }
+
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+            return;
+        }
+
+        if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+        }
     }
 
     async function saveSettings() {
         if (!currentUserData || !currentUserData.uid) return;
-        const newNickname = nicknameInput.value.trim();
-        if (!newNickname) return;
+        const newNickname = nicknameInput.value.trim() || currentUserData.nickname || currentUserData.displayName || "مجهول";
+        const wantAdminEnabled = Boolean(adminPanelToggle && adminPanelToggle.checked);
+        const now = Date.now();
+        let nextAdminEnabled = settingsAdminPrevEnabled;
+        let nextAdminExpiresAt = settingsAdminPrevExpiresAt;
+
+        if (wantAdminEnabled) {
+            const stillValid = settingsAdminPrevEnabled && Number(settingsAdminPrevExpiresAt || 0) > now;
+            if (stillValid) {
+                nextAdminEnabled = true;
+                nextAdminExpiresAt = settingsAdminPrevExpiresAt;
+            } else {
+                nextAdminEnabled = true;
+                nextAdminExpiresAt = now + ADMIN_ACCESS_WEEK_MS;
+            }
+        } else {
+            nextAdminEnabled = false;
+            nextAdminExpiresAt = 0;
+        }
 
         try {
             const profileRef = ref(db, `users/${currentUserData.uid}/profile`);
             await update(profileRef, { nickname: newNickname });
+            if (adminPanelToggle && typeof window.setAdminPanelEnabled === "function") {
+                window.setAdminPanelEnabled(nextAdminEnabled, { expiresAt: nextAdminExpiresAt });
+            }
+            if (typeof window.saveProfilePreferences === "function" && typeof window.getCurrentPreferenceState === "function") {
+                await window.saveProfilePreferences({
+                    ...window.getCurrentPreferenceState(),
+                    adminPanelEnabled: nextAdminEnabled,
+                    adminPanelExpiresAt: nextAdminExpiresAt
+                });
+            }
 
             const updated = {
                 ...currentUserData,
                 nickname: newNickname
             };
             localStorage.setItem("dashTypeUser", JSON.stringify(updated));
+            settingsAdminPrevEnabled = nextAdminEnabled;
+            settingsAdminPrevExpiresAt = nextAdminExpiresAt;
             updateUserUI(updated);
             closeSettingsModal();
         } catch (error) {
@@ -741,19 +983,60 @@
             idSpan.textContent = shortId ? `#${shortId}` : "";
             userName.appendChild(nameSpan);
             if (shortId) userName.appendChild(idSpan);
-            userProfilePic.src = user.photoURL || "https://via.placeholder.com/32";
+            userProfilePic.onerror = () => {
+                userProfilePic.onerror = null;
+                userProfilePic.src = FALLBACK_PROFILE_PIC;
+            };
+            userProfilePic.src = user.photoURL || FALLBACK_PROFILE_PIC;
             settingsBtn.style.display = "inline-flex";
+            if (profileStatsCard && cachedProfileStats) {
+                renderProfileStats(cachedProfileStats);
+            }
+            window.__dashTypeSignedIn = true;
+            if (typeof window.setAdminPanelButtonVisibility === "function") {
+                window.setAdminPanelButtonVisibility(true);
+            }
         } else {
             currentUserData = null;
             googleSignInBtn.style.display = "flex";
             userInfo.style.display = "none";
             settingsBtn.style.display = "none";
+            cachedProfileStats = null;
+            if (profileStatsCard) profileStatsCard.classList.add("is-hidden");
+            window.__dashTypeSignedIn = false;
+            if (typeof window.setAdminPanelButtonVisibility === "function") {
+                window.setAdminPanelButtonVisibility(false);
+            }
         }
     }
+
+    window.addEventListener("dashType:language-changed", () => {
+        if (cachedProfileStats) {
+            renderProfileStats(cachedProfileStats);
+        }
+    });
+
+    document.addEventListener("visibilitychange", () => {
+        if (!document.hidden && activePreferencesUid) {
+            void loadProfileStats(activePreferencesUid);
+        }
+    });
+
+    window.addEventListener("online", () => {
+        if (activePreferencesUid) {
+            void loadProfileStats(activePreferencesUid);
+        }
+    });
 
     // Check if user is already logged in
     auth.onAuthStateChanged(async (user) => {
         if (user) {
+            isCurrentUserAdmin = false;
+            hasAdminRoleCheckDone = false;
+            if (typeof window.setAdminDbState === "function") {
+                window.setAdminDbState({ verified: false, isAdmin: false });
+            }
+
             activePreferencesUid = user.uid;
             const cachedUser = JSON.parse(localStorage.getItem("dashTypeUser"));
             if (cachedUser && cachedUser.nickname) {
@@ -763,12 +1046,27 @@
             }
 
             await applyUserPreferences(user.uid);
+            await loadProfileStats(user.uid);
+
+            isCurrentUserAdmin = await fetchAdminRole(user.uid);
+            hasAdminRoleCheckDone = true;
+            if (typeof window.setAdminDbState === "function") {
+                window.setAdminDbState({ verified: true, isAdmin: isCurrentUserAdmin });
+            }
+            if (!isCurrentUserAdmin && typeof window.setAdminPanelEnabled === "function") {
+                window.setAdminPanelEnabled(false, { expiresAt: 0 });
+            }
 
             if (typeof window.getCurrentPreferenceState === "function") {
                 window.saveProfilePreferences(window.getCurrentPreferenceState());
             }
         } else {
             activePreferencesUid = null;
+            isCurrentUserAdmin = false;
+            hasAdminRoleCheckDone = false;
+            if (typeof window.setAdminDbState === "function") {
+                window.setAdminDbState({ verified: false, isAdmin: false });
+            }
             updateUserUI(null);
         }
     });

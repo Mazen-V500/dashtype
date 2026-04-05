@@ -9,31 +9,93 @@
       "**/.*",
       "**/node_modules/**"
     ],
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "X-Content-Type-Options",
+            "value": "nosniff"
+          },
+          {
+            "key": "X-Frame-Options",
+            "value": "SAMEORIGIN"
+          },
+          {
+            "key": "Referrer-Policy",
+            "value": "strict-origin-when-cross-origin"
+          },
+          {
+            "key": "Permissions-Policy",
+            "value": "camera=(), microphone=(), geolocation=()"
+          },
+          {
+            "key": "Strict-Transport-Security",
+            "value": "max-age=31536000; includeSubDomains"
+          }
+        ]
+      },
+      {
+        "source": "/admin",
+        "headers": [
+          {
+            "key": "X-Robots-Tag",
+            "value": "noindex, nofollow"
+          }
+        ]
+      },
+      {
+        "source": "/admin/**",
+        "headers": [
+          {
+            "key": "X-Robots-Tag",
+            "value": "noindex, nofollow"
+          }
+        ]
+      },
+      {
+        "source": "/admin.html",
+        "headers": [
+          {
+            "key": "X-Robots-Tag",
+            "value": "noindex, nofollow"
+          }
+        ]
+      }
+    ],
     "cleanUrls": true,
     "rewrites": [
       {
         "source": "/single",
-        "destination": "/pages/single/index.html"
+        "destination": "/single/index.html"
       },
       {
         "source": "/triple",
-        "destination": "/pages/triple/index.html"
+        "destination": "/triple/index.html"
       },
       {
         "source": "/sequential",
-        "destination": "/pages/sequential/index.html"
+        "destination": "/sequential/index.html"
       },
       {
         "source": "/paragraph",
-        "destination": "/pages/paragraph/index.html"
+        "destination": "/paragraph/index.html"
       },
       {
         "source": "/history",
-        "destination": "/history.html"
+        "destination": "/history/index.html"
       },
       {
         "source": "/leaderboard",
-        "destination": "/global-leaderboard.html"
+        "destination": "/leaderboard/index.html"
+      },
+      {
+        "source": "/admin",
+        "destination": "/admin/index.html"
+      },
+      {
+        "source": "/guide",
+        "destination": "/guide/index.html"
       }
     ]
   }

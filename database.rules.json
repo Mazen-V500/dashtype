@@ -3,30 +3,47 @@
     ".read": false,
     ".write": false,
     "users": {
+      ".read": "auth != null && (root.child('users/' + auth.uid + '/isAdmin').val() === true || root.child('users/' + auth.uid + '/admin').val() === true || root.child('users/' + auth.uid + '/roles/admin').val() === true || root.child('users/' + auth.uid + '/roles/isAdmin').val() === true || root.child('users/' + auth.uid + '/roles/supervisor').val() === true || root.child('users/' + auth.uid + '/role').val() === 'admin' || root.child('users/' + auth.uid + '/role').val() === 'supervisor' || root.child('users/' + auth.uid + '/profile/isAdmin').val() === true || root.child('users/' + auth.uid + '/profile/admin').val() === true || root.child('users/' + auth.uid + '/profile/roles/admin').val() === true || root.child('users/' + auth.uid + '/profile/roles/isAdmin').val() === true || root.child('users/' + auth.uid + '/profile/roles/supervisor').val() === true || root.child('users/' + auth.uid + '/profile/role').val() === 'admin' || root.child('users/' + auth.uid + '/profile/role').val() === 'supervisor')",
+      ".write": false,
       "$uid": {
-        ".read": "auth != null && auth.uid === $uid",
-        ".write": "auth != null && auth.uid === $uid"
+        ".read": "auth != null && (auth.uid === $uid || root.child('users/' + auth.uid + '/isAdmin').val() === true || root.child('users/' + auth.uid + '/admin').val() === true || root.child('users/' + auth.uid + '/roles/admin').val() === true || root.child('users/' + auth.uid + '/roles/isAdmin').val() === true || root.child('users/' + auth.uid + '/roles/supervisor').val() === true || root.child('users/' + auth.uid + '/role').val() === 'admin' || root.child('users/' + auth.uid + '/role').val() === 'supervisor' || root.child('users/' + auth.uid + '/profile/isAdmin').val() === true || root.child('users/' + auth.uid + '/profile/admin').val() === true || root.child('users/' + auth.uid + '/profile/roles/admin').val() === true || root.child('users/' + auth.uid + '/profile/roles/isAdmin').val() === true || root.child('users/' + auth.uid + '/profile/roles/supervisor').val() === true || root.child('users/' + auth.uid + '/profile/role').val() === 'admin' || root.child('users/' + auth.uid + '/profile/role').val() === 'supervisor')",
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "(!newData.hasChild('isAdmin') || newData.child('isAdmin').val() === data.child('isAdmin').val()) && (!newData.hasChild('admin') || newData.child('admin').val() === data.child('admin').val()) && (!newData.hasChild('role') || newData.child('role').val() === data.child('role').val()) && (!newData.hasChild('roles') || (!newData.child('roles').hasChild('admin') || newData.child('roles/admin').val() === data.child('roles/admin').val()) && (!newData.child('roles').hasChild('isAdmin') || newData.child('roles/isAdmin').val() === data.child('roles/isAdmin').val()) && (!newData.child('roles').hasChild('supervisor') || newData.child('roles/supervisor').val() === data.child('roles/supervisor').val())) && (!newData.hasChild('profile') || (!newData.child('profile').hasChild('isAdmin') || newData.child('profile/isAdmin').val() === data.child('profile/isAdmin').val()) && (!newData.child('profile').hasChild('admin') || newData.child('profile/admin').val() === data.child('profile/admin').val()) && (!newData.child('profile').hasChild('role') || newData.child('profile/role').val() === data.child('profile/role').val()) && (!newData.child('profile').hasChild('roles') || (!newData.child('profile/roles').hasChild('admin') || newData.child('profile/roles/admin').val() === data.child('profile/roles/admin').val()) && (!newData.child('profile/roles').hasChild('isAdmin') || newData.child('profile/roles/isAdmin').val() === data.child('profile/roles/isAdmin').val()) && (!newData.child('profile/roles').hasChild('supervisor') || newData.child('profile/roles/supervisor').val() === data.child('profile/roles/supervisor').val())))"
       }
     },
     "publicRounds": {
       ".read": true,
       "$roundId": {
-        ".write": "auth != null && newData.child('uid').val() === auth.uid",
-        ".validate": "newData.hasChildren(['uid','playerName','shortId','mode','timeTaken','timestamp']) && newData.child('uid').isString() && newData.child('playerName').isString() && newData.child('shortId').isString() && newData.child('mode').isString() && newData.child('timeTaken').isNumber() && newData.child('timestamp').isNumber()"
+        ".write": "auth != null && !data.exists() && (newData.child('shortId').val() === root.child('users/' + auth.uid + '/profile/shortId').val() || newData.child('shortId').val() === root.child('users/' + auth.uid + '/shortId').val()) && (newData.child('playerName').val() === root.child('users/' + auth.uid + '/profile/nickname').val() || newData.child('playerName').val() === root.child('users/' + auth.uid + '/profile/displayName').val() || newData.child('playerName').val() === root.child('users/' + auth.uid + '/nickname').val() || newData.child('playerName').val() === root.child('users/' + auth.uid + '/displayName').val())",
+        ".validate": "newData.hasChildren(['playerName','shortId','mode','timeTaken','timestamp']) && !newData.child('uid').exists() && newData.child('playerName').isString() && newData.child('playerName').val().length > 0 && newData.child('playerName').val().length <= 50 && newData.child('playerName').val().matches(/^[^<>]{1,50}$/) && newData.child('shortId').isString() && newData.child('shortId').val().length >= 4 && newData.child('shortId').val().length <= 12 && newData.child('shortId').val().matches(/^[A-Za-z0-9]{4,12}$/) && newData.child('mode').isString() && (newData.child('mode').val() === 'single' || newData.child('mode').val() === 'triple' || newData.child('mode').val() === 'seq' || newData.child('mode').val() === 'paragraph') && newData.child('timeTaken').isNumber() && newData.child('timeTaken').val() > 0 && newData.child('timeTaken').val() <= 300 && newData.child('timestamp').isNumber() && newData.child('timestamp').val() >= now - 31557600000 && newData.child('timestamp').val() <= now + 60000"
       }
     },
     "paragraphs": {
       ".read": true,
       "$paragraphId": {
         ".write": "auth != null && (!data.exists() ? newData.child('ownerUid').val() === auth.uid : data.child('ownerUid').val() === auth.uid)",
-        ".validate": "newData.hasChildren(['paragraphId','text','wordCount','language','isPublic','ownerUid','ownerName','createdAt']) && newData.child('paragraphId').val() === $paragraphId && newData.child('text').isString() && newData.child('text').val().length > 0 && newData.child('wordCount').isNumber() && newData.child('language').isString() && newData.child('isPublic').isBoolean() && newData.child('ownerUid').isString() && newData.child('ownerName').isString() && newData.child('createdAt').isNumber()"
+        ".validate": "newData.hasChildren(['paragraphId','text','wordCount','language','isPublic','ownerUid','ownerName','createdAt']) && newData.child('paragraphId').val() === $paragraphId && newData.child('text').isString() && newData.child('text').val().length > 0 && newData.child('text').val().length <= 10000 && newData.child('wordCount').isNumber() && newData.child('wordCount').val() > 0 && newData.child('wordCount').val() <= 1000 && newData.child('language').isString() && (newData.child('language').val() === 'ar' || newData.child('language').val() === 'en') && newData.child('isPublic').isBoolean() && newData.child('ownerUid').isString() && newData.child('ownerUid').val() === auth.uid && newData.child('ownerName').isString() && newData.child('ownerName').val().length > 0 && newData.child('ownerName').val().length <= 50 && newData.child('createdAt').isNumber()"
       }
     },
     "paragraphRaces": {
       ".read": true,
       "$raceId": {
-        ".write": "auth != null && (!data.exists() ? newData.child('createdBy').val() === auth.uid : true)",
-        ".validate": "newData.hasChildren(['raceId','text','language','status','createdAt','createdBy','participants']) && newData.child('raceId').val() === $raceId"
+        ".write": "auth != null && !data.exists() && newData.child('createdBy').val() === auth.uid",
+        ".validate": "newData.hasChildren(['raceId','text','language','status','createdAt','createdBy','participants']) && newData.child('raceId').val() === $raceId",
+        "status": {
+          ".write": "auth != null && root.child('paragraphRaces/' + $raceId + '/createdBy').val() === auth.uid",
+          ".validate": "newData.isString() && (newData.val() === 'waiting' || newData.val() === 'countdown' || newData.val() === 'running' || newData.val() === 'finished')"
+        },
+        "startsAt": {
+          ".write": "auth != null && root.child('paragraphRaces/' + $raceId + '/createdBy').val() === auth.uid",
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "participants": {
+          "$participantUid": {
+            ".write": "auth != null && auth.uid === $participantUid",
+            ".validate": "newData.hasChildren(['uid','name','joinedAt','finishedAt','timeTaken']) && newData.child('uid').isString() && newData.child('uid').val() === $participantUid && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 50 && newData.child('joinedAt').isNumber() && (newData.child('finishedAt').isNumber() || newData.child('finishedAt').val() == null) && (newData.child('timeTaken').isNumber() || newData.child('timeTaken').val() == null) && (!newData.child('timeTaken').isNumber() || (newData.child('timeTaken').val() > 0 && newData.child('timeTaken').val() <= 3600))"
+          }
+        }
       }
     }
   }

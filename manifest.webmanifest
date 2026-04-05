@@ -1,0 +1,28 @@
+{
+  "name": "DashType",
+  "short_name": "DashType",
+  "description": "Typing speed training with Arabic and English modes",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#020205",
+  "theme_color": "#0b3c78",
+  "lang": "ar",
+  "icons": [
+    {
+      "src": "photo/favicon-64.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "photo/favicon-32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "photo/favicon-16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    }
+  ]
+}

@@ -1,7 +1,9 @@
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { getDatabase, ref, get, set, update, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+import { getDatabase, ref, get, set, update, push, onValue, query, orderByChild, equalTo, limitToFirst } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 import { loadUserPreferences, saveUserPreferences } from "./firebase-save.js";
+import { readTypingGameState, writeTypingGameState } from "./app-state.js";
+import { createUiToneShiftRunner, normalizeTypingInput, resolveWordmarkSrc } from "./ui-utils.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyABT9cJ3H2e1YaljPhmFb8dgXfaV7cZEQs",
@@ -19,6 +21,7 @@ const db = getDatabase(app);
 
 const MAX_WORDS = 1000;
 const RANDOM_WORD_COUNT = 120;
+const PARAGRAPH_LEADERBOARD_FETCH_LIMIT = 250;
 
 const wordsByLanguage = {
     ar: [
@@ -320,6 +323,7 @@ let isApplyingRemotePreferences = false;
 let currentUser = null;
 let raceListenerStop = null;
 let countdownTimer = null;
+let lastParagraphMistakeAt = 0;
 const publicParagraphCache = new Map();
 const PROGRESSIVE_VISIT_KEY = "g4ProgressiveVisited";
 const LOCAL_LIBRARY_KEY = "g4LocalParagraphs";
@@ -330,6 +334,8 @@ const raceState = {
     status: "idle",
     startsAt: 0
 };
+
+const runUiToneShift = createUiToneShiftRunner({ durationMs: 460 });
 
 function t(key) {
     return textMap[currentLanguage][key];
@@ -348,11 +354,7 @@ function normalizeWhitespace(value) {
 }
 
 function normalizeForCompare(value) {
-    const compact = normalizeWhitespace(value);
-    if (currentLanguage === "en") {
-        return compact.toLowerCase();
-    }
-    return compact;
+    return normalizeTypingInput(value, currentLanguage);
 }
 
 function countWords(value) {
@@ -453,7 +455,7 @@ function saveState() {
         paragraphVisibility,
         paragraphSourceMode: sourceMode
     };
-    localStorage.setItem("typingGameState", JSON.stringify(state));
+    writeTypingGameState(state);
 
     if (!isApplyingRemotePreferences) {
         void saveUserPreferences({
@@ -464,19 +466,25 @@ function saveState() {
     }
 }
 
-function setTheme(theme) {
+function setTheme(theme, options = {}) {
     document.documentElement.setAttribute("data-theme", theme);
     themeButtons.forEach((btn) => {
         btn.classList.toggle("active", btn.dataset.theme === theme);
     });
+    if (options.animate !== false) {
+        runUiToneShift();
+    }
     saveState();
 }
 
-function setColorMode(colorMode) {
+function setColorMode(colorMode, options = {}) {
     document.documentElement.setAttribute("data-color-mode", colorMode);
     colorModeButtons.forEach((btn) => {
         btn.classList.toggle("active", btn.dataset.colorMode === colorMode);
     });
+    if (options.animate !== false) {
+        runUiToneShift();
+    }
     updateLogo();
     saveState();
 }
@@ -486,33 +494,25 @@ function updateLogo() {
     if (!logoImg) return;
     const colorMode = document.documentElement.getAttribute("data-color-mode") || "blur";
     const lang = (document.documentElement.lang || currentLanguage || "ar").toLowerCase();
-    const isArabic = lang === "ar";
-    logoImg.src = colorMode === "light"
-        ? (isArabic ? "photo/dashtype%20black%20Wordmark%20ar.png" : "photo/dashtype%20black%20Wordmark.png")
-        : (isArabic ? "photo/dashtype%20White%20Wordmark%20ar.png" : "photo/dashtype%20white%20Wordmark.png");
+    logoImg.src = resolveWordmarkSrc(colorMode, lang);
 }
 
 function loadState() {
-    try {
-        const saved = JSON.parse(localStorage.getItem("typingGameState") || "{}");
-        if (typeof saved.playerName === "string" && saved.playerName.trim()) {
-            playerName = saved.playerName;
-        }
-        if (saved.currentLanguage === "ar" || saved.currentLanguage === "en") {
-            currentLanguage = saved.currentLanguage;
-        }
-        if (saved.paragraphVisibility === "public" || saved.paragraphVisibility === "private") {
-            paragraphVisibility = saved.paragraphVisibility;
-        }
-        if (saved.paragraphSourceMode === "library" || saved.paragraphSourceMode === "create") {
-            sourceMode = saved.paragraphSourceMode;
-        }
-        setTheme(typeof saved.currentTheme === "string" ? saved.currentTheme : "ocean");
-        setColorMode(typeof saved.currentColorMode === "string" ? saved.currentColorMode : "blur");
-    } catch (_error) {
-        setTheme("ocean");
-        setColorMode("blur");
+    const saved = readTypingGameState();
+    if (typeof saved.playerName === "string" && saved.playerName.trim()) {
+        playerName = saved.playerName;
     }
+    if (saved.currentLanguage === "ar" || saved.currentLanguage === "en") {
+        currentLanguage = saved.currentLanguage;
+    }
+    if (saved.paragraphVisibility === "public" || saved.paragraphVisibility === "private") {
+        paragraphVisibility = saved.paragraphVisibility;
+    }
+    if (saved.paragraphSourceMode === "library" || saved.paragraphSourceMode === "create") {
+        sourceMode = saved.paragraphSourceMode;
+    }
+    setTheme(typeof saved.currentTheme === "string" ? saved.currentTheme : "ocean", { animate: false });
+    setColorMode(typeof saved.currentColorMode === "string" ? saved.currentColorMode : "blur", { animate: false });
 }
 
 async function applyRemotePreferences() {
@@ -691,7 +691,7 @@ function setActiveParagraph(paragraphData, sourceMessage = "") {
 }
 
 function renderParagraphLeaderboard(rows) {
-    paragraphLeaderboardList.innerHTML = "";
+    paragraphLeaderboardList.textContent = "";
     if (!rows.length) {
         const li = document.createElement("li");
         li.textContent = t("leaderboardEmpty");
@@ -708,7 +708,13 @@ function renderParagraphLeaderboard(rows) {
 
 async function loadParagraphLeaderboard(paragraphId) {
     try {
-        const roundsSnapshot = await get(ref(db, "publicRounds"));
+        const roundsQuery = query(
+            ref(db, "publicRounds"),
+            orderByChild("paragraphId"),
+            equalTo(paragraphId),
+            limitToFirst(PARAGRAPH_LEADERBOARD_FETCH_LIMIT)
+        );
+        const roundsSnapshot = await get(roundsQuery);
         if (!roundsSnapshot.exists()) {
             renderParagraphLeaderboard([]);
             return;
@@ -772,6 +778,7 @@ function clearCountdown() {
 
 function startRoundNow() {
     if (!currentParagraph) {
+        resetRound();
         setBuilderMessage(t("resultNeedParagraph"), "result warning");
         return;
     }
@@ -816,7 +823,7 @@ async function tryFinalizeRace() {
 
     const finished = allParticipants.filter((item) => typeof item.timeTaken === "number");
     if (finished.length >= 2 && finished.length === allParticipants.length) {
-        await update(ref(db, `paragraphRaces/${raceState.raceId}`), { status: "finished" });
+        await set(ref(db, `paragraphRaces/${raceState.raceId}/status`), "finished");
     }
 }
 
@@ -940,7 +947,7 @@ async function saveParagraphToLibrary(paragraphData, sourceType = "owned") {
 }
 
 async function loadPublicParagraphs(selectedParagraphId = "") {
-    publicParagraphSelect.innerHTML = "";
+    publicParagraphSelect.textContent = "";
     publicParagraphCache.clear();
     hasLibraryHistory = false;
 
@@ -1101,7 +1108,7 @@ function beginCountdown(startsAt) {
                 startRoundNow();
             }
             if (raceState.isHost && raceState.raceId) {
-                await update(ref(db, `paragraphRaces/${raceState.raceId}`), { status: "running" });
+                await set(ref(db, `paragraphRaces/${raceState.raceId}/status`), "running");
             }
         }
     }, 250);
@@ -1118,10 +1125,8 @@ function handleRaceSnapshot(data) {
 
     if (raceState.isHost && raceState.status === "waiting" && participantsCount >= 2 && !data.startsAt) {
         const startsAt = Date.now() + 5000;
-        update(ref(db, `paragraphRaces/${raceState.raceId}`), {
-            status: "countdown",
-            startsAt
-        });
+        set(ref(db, `paragraphRaces/${raceState.raceId}/status`), "countdown");
+        set(ref(db, `paragraphRaces/${raceState.raceId}/startsAt`), startsAt);
         setBuilderMessage(t("resultRaceWaiting"), "result");
         return;
     }
@@ -1465,6 +1470,15 @@ typingInput.addEventListener("input", () => {
 
     if (!target.startsWith(typed)) {
         setResultMessage(t("resultWrong"), "result warning");
+        const now = Date.now();
+        if (now - lastParagraphMistakeAt > 900) {
+            lastParagraphMistakeAt = now;
+            const targetWords = normalizeWhitespace(currentParagraph).split(" ").filter(Boolean);
+            const typedWords = normalizeWhitespace(typingInput.value).split(" ").filter(Boolean);
+            const expectedIndex = Math.max(0, typedWords.length - 1);
+            const expectedWord = targetWords[expectedIndex] || targetWords[targetWords.length - 1] || "";
+            window.recordTypingMiss?.(expectedWord, "paragraph", currentLanguage);
+        }
         return;
     }
 

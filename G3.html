@@ -1,20 +1,12 @@
-﻿<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+﻿<!doctype html>
+<html lang="ar" dir="rtl" data-route-path="sequential/" data-local-path="./sequential/">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DashType - Redirect</title>
-    <script>
-        const host = window.location.hostname || "";
-        const isGitHubPages = host.toLowerCase().endsWith("github.io");
-        const pathParts = (window.location.pathname || "/").split("/").filter(Boolean);
-        const basePath = pathParts.length && !pathParts[0].includes(".") ? `/${pathParts[0]}/` : "/";
-        const isLocalPreview = window.location.protocol === "file:" || host === "localhost" || host === "127.0.0.1" || host === "::1";
-        const target = isLocalPreview ? "./pages/sequential/index.html" : (isGitHubPages ? `${basePath}pages/sequential/index.html` : "/sequential");
-        window.location.replace(target);
-    </script>
+  <meta charset="utf-8">
+  <meta http-equiv="refresh" content="0;url=./sequential/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DashType Redirect</title>
 </head>
 <body>
-    <p>Redirecting to Sequential mode...</p>
+  <script src="scripts/route-redirect.js"></script>
 </body>
 </html>

@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DashType - لوحة الجودة</title>
+    <meta name="description" content="لوحة جودة DashType لمراجعة جودة البيانات والحسابات بشكل آمن.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="canonical" href="https://dashtype.tech/admin">
+    <link rel="stylesheet" href="../style.css">
+    <link rel="manifest" href="../manifest.webmanifest">
+    <link rel="icon" type="image/png" sizes="32x32" href="../photo/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../photo/favicon-16.png">
+    <link rel="apple-touch-icon" href="../photo/favicon-64.png">
+    <style>
+        .admin-split {
+            display: grid;
+            gap: 14px;
+        }
+
+        .admin-section-title {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .admin-muted {
+            opacity: 0.8;
+            font-size: 13px;
+        }
+
+        .admin-user-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .admin-user-actions .filter-btn,
+        .admin-user-actions a.filter-btn {
+            text-decoration: none;
+            min-height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .admin-json {
+            margin: 0;
+            padding: 12px;
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            background: var(--glass-surface-soft);
+            max-height: 320px;
+            overflow: auto;
+            font-size: 12px;
+            direction: ltr;
+            text-align: left;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .admin-mt-10 {
+            margin-top: 10px;
+        }
+
+        .admin-section-subtitle {
+            margin-top: 10px;
+            font-size: 16px;
+        }
+
+        .admin-check-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-check-spinner {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            border-top-color: var(--accent-b);
+            animation: admin-spin 0.8s linear infinite;
+            display: none;
+            flex: 0 0 auto;
+        }
+
+        .admin-check-spinner.is-active {
+            display: inline-block;
+        }
+
+        .admin-role-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 64px;
+            padding: 4px 8px;
+            border-radius: var(--radius-pill);
+            border: 1px solid var(--glass-border);
+            background: var(--glass-surface-soft);
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .admin-role-badge.is-admin {
+            background: linear-gradient(120deg, var(--accent-a), var(--accent-b));
+            color: #07203a;
+            border-color: transparent;
+        }
+
+        @keyframes admin-spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="#adminMain" class="skip-link">تخطي إلى المحتوى</a>
+    <header class="top-controls logo-only">
+        <div class="logo-container">
+            <a href="../index.html" class="logo-badge">
+                <img id="logoImg" src="../photo/dashtype%20White%20Wordmark%20ar.png" alt="DashType" class="app-logo">
+                <span class="logo-beta">بيتا</span>
+            </a>
+        </div>
+    </header>
+
+    <main id="adminMain" class="game-card admin-page-main">
+        <section class="game-top">
+            <div class="game-title-group">
+                <h1 id="pageTitle">لوحة الجودة</h1>
+                <p class="subtitle" id="pageSubtitle">مراقبة النتائج الشاذة وجودة البيانات في السجل العام</p>
+            </div>
+            <div class="history-back-wrap">
+                <a href="../index.html" class="inline-link">
+                    <button class="filter-btn active btn-icon history-back-btn" type="button"><span class="icon icon-back" aria-hidden="true"></span><span>العودة للرئيسية</span></button>
+                </a>
+            </div>
+        </section>
+
+        <section class="status-card admin-access-card">
+            <div class="progress admin-progress-label">الوصول</div>
+            <div class="admin-check-row">
+                <span id="accessSpinner" class="admin-check-spinner is-active" aria-hidden="true"></span>
+                <div id="accessMsg" class="result">جاري التحقق من الصلاحية...</div>
+            </div>
+        </section>
+
+        <section id="adminPanel" class="status-card hidden admin-panel-card">
+            <div class="stats-grid">
+                <div class="stat-card"><div id="totalRounds" class="stat-value">0</div><div class="stat-label">إجمالي السجلات</div></div>
+                <div class="stat-card"><div id="anomalyCount" class="stat-value">0</div><div class="stat-label">نتائج شاذة</div></div>
+                <div class="stat-card"><div id="invalidTimeCount" class="stat-value">0</div><div class="stat-label">وقت غير صالح</div></div>
+                <div class="stat-card"><div id="speedOutlierCount" class="stat-value">0</div><div class="stat-label">سرعة شاذة</div></div>
+            </div>
+
+            <div id="anomalyEmpty" class="result">لا توجد نتائج شاذة حسب القواعد الحالية.</div>
+
+            <div id="anomalyTableWrap" class="hidden admin-table-wrap">
+                <table class="history-table admin-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>اللاعب</th>
+                            <th>النمط</th>
+                            <th>الوقت</th>
+                            <th>السبب</th>
+                            <th>التاريخ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="anomalyBody"></tbody>
+                </table>
+            </div>
+
+            <div id="pager" class="hidden admin-pager">
+                <button id="prevBtn" class="filter-btn" type="button">السابق</button>
+                <span id="pageLabel" class="progress">صفحة 1 / 1</span>
+                <button id="nextBtn" class="filter-btn" type="button">التالي</button>
+            </div>
+
+            <div class="admin-split">
+                <h2 class="admin-section-title">الحسابات</h2>
+                <p class="admin-muted">استعراض كل الحسابات، تفاصيلها، وسجلها المخزن في قاعدة البيانات.</p>
+
+                <div id="accountsEmpty" class="result hidden">لا توجد حسابات متاحة.</div>
+
+                <div id="accountsTableWrap" class="hidden admin-table-wrap">
+                    <table class="history-table admin-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>اللاعب</th>
+                                <th>المعرف</th>
+                                <th>المستوى</th>
+                                <th>النقاط</th>
+                                <th>الجولات</th>
+                                <th>الصلاحية</th>
+                                <th>الخيارات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="accountsBody"></tbody>
+                    </table>
+                </div>
+
+                <section id="accountDetailsCard" class="status-card hidden">
+                    <h3 id="accountDetailsTitle" class="admin-section-title">تفاصيل الحساب</h3>
+                    <div id="accountDetailsMeta" class="admin-muted"></div>
+
+                    <div class="profile-history-grid admin-mt-10">
+                        <div class="stat-card"><div id="accountLevel" class="stat-value">0</div><div class="stat-label">المستوى</div></div>
+                        <div class="stat-card"><div id="accountPoints" class="stat-value">0</div><div class="stat-label">النقاط</div></div>
+                        <div class="stat-card"><div id="accountRoundsCount" class="stat-value">0</div><div class="stat-label">جولات الحساب</div></div>
+                        <div class="stat-card"><div id="accountPublicRoundsCount" class="stat-value">0</div><div class="stat-label">جولات عامة</div></div>
+                    </div>
+
+                    <div class="admin-user-actions admin-mt-10">
+                        <a id="openHistoryLink" class="filter-btn" target="_blank" rel="noopener noreferrer" href="/history/">فتح السجل الشخصي</a>
+                    </div>
+
+                    <div class="admin-table-wrap admin-mt-10">
+                        <table class="history-table admin-table">
+                            <thead>
+                                <tr>
+                                    <th>التاريخ</th>
+                                    <th>الكلمات</th>
+                                    <th>الوقت</th>
+                                    <th>النمط</th>
+                                    <th>اللغة</th>
+                                    <th>النقاط</th>
+                                </tr>
+                            </thead>
+                            <tbody id="accountRoundsBody"></tbody>
+                        </table>
+                    </div>
+
+                    <h4 class="admin-section-title admin-section-subtitle">البيانات الخام للحساب</h4>
+                    <pre id="accountRawData" class="admin-json"></pre>
+                </section>
+            </div>
+        </section>
+    </main>
+
+    <script src="../scripts/pwa-register.js"></script>
+    <script type="module">
+        import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getDatabase, ref, get, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { hasAdminRoleFromUserNode } from "../scripts/role-utils.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyABT9cJ3H2e1YaljPhmFb8dgXfaV7cZEQs",
+            authDomain: "dashtype-9855c.firebaseapp.com",
+            projectId: "dashtype-9855c",
+            storageBucket: "dashtype-9855c.firebasestorage.app",
+            messagingSenderId: "758504188835",
+            appId: "1:758504188835:web:a75d6f9452f09a067f0816",
+            databaseURL: "https://dashtype-9855c-default-rtdb.firebaseio.com"
+        };
+
+        const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        const FETCH_LIMIT = 2500;
+        const PAGE_SIZE = 25;
+
+        const accessMsg = document.getElementById("accessMsg");
+        const accessSpinner = document.getElementById("accessSpinner");
+        const adminPanel = document.getElementById("adminPanel");
+        const anomalyBody = document.getElementById("anomalyBody");
+        const anomalyEmpty = document.getElementById("anomalyEmpty");
+        const anomalyTableWrap = document.getElementById("anomalyTableWrap");
+        const pager = document.getElementById("pager");
+        const pageLabel = document.getElementById("pageLabel");
+        const prevBtn = document.getElementById("prevBtn");
+        const nextBtn = document.getElementById("nextBtn");
+
+        const accountsEmpty = document.getElementById("accountsEmpty");
+        const accountsTableWrap = document.getElementById("accountsTableWrap");
+        const accountsBody = document.getElementById("accountsBody");
+
+        const accountDetailsCard = document.getElementById("accountDetailsCard");
+        const accountDetailsTitle = document.getElementById("accountDetailsTitle");
+        const accountDetailsMeta = document.getElementById("accountDetailsMeta");
+        const accountLevel = document.getElementById("accountLevel");
+        const accountPoints = document.getElementById("accountPoints");
+        const accountRoundsCount = document.getElementById("accountRoundsCount");
+        const accountPublicRoundsCount = document.getElementById("accountPublicRoundsCount");
+        const openHistoryLink = document.getElementById("openHistoryLink");
+        const accountRoundsBody = document.getElementById("accountRoundsBody");
+        const accountRawData = document.getElementById("accountRawData");
+
+        let anomalies = [];
+        let currentPage = 1;
+        let usersCache = {};
+        let allPublicRounds = [];
+
+        function setAccessChecking(message) {
+            if (accessSpinner) {
+                accessSpinner.classList.add("is-active");
+            }
+            accessMsg.textContent = message;
+            accessMsg.className = "result";
+            adminPanel.classList.add("hidden");
+        }
+
+        function setAccessEnabled(enabled, message) {
+            if (accessSpinner) {
+                accessSpinner.classList.remove("is-active");
+            }
+            accessMsg.textContent = message;
+            accessMsg.className = enabled ? "result" : "result warning";
+            if (!enabled) {
+                adminPanel.classList.add("hidden");
+            }
+        }
+
+        async function getAdminAccess(uid) {
+            if (!uid) return { isAdmin: false };
+            try {
+                const userSnap = await get(ref(db, `users/${uid}`));
+                const userNode = userSnap.exists() ? (userSnap.val() || {}) : {};
+                return {
+                    isAdmin: hasAdminRoleFromUserNode(userNode)
+                };
+            } catch (_error) {
+                return { isAdmin: false };
+            }
+        }
+
+        function countWords(text) {
+            return String(text || "").trim().split(/\s+/).filter(Boolean).length;
+        }
+
+        function formatDate(value) {
+            return new Date(Number(value || 0)).toLocaleString("ar-SA");
+        }
+
+        function normalizeDisplayName(input) {
+            const value = String(input || "").trim();
+            return value || "لاعب";
+        }
+
+        function normalizeShortId(input, uid) {
+            const value = String(input || "").trim();
+            return value || String(uid || "").slice(0, 6);
+        }
+
+        function analyzeRound(round) {
+            const reasons = [];
+            const time = Number(round.timeTaken || 0);
+            const words = countWords(round.word);
+            const secPerWord = words > 0 ? time / words : time;
+
+            if (!round.word || words === 0) reasons.push("نص فارغ");
+            if (!Number.isFinite(time) || time <= 0 || time > 300) reasons.push("وقت غير صالح");
+            if (words > 0 && secPerWord < 0.08) reasons.push("سرعة غير منطقية (سريعة جداً)");
+            if (words > 0 && secPerWord > 20) reasons.push("سرعة غير منطقية (بطيئة جداً)");
+            if (!round.playerName || String(round.playerName).trim().length < 2) reasons.push("اسم لاعب غير واضح");
+
+            return reasons;
+        }
+
+        async function loadRoundsSnapshot() {
+            try {
+                return await get(query(ref(db, "publicRounds"), orderByChild("timestamp"), limitToLast(FETCH_LIMIT)));
+            } catch (_error) {
+                return await get(ref(db, "publicRounds"));
+            }
+        }
+
+        function renderAnomalyPage() {
+            anomalyBody.textContent = "";
+            const totalPages = Math.max(1, Math.ceil(anomalies.length / PAGE_SIZE));
+            currentPage = Math.min(totalPages, Math.max(1, currentPage));
+            const start = (currentPage - 1) * PAGE_SIZE;
+            const pageRows = anomalies.slice(start, start + PAGE_SIZE);
+
+            pageRows.forEach((item, idx) => {
+                const tr = document.createElement("tr");
+
+                const rankTd = document.createElement("td");
+                rankTd.textContent = String(start + idx + 1);
+
+                const playerTd = document.createElement("td");
+                const playerSpan = document.createElement("span");
+                playerSpan.setAttribute("dir", "auto");
+                playerSpan.textContent = normalizeDisplayName(item.playerName);
+                playerTd.appendChild(playerSpan);
+
+                const modeTd = document.createElement("td");
+                modeTd.textContent = item.mode || "-";
+
+                const timeTd = document.createElement("td");
+                timeTd.textContent = Number(item.timeTaken || 0).toFixed(3);
+
+                const reasonTd = document.createElement("td");
+                reasonTd.textContent = item.reasons.join("، ");
+
+                const dateTd = document.createElement("td");
+                dateTd.textContent = formatDate(item.timestamp);
+
+                tr.append(rankTd, playerTd, modeTd, timeTd, reasonTd, dateTd);
+                anomalyBody.appendChild(tr);
+            });
+
+            pageLabel.textContent = `صفحة ${currentPage} / ${totalPages}`;
+            prevBtn.disabled = currentPage <= 1;
+            nextBtn.disabled = currentPage >= totalPages;
+        }
+
+        function buildAccounts() {
+            const publicCountByShortId = new Map();
+            allPublicRounds.forEach((row) => {
+                const shortId = normalizeShortId(row.shortId || "", "");
+                if (!shortId) return;
+                publicCountByShortId.set(shortId, (publicCountByShortId.get(shortId) || 0) + 1);
+            });
+
+            return Object.keys(usersCache).map((uid) => {
+                const node = usersCache[uid] || {};
+                const profile = node.profile || {};
+                const stats = profile.stats || {};
+                const roundsObj = node.rounds && typeof node.rounds === "object" ? node.rounds : {};
+                const roundsCount = Object.keys(roundsObj).length;
+                const shortId = normalizeShortId(profile.shortId || node.shortId, uid);
+
+                return {
+                    uid,
+                    name: normalizeDisplayName(profile.nickname || node.nickname || profile.displayName || node.displayName),
+                    shortId,
+                    level: Number(stats.level || 0),
+                    points: Number(stats.totalPoints || 0),
+                    isAdmin: hasAdminRoleFromUserNode(node),
+                    roundsCount,
+                    publicRoundsCount: publicCountByShortId.get(shortId) || 0,
+                    updatedAt: Number(stats.updatedAt || profile.updatedAt || 0)
+                };
+            }).sort((a, b) => (b.points - a.points) || (b.level - a.level) || (b.roundsCount - a.roundsCount));
+        }
+
+        function renderAccountsTable(accounts) {
+            accountsBody.textContent = "";
+            if (!accounts.length) {
+                accountsEmpty.classList.remove("hidden");
+                accountsTableWrap.classList.add("hidden");
+                accountDetailsCard.classList.add("hidden");
+                return;
+            }
+
+            accountsEmpty.classList.add("hidden");
+            accountsTableWrap.classList.remove("hidden");
+
+            accounts.forEach((row, idx) => {
+                const tr = document.createElement("tr");
+
+                const rankTd = document.createElement("td");
+                rankTd.textContent = String(idx + 1);
+
+                const playerTd = document.createElement("td");
+                const playerSpan = document.createElement("span");
+                playerSpan.setAttribute("dir", "auto");
+                playerSpan.textContent = row.name;
+                playerTd.appendChild(playerSpan);
+
+                const shortIdTd = document.createElement("td");
+                shortIdTd.textContent = `#${row.shortId}`;
+
+                const levelTd = document.createElement("td");
+                levelTd.textContent = String(row.level);
+
+                const pointsTd = document.createElement("td");
+                pointsTd.textContent = String(row.points);
+
+                const roundsTd = document.createElement("td");
+                roundsTd.textContent = String(row.roundsCount);
+
+                const roleTd = document.createElement("td");
+                const roleBadge = document.createElement("span");
+                roleBadge.className = `admin-role-badge ${row.isAdmin ? "is-admin" : ""}`;
+                roleBadge.textContent = row.isAdmin ? "مسؤول" : "مستخدم";
+                roleTd.appendChild(roleBadge);
+
+                const actionsTd = document.createElement("td");
+                const actionsWrap = document.createElement("div");
+                actionsWrap.className = "admin-user-actions";
+
+                const viewButton = document.createElement("button");
+                viewButton.className = "filter-btn admin-view-account-btn";
+                viewButton.type = "button";
+                viewButton.dataset.uid = row.uid;
+                viewButton.textContent = "عرض البيانات";
+
+                const historyLink = document.createElement("a");
+                historyLink.className = "filter-btn";
+                historyLink.href = `/history/?uid=${encodeURIComponent(row.uid)}&admin=1`;
+                historyLink.target = "_blank";
+                historyLink.rel = "noopener noreferrer";
+                historyLink.textContent = "فتح السجل";
+
+                actionsWrap.append(viewButton, historyLink);
+                actionsTd.appendChild(actionsWrap);
+
+                tr.append(rankTd, playerTd, shortIdTd, levelTd, pointsTd, roundsTd, roleTd, actionsTd);
+                accountsBody.appendChild(tr);
+            });
+        }
+
+        function renderAccountDetails(uid) {
+            const node = usersCache[uid] || null;
+            if (!node) {
+                accountDetailsCard.classList.add("hidden");
+                return;
+            }
+
+            const profile = node.profile || {};
+            const stats = profile.stats || {};
+            const isAdmin = hasAdminRoleFromUserNode(node);
+            const name = normalizeDisplayName(profile.nickname || node.nickname || profile.displayName || node.displayName);
+            const shortId = normalizeShortId(profile.shortId || node.shortId, uid);
+            const roundsObj = node.rounds && typeof node.rounds === "object" ? node.rounds : {};
+            const rounds = Object.values(roundsObj)
+                .filter((row) => row && typeof row === "object")
+                .sort((a, b) => Number(b.timestamp || 0) - Number(a.timestamp || 0));
+
+            const publicRounds = allPublicRounds
+                .filter((row) => normalizeShortId(row.shortId || "", "") === shortId)
+                .sort((a, b) => Number(b.timestamp || 0) - Number(a.timestamp || 0));
+
+            accountDetailsTitle.textContent = `تفاصيل الحساب: ${name}`;
+            accountDetailsMeta.textContent = `Short ID: #${shortId} | الدور: ${isAdmin ? "مسؤول" : "مستخدم"}`;
+            accountLevel.textContent = Number(stats.level || 0);
+            accountPoints.textContent = Number(stats.totalPoints || 0);
+            accountRoundsCount.textContent = rounds.length;
+            accountPublicRoundsCount.textContent = publicRounds.length;
+            openHistoryLink.href = `/history/?uid=${encodeURIComponent(uid)}&admin=1`;
+
+            accountRoundsBody.textContent = "";
+            const rowsToRender = rounds.slice(0, 120);
+            rowsToRender.forEach((round) => {
+                const tr = document.createElement("tr");
+
+                const dateTd = document.createElement("td");
+                dateTd.textContent = formatDate(round.timestamp);
+
+                const wordTd = document.createElement("td");
+                const wordSpan = document.createElement("span");
+                wordSpan.setAttribute("dir", "auto");
+                wordSpan.textContent = String(round.word || "");
+                wordTd.appendChild(wordSpan);
+
+                const timeTd = document.createElement("td");
+                timeTd.textContent = Number(round.timeTaken || 0).toFixed(3);
+
+                const modeTd = document.createElement("td");
+                modeTd.textContent = String(round.mode || "-");
+
+                const languageTd = document.createElement("td");
+                languageTd.textContent = String(round.language || "-");
+
+                const pointsTd = document.createElement("td");
+                pointsTd.textContent = String(Number(round.totalPoints || 0));
+
+                tr.append(dateTd, wordTd, timeTd, modeTd, languageTd, pointsTd);
+                accountRoundsBody.appendChild(tr);
+            });
+
+            if (!rowsToRender.length) {
+                const tr = document.createElement("tr");
+                const emptyTd = document.createElement("td");
+                emptyTd.colSpan = 6;
+                emptyTd.style.textAlign = "center";
+                emptyTd.style.opacity = ".72";
+                emptyTd.textContent = "لا توجد جولات محفوظة لهذا الحساب.";
+                tr.appendChild(emptyTd);
+                accountRoundsBody.appendChild(tr);
+            }
+
+            accountRawData.textContent = JSON.stringify(node, null, 2);
+            accountDetailsCard.classList.remove("hidden");
+        }
+
+        async function loadAdminData() {
+            setAccessChecking("جاري تحميل لوحة الجودة...");
+
+            const [roundsResult, usersResult] = await Promise.allSettled([
+                loadRoundsSnapshot(),
+                get(ref(db, "users"))
+            ]);
+
+            const roundsSnapshot = roundsResult.status === "fulfilled" ? roundsResult.value : null;
+            const usersSnapshot = usersResult.status === "fulfilled" ? usersResult.value : null;
+
+            const roundsRaw = roundsSnapshot && roundsSnapshot.exists() ? Object.values(roundsSnapshot.val()) : [];
+            const rounds = roundsRaw
+                .filter((row) => row && typeof row === "object")
+                .map((row) => ({
+                    ...row,
+                    timeTaken: Number(row.timeTaken || 0),
+                    timestamp: Number(row.timestamp || 0)
+                }));
+
+            allPublicRounds = rounds;
+            usersCache = usersSnapshot && usersSnapshot.exists() ? (usersSnapshot.val() || {}) : {};
+
+            const parsed = rounds.map((round) => {
+                const reasons = analyzeRound(round || {});
+                return {
+                    ...round,
+                    reasons
+                };
+            });
+
+            anomalies = parsed
+                .filter((row) => row.reasons.length > 0)
+                .sort((a, b) => Number(b.timestamp || 0) - Number(a.timestamp || 0));
+
+            const invalidTimeCount = anomalies.filter((row) => row.reasons.some((reason) => reason.includes("وقت غير صالح"))).length;
+            const speedOutlierCount = anomalies.filter((row) => row.reasons.some((reason) => reason.includes("سرعة غير منطقية"))).length;
+
+            document.getElementById("totalRounds").textContent = rounds.length;
+            document.getElementById("anomalyCount").textContent = anomalies.length;
+            document.getElementById("invalidTimeCount").textContent = invalidTimeCount;
+            document.getElementById("speedOutlierCount").textContent = speedOutlierCount;
+
+            adminPanel.classList.remove("hidden");
+            if (!anomalies.length) {
+                anomalyEmpty.classList.remove("hidden");
+                anomalyTableWrap.classList.add("hidden");
+                pager.classList.add("hidden");
+            } else {
+                anomalyEmpty.classList.add("hidden");
+                anomalyTableWrap.classList.remove("hidden");
+                pager.classList.remove("hidden");
+                currentPage = 1;
+                renderAnomalyPage();
+            }
+
+            const accounts = buildAccounts();
+            renderAccountsTable(accounts);
+            if (accounts.length) {
+                renderAccountDetails(accounts[0].uid);
+            }
+
+            if (accessSpinner) {
+                accessSpinner.classList.remove("is-active");
+            }
+            const limitedRead = usersResult.status !== "fulfilled";
+            accessMsg.textContent = limitedRead
+                ? "تم فتح لوحة الجودة (وضع توافق بصلاحيات قراءة محدودة)"
+                : "تم فتح لوحة الجودة";
+            accessMsg.className = limitedRead ? "result warning" : "result success";
+        }
+
+        prevBtn.addEventListener("click", () => {
+            currentPage -= 1;
+            renderAnomalyPage();
+        });
+
+        nextBtn.addEventListener("click", () => {
+            currentPage += 1;
+            renderAnomalyPage();
+        });
+
+        accountsBody.addEventListener("click", (event) => {
+            const button = event.target.closest("button[data-uid]");
+            if (!button) {
+                return;
+            }
+            renderAccountDetails(button.dataset.uid || "");
+        });
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                setAccessEnabled(false, "سجل الدخول أولاً من الصفحة الرئيسية للدخول إلى لوحة الجودة");
+                return;
+            }
+
+            setAccessChecking("جاري التحقق من صلاحية الحساب من قاعدة البيانات...");
+            const access = await getAdminAccess(user.uid);
+            if (!access.isAdmin) {
+                setAccessEnabled(false, "تم رفض الوصول: الحساب الحالي لا يملك دور مسؤول موثّق");
+                return;
+            }
+
+            try {
+                await loadAdminData();
+            } catch (error) {
+                console.error(error);
+                setAccessEnabled(false, "فشل تحميل لوحة الجودة");
+            }
+        });
+    </script>
+</body>
+</html>

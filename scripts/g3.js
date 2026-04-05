@@ -1,4 +1,6 @@
 ﻿import { loadUserPreferences, saveUserPreferences } from "./firebase-save.js";
+import { readTypingGameState, writeTypingGameState } from "./app-state.js";
+import { createUiToneShiftRunner, normalizeTypingInput, resolveWordmarkSrc } from "./ui-utils.js";
 
 window.TypingGame = (() => {
     const wordsByLanguage = window.DashTypeWordBank || {
@@ -147,7 +149,9 @@ window.TypingGame = (() => {
         let rafId = null;
         let sequentialWords = [];
         let sequentialIndex = 0;
+        let lastMistakeAt = 0;
         let isApplyingRemotePreferences = false;
+        const runUiToneShift = createUiToneShiftRunner({ durationMs: 460 });
 
         function t(key) {
             return textMap[currentLanguage][key];
@@ -169,7 +173,7 @@ window.TypingGame = (() => {
                 currentColorMode: document.documentElement.getAttribute("data-color-mode") || "blur",
                 selectedMode: mode
             };
-            localStorage.setItem("typingGameState", JSON.stringify(state));
+            writeTypingGameState(state);
 
             if (!isApplyingRemotePreferences) {
                 void saveUserPreferences({
@@ -180,19 +184,25 @@ window.TypingGame = (() => {
             }
         }
 
-        function setTheme(theme) {
+        function setTheme(theme, options = {}) {
             document.documentElement.setAttribute("data-theme", theme);
             themeButtons.forEach((btn) => {
                 btn.classList.toggle("active", btn.dataset.theme === theme);
             });
+            if (options.animate !== false) {
+                runUiToneShift();
+            }
             saveState();
         }
 
-        function setColorMode(colorMode) {
+        function setColorMode(colorMode, options = {}) {
             document.documentElement.setAttribute("data-color-mode", colorMode);
             colorModeButtons.forEach((btn) => {
                 btn.classList.toggle("active", btn.dataset.colorMode === colorMode);
             });
+            if (options.animate !== false) {
+                runUiToneShift();
+            }
             updateLogo();
             saveState();
         }
@@ -202,30 +212,21 @@ window.TypingGame = (() => {
             if (!logoImg) return;
             const colorMode = document.documentElement.getAttribute("data-color-mode") || "blur";
             const lang = (document.documentElement.lang || currentLanguage || "ar").toLowerCase();
-            const isArabic = lang === "ar";
-            const logoSrc = colorMode === "light"
-                ? (isArabic ? "photo/dashtype%20black%20Wordmark%20ar.png" : "photo/dashtype%20black%20Wordmark.png")
-                : (isArabic ? "photo/dashtype%20White%20Wordmark%20ar.png" : "photo/dashtype%20white%20Wordmark.png");
-            logoImg.src = logoSrc;
+            logoImg.src = resolveWordmarkSrc(colorMode, lang);
         }
 
         function loadState() {
-            try {
-                const saved = JSON.parse(localStorage.getItem("typingGameState") || "{}");
-                if (typeof saved.playerName === "string" && saved.playerName.trim()) {
-                    playerName = saved.playerName;
-                }
-                if (saved.currentLanguage === "ar" || saved.currentLanguage === "en") {
-                    currentLanguage = saved.currentLanguage;
-                }
-                const theme = typeof saved.currentTheme === "string" ? saved.currentTheme : "ocean";
-                const colorMode = typeof saved.currentColorMode === "string" ? saved.currentColorMode : "blur";
-                setTheme(theme);
-                setColorMode(colorMode);
-            } catch (_error) {
-                setTheme("ocean");
-                setColorMode("blur");
+            const saved = readTypingGameState();
+            if (typeof saved.playerName === "string" && saved.playerName.trim()) {
+                playerName = saved.playerName;
             }
+            if (saved.currentLanguage === "ar" || saved.currentLanguage === "en") {
+                currentLanguage = saved.currentLanguage;
+            }
+            const theme = typeof saved.currentTheme === "string" ? saved.currentTheme : "ocean";
+            const colorMode = typeof saved.currentColorMode === "string" ? saved.currentColorMode : "blur";
+            setTheme(theme, { animate: false });
+            setColorMode(colorMode, { animate: false });
         }
 
         async function applyRemotePreferences() {
@@ -509,10 +510,7 @@ window.TypingGame = (() => {
         }
 
         function normalizeInput(value) {
-            if (currentLanguage === "en") {
-                return value.toLowerCase();
-            }
-            return value;
+            return normalizeTypingInput(value, currentLanguage);
         }
 
         typingInput.addEventListener("input", () => {
@@ -527,6 +525,11 @@ window.TypingGame = (() => {
             if (!targetValue.startsWith(typedValue)) {
                 resultText.textContent = t("resultWrong");
                 resultText.className = "result warning";
+                const now = Date.now();
+                if (now - lastMistakeAt > 900) {
+                    lastMistakeAt = now;
+                    window.recordTypingMiss?.(currentWord, "seq", currentLanguage);
+                }
                 return;
             }
 

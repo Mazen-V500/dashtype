@@ -4,16 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DashType - نمط الفقرة</title>
-    <link rel="stylesheet" href="../../style.css">
-    <link rel="icon" type="image/png" sizes="32x32" href="../../photo/favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="../../photo/favicon-16.png">
-    <link rel="apple-touch-icon" href="../../photo/favicon-64.png">
+    <meta name="description" content="نمط DashType الفقرة لإنشاء نصوص وتحديات ومنافسات كتابة بزمن فعلي.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://dashtype.tech/paragraph">
+    <link rel="stylesheet" href="../style.css">
+    <link rel="manifest" href="../manifest.webmanifest">
+    <link rel="icon" type="image/png" sizes="32x32" href="../photo/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../photo/favicon-16.png">
+    <link rel="apple-touch-icon" href="../photo/favicon-64.png">
 </head>
 <body class="mode4-page">
+    <a href="#gameScreen" class="skip-link">تخطي إلى المحتوى</a>
     <header class="top-controls logo-only">
         <div class="logo-container">
-            <a href="../../index.html" class="logo-badge">
-                <img id="logoImg" src="../../photo/dashtype%20White%20Wordmark%20ar.png" alt="DashType" class="app-logo">
+            <a href="../index.html" class="logo-badge">
+                <img id="logoImg" src="../photo/dashtype%20White%20Wordmark%20ar.png" alt="DashType" class="app-logo">
                 <span class="logo-beta" id="betaLabel">بيتا</span>
             </a>
         </div>
@@ -162,7 +167,7 @@
                 </div>
             </div>
 
-            <div class="control-group">
+            <div class="control-group lang-control">
                 <label id="langLabel">اللغة</label>
                 <div class="lang-switch" role="group" aria-label="language selector">
                     <button id="langArBtn" class="lang-btn" type="button">العربية</button>
@@ -175,16 +180,16 @@
             <div class="footer-person">
                 <div id="mazenNameTxt" class="footer-person-name">مازن</div>
                 <div class="footer-links">
-                    <a href="https://x.com/mazen_v500" class="footer-link" target="_blank" rel="noopener" title="X/Twitter" aria-label="X/Twitter"><span class="icon icon-x" aria-hidden="true"></span></a>
-                    <a href="https://github.com/mazen-v500" class="footer-link" target="_blank" rel="noopener" title="GitHub" aria-label="GitHub"><span class="icon icon-github" aria-hidden="true"></span></a>
-                    <a href="https://t.me/mazen_v500" class="footer-link" target="_blank" rel="noopener" title="Telegram" aria-label="Telegram"><span class="icon icon-telegram" aria-hidden="true"></span></a>
+                    <a href="https://x.com/mazen_v500" class="footer-link" target="_blank" rel="noopener noreferrer" title="X/Twitter" aria-label="X/Twitter"><span class="icon icon-x" aria-hidden="true"></span></a>
+                    <a href="https://github.com/mazen-v500" class="footer-link" target="_blank" rel="noopener noreferrer" title="GitHub" aria-label="GitHub"><span class="icon icon-github" aria-hidden="true"></span></a>
+                    <a href="https://t.me/mazen_v500" class="footer-link" target="_blank" rel="noopener noreferrer" title="Telegram" aria-label="Telegram"><span class="icon icon-telegram" aria-hidden="true"></span></a>
                 </div>
             </div>
             <div class="footer-person">
                 <div id="ahmedNameTxt" class="footer-person-name">أحمد</div>
                 <div class="footer-links">
-                    <a href="https://x.com/ko_wll" class="footer-link" target="_blank" rel="noopener" title="X/Twitter" aria-label="X/Twitter"><span class="icon icon-x" aria-hidden="true"></span></a>
-                    <a href="https://instagram.com/zs_us" class="footer-link" target="_blank" rel="noopener" title="Instagram" aria-label="Instagram"><span class="icon icon-instagram" aria-hidden="true"></span></a>
+                    <a href="https://x.com/ko_wll" class="footer-link" target="_blank" rel="noopener noreferrer" title="X/Twitter" aria-label="X/Twitter"><span class="icon icon-x" aria-hidden="true"></span></a>
+                    <a href="https://instagram.com/zs_us" class="footer-link" target="_blank" rel="noopener noreferrer" title="Instagram" aria-label="Instagram"><span class="icon icon-instagram" aria-hidden="true"></span></a>
                 </div>
             </div>
         </div>
@@ -192,11 +197,13 @@
         <p class="footer-meta">
             <span class="footer-meta-item">&copy; 2026 DashType. All rights reserved.</span>
             <span class="footer-meta-item"><span id="contactLabel" class="footer-contact-label">للتواصل معنا</span> <a class="footer-contact" href="mailto:contact@dashtype.tech">contact@dashtype.tech</a></span>
-            <span class="footer-meta-item"><span id="versionLabel" class="footer-contact-label">الإصدار</span> <span class="footer-version">0.6.005</span></span>
+            <span class="footer-meta-item"><span id="versionLabel" class="footer-contact-label">الإصدار</span> <span class="footer-version">0.7.000</span></span>
         </p>
     </footer>
 
-    <script type="module" src="../../scripts/firebase-save.js"></script>
-    <script type="module" src="../../scripts/g4.js"></script>
+    <script type="module" src="../scripts/firebase-save.js"></script>
+    <script src="../scripts/pwa-register.js"></script>
+    <script src="../scripts/keyboard-visual.js"></script>
+    <script type="module" src="../scripts/g4.js"></script>
 </body>
 </html>
