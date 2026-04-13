@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -108,6 +108,38 @@
             opacity: 0.9;
         }
 
+        .admin-updates-section {
+            display: grid;
+            gap: 10px;
+        }
+
+        .admin-updates-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .admin-updates-list {
+            margin: 0;
+            padding: 0 22px 0 0;
+            display: grid;
+            gap: 8px;
+            line-height: 1.75;
+        }
+
+        .admin-updates-meta {
+            font-size: 12px;
+            opacity: 0.75;
+        }
+
+        .admin-updates-empty {
+            opacity: 0.82;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
         @media (max-width: 768px) {
             .mode-guide-grid {
                 grid-template-columns: 1fr;
@@ -176,6 +208,17 @@
                 <h2 class="guide-title" id="tipsTitle">نصائح مهمة قبل اللعب</h2>
                 <ul class="guide-list" id="tipsList"></ul>
             </section>
+
+            <section class="status-card guide-section admin-updates-section is-hidden" id="adminUpdatesSection">
+                <div class="admin-updates-head">
+                    <h2 class="guide-title" id="adminUpdatesTitle">تحديثات المسؤول</h2>
+                    <button id="adminUpdatesRefreshBtn" class="filter-btn btn-icon" type="button"><span class="icon icon-next" aria-hidden="true"></span><span id="adminUpdatesRefreshText">تحديث الآن</span></button>
+                </div>
+                <p class="guide-subtitle" id="adminUpdatesSubtitle">يظهر هذا القسم لحسابات المسؤول فقط، ويتم تعبئته من ملف تعليمات المشروع.</p>
+                <div class="admin-updates-meta" id="adminUpdatesMeta"></div>
+                <div class="admin-updates-empty" id="adminUpdatesEmpty">لا توجد تحديثات متاحة حالياً.</div>
+                <ul class="admin-updates-list is-hidden" id="adminUpdatesList"></ul>
+            </section>
         </div>
     </main>
 
@@ -191,6 +234,7 @@
                     <button id="themeNeonBtn" class="theme-dot" type="button" data-theme="neon" title="Green & Yellow"></button>
                     <button id="themeVioletBtn" class="theme-dot" type="button" data-theme="violet" title="Purple & Pink"></button>
                     <button id="themeBrownBtn" class="theme-dot" type="button" data-theme="brown" title="Brown"></button>
+                    <button id="themeMaroonBtn" class="theme-dot" type="button" data-theme="maroon" title="Burgundy & Dark Red"></button>
                 </div>
             </div>
 
@@ -233,13 +277,31 @@
         <p class="footer-meta">
             <span class="footer-meta-item">&copy; 2026 DashType. All rights reserved.</span>
             <span class="footer-meta-item"><span id="contactLabel" class="footer-contact-label">للتواصل معنا</span> <a class="footer-contact" href="mailto:contact@dashtype.tech">contact@dashtype.tech</a></span>
-            <span class="footer-meta-item"><span id="versionLabel" class="footer-contact-label">الإصدار</span> <span class="footer-version">0.7.000</span></span>
+            <span class="footer-meta-item"><span id="versionLabel" class="footer-contact-label">الإصدار</span> <span class="footer-version">0.8.000</span></span>
         </p>
     </footer>
 
     <script type="module">
+        import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
         import { readTypingGameState, writeTypingGameState } from "../scripts/app-state.js";
         import { resolveRuntimeRoute } from "../scripts/route-context.js";
+        import { hasAdminRoleFromUserNode } from "../scripts/role-utils.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyABT9cJ3H2e1YaljPhmFb8dgXfaV7cZEQs",
+            authDomain: "dashtype-9855c.firebaseapp.com",
+            projectId: "dashtype-9855c",
+            storageBucket: "dashtype-9855c.firebasestorage.app",
+            messagingSenderId: "758504188835",
+            appId: "1:758504188835:web:a75d6f9452f09a067f0816",
+            databaseURL: "https://dashtype-9855c-default-rtdb.firebaseio.com"
+        };
+
+        const firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+        const auth = getAuth(firebaseApp);
+        const db = getDatabase(firebaseApp);
 
         const textMap = {
             ar: {
@@ -255,6 +317,15 @@
                 pointsTitle: "نظام النقاط والمستويات",
                 faqTitle: "الأسئلة الشائعة",
                 tipsTitle: "نصائح مهمة قبل اللعب",
+                adminUpdatesTitle: "تحديثات المسؤول",
+                adminUpdatesSubtitle: "يظهر هذا القسم لحسابات المسؤول فقط، ويتم تعبئته من ملف تعليمات المشروع.",
+                adminUpdatesRefresh: "تحديث الآن",
+                adminUpdatesLoading: "جاري تحميل التحديثات...",
+                adminUpdatesEmpty: "لا توجد تحديثات متاحة حالياً.",
+                adminUpdatesNoAccess: "هذا القسم متاح لحسابات المسؤول فقط.",
+                adminUpdatesLoadFailed: "تعذر تحميل التحديثات حالياً.",
+                adminUpdatesSource: "المصدر",
+                adminUpdatesUpdatedAt: "آخر تحديث",
                 modeGo: "ابدأ الآن",
                 themeLabel: "المظهر",
                 colorModeLabel: "الوضع",
@@ -266,6 +337,7 @@
                 themeNeon: "أخضر وأصفر",
                 themeViolet: "بنفسجي ووردي",
                 themeBrown: "بني",
+                themeMaroon: "عنابي وأحمر داكن",
                 darkMode: "داكن",
                 blurMode: "ضبابي",
                 lightMode: "فاتح",
@@ -335,6 +407,15 @@
                 pointsTitle: "Points and Levels",
                 faqTitle: "Frequently Asked Questions",
                 tipsTitle: "Important Tips",
+                adminUpdatesTitle: "Admin Updates",
+                adminUpdatesSubtitle: "This section is visible to admin accounts only and is populated from project instruction updates.",
+                adminUpdatesRefresh: "Refresh now",
+                adminUpdatesLoading: "Loading updates...",
+                adminUpdatesEmpty: "No updates are available right now.",
+                adminUpdatesNoAccess: "This section is available to admin accounts only.",
+                adminUpdatesLoadFailed: "Unable to load updates right now.",
+                adminUpdatesSource: "Source",
+                adminUpdatesUpdatedAt: "Last updated",
                 modeGo: "Play now",
                 themeLabel: "Theme",
                 colorModeLabel: "Mode",
@@ -346,6 +427,7 @@
                 themeNeon: "Green & Yellow",
                 themeViolet: "Purple & Pink",
                 themeBrown: "Brown",
+                themeMaroon: "Burgundy & Dark Red",
                 darkMode: "Dark",
                 blurMode: "Blurred",
                 lightMode: "Light",
@@ -407,6 +489,8 @@
         let currentLanguage = "ar";
         let currentTheme = "ocean";
         let currentColorMode = "blur";
+        const ADMIN_UPDATES_FILE = "../PROJECT_INSTRUCTIONS_UPDATES.md";
+        let isViewerAdmin = false;
 
         function getModeHref(modeKey) {
             const routeMap = {
@@ -524,6 +608,132 @@
             });
         }
 
+        function getAdminUpdatesElements() {
+            return {
+                section: document.getElementById("adminUpdatesSection"),
+                title: document.getElementById("adminUpdatesTitle"),
+                subtitle: document.getElementById("adminUpdatesSubtitle"),
+                refreshText: document.getElementById("adminUpdatesRefreshText"),
+                empty: document.getElementById("adminUpdatesEmpty"),
+                list: document.getElementById("adminUpdatesList"),
+                meta: document.getElementById("adminUpdatesMeta"),
+                refreshBtn: document.getElementById("adminUpdatesRefreshBtn")
+            };
+        }
+
+        async function fetchAdminRole(uid) {
+            if (!uid) return false;
+            try {
+                const userSnapshot = await get(ref(db, `users/${uid}`));
+                if (!userSnapshot.exists()) {
+                    return false;
+                }
+                return hasAdminRoleFromUserNode(userSnapshot.val() || {});
+            } catch (_error) {
+                return false;
+            }
+        }
+
+        function parseInstructionUpdates(content) {
+            const rows = String(content || "").replace(/\r/g, "").split("\n");
+            const updates = [];
+            let latestDate = "";
+
+            rows.forEach((line) => {
+                const trimmed = line.trim();
+                if (!latestDate && trimmed.startsWith("## ")) {
+                    latestDate = trimmed.replace(/^##\s+/, "").trim();
+                }
+                if (!trimmed.startsWith("- ")) {
+                    return;
+                }
+                const clean = trimmed
+                    .replace(/^-\s+/, "")
+                    .replace(/`/g, "")
+                    .replace(/\*\*/g, "")
+                    .trim();
+                if (clean) {
+                    updates.push(clean);
+                }
+            });
+
+            return {
+                latestDate,
+                updates
+            };
+        }
+
+        function renderAdminUpdates(items = [], latestDate = "") {
+            const t = textMap[currentLanguage];
+            const { list, empty, meta } = getAdminUpdatesElements();
+
+            list.replaceChildren();
+            if (!items.length) {
+                list.classList.add("is-hidden");
+                empty.classList.remove("is-hidden");
+                empty.textContent = t.adminUpdatesEmpty;
+                meta.textContent = "";
+                return;
+            }
+
+            items.forEach((itemText) => {
+                const li = document.createElement("li");
+                li.textContent = itemText;
+                list.appendChild(li);
+            });
+
+            list.classList.remove("is-hidden");
+            empty.classList.add("is-hidden");
+            if (latestDate) {
+                meta.textContent = `${t.adminUpdatesSource}: PROJECT_INSTRUCTIONS_UPDATES.md | ${t.adminUpdatesUpdatedAt}: ${latestDate}`;
+            } else {
+                meta.textContent = `${t.adminUpdatesSource}: PROJECT_INSTRUCTIONS_UPDATES.md`;
+            }
+        }
+
+        async function loadAdminUpdatesFromInstructions() {
+            const t = textMap[currentLanguage];
+            const { empty, refreshBtn } = getAdminUpdatesElements();
+            if (!isViewerAdmin) {
+                return;
+            }
+
+            empty.classList.remove("is-hidden");
+            empty.textContent = t.adminUpdatesLoading;
+            refreshBtn.disabled = true;
+
+            try {
+                const response = await fetch(ADMIN_UPDATES_FILE, { cache: "no-store" });
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                const content = await response.text();
+                const parsed = parseInstructionUpdates(content);
+                renderAdminUpdates(parsed.updates, parsed.latestDate);
+            } catch (_error) {
+                renderAdminUpdates([], "");
+                empty.textContent = t.adminUpdatesLoadFailed;
+            } finally {
+                refreshBtn.disabled = false;
+            }
+        }
+
+        function applyAdminUpdatesVisibility() {
+            const t = textMap[currentLanguage];
+            const { section, empty, list, meta } = getAdminUpdatesElements();
+            if (isViewerAdmin) {
+                section.classList.remove("is-hidden");
+                return;
+            }
+
+            section.classList.add("is-hidden");
+            list.replaceChildren();
+            list.classList.add("is-hidden");
+            empty.classList.remove("is-hidden");
+            empty.textContent = t.adminUpdatesNoAccess;
+            meta.textContent = "";
+        }
+
         function applyStaticTexts() {
             const t = textMap[currentLanguage];
             document.documentElement.lang = currentLanguage;
@@ -541,6 +751,9 @@
             document.getElementById("pointsTitle").textContent = t.pointsTitle;
             document.getElementById("faqTitle").textContent = t.faqTitle;
             document.getElementById("tipsTitle").textContent = t.tipsTitle;
+            document.getElementById("adminUpdatesTitle").textContent = t.adminUpdatesTitle;
+            document.getElementById("adminUpdatesSubtitle").textContent = t.adminUpdatesSubtitle;
+            document.getElementById("adminUpdatesRefreshText").textContent = t.adminUpdatesRefresh;
             document.getElementById("themeLabel").textContent = t.themeLabel;
             document.getElementById("colorModeLabel").textContent = t.colorModeLabel;
             document.getElementById("langLabel").textContent = t.langLabel;
@@ -562,7 +775,8 @@
                 { id: "themeBerryBtn", key: "themeBerry" },
                 { id: "themeNeonBtn", key: "themeNeon" },
                 { id: "themeVioletBtn", key: "themeViolet" },
-                { id: "themeBrownBtn", key: "themeBrown" }
+                { id: "themeBrownBtn", key: "themeBrown" },
+                { id: "themeMaroonBtn", key: "themeMaroon" }
             ];
             themeButtons.forEach(({ id, key }) => {
                 const btn = document.getElementById(id);
@@ -588,6 +802,7 @@
             renderTextList("tipsList", t.tips, false);
             renderModeCards();
             renderFaqList();
+            applyAdminUpdatesVisibility();
         }
 
         function applyRuntimeLinks() {
@@ -612,6 +827,9 @@
             currentLanguage = lang;
             savePreferences();
             applyStaticTexts();
+            if (isViewerAdmin) {
+                void loadAdminUpdatesFromInstructions();
+            }
         }
 
         document.querySelectorAll(".theme-dot").forEach((btn) => {
@@ -624,6 +842,23 @@
 
         document.getElementById("langArBtn").addEventListener("click", () => setLanguage("ar"));
         document.getElementById("langEnBtn").addEventListener("click", () => setLanguage("en"));
+        document.getElementById("adminUpdatesRefreshBtn").addEventListener("click", () => {
+            void loadAdminUpdatesFromInstructions();
+        });
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                isViewerAdmin = false;
+                applyAdminUpdatesVisibility();
+                return;
+            }
+
+            isViewerAdmin = await fetchAdminRole(user.uid);
+            applyAdminUpdatesVisibility();
+            if (isViewerAdmin) {
+                await loadAdminUpdatesFromInstructions();
+            }
+        });
 
         loadPreferences();
         applyThemeState();

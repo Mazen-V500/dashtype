@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 	<meta charset="UTF-8">
@@ -19,7 +19,7 @@
 		.leaderboard-container {
 			display: grid;
 			gap: 16px;
-		}
+        }
 
 		.mode-sections {
             display: grid;
@@ -29,22 +29,55 @@
         }
 
         .leaderboard-card {
-            background: var(--glass-surface);
+            background:
+                radial-gradient(circle at top right, rgba(255, 255, 255, 0.14), transparent 58%),
+                var(--glass-surface);
             border: 1px solid var(--glass-border);
             border-radius: var(--radius-xl);
             overflow-x: auto;
             overflow-y: hidden;
+            position: relative;
             -webkit-backdrop-filter: blur(16px) saturate(140%);
             backdrop-filter: blur(16px) saturate(140%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 12px 28px rgba(0, 0, 0, 0.16);
         }
 
+        .leaderboard-card::before {
+            content: "";
+            position: absolute;
+            inset-inline-end: 12px;
+            top: 12px;
+            width: 30px;
+            height: 30px;
+            border-radius: 10px;
+            background-color: var(--accent-b);
+            -webkit-mask-image: var(--lb-card-icon, none);
+            mask-image: var(--lb-card-icon, none);
+            -webkit-mask-position: center;
+            mask-position: center;
+            -webkit-mask-size: 16px 16px;
+            mask-size: 16px 16px;
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            opacity: 0.9;
+            pointer-events: none;
+        }
+
+        .leaderboard-card[data-icon="global"] { --lb-card-icon: url("../photo/icons/global.svg"); }
+        .leaderboard-card[data-icon="history"] { --lb-card-icon: url("../photo/icons/history.svg"); }
+        .leaderboard-card[data-icon="single"] { --lb-card-icon: url("../photo/icons/mode-single.svg"); }
+        .leaderboard-card[data-icon="triple"] { --lb-card-icon: url("../photo/icons/mode-triple.svg"); }
+        .leaderboard-card[data-icon="seq"] { --lb-card-icon: url("../photo/icons/mode-sequential.svg"); }
+        .leaderboard-card[data-icon="paragraph"] { --lb-card-icon: url("../photo/icons/mode-paragraph.svg"); }
+
         .leaderboard-header {
-            background: linear-gradient(120deg, var(--accent-a), var(--accent-b));
-            color: #07203a;
-            padding: 12px 16px;
+            background: color-mix(in srgb, var(--glass-surface-soft) 88%, rgba(255, 255, 255, 0.06));
+            color: var(--text-strong);
+            padding: 12px 44px 12px 16px;
             font-weight: 800;
-            text-align: center;
+            text-align: start;
             font-size: 18px;
+            border-bottom: 1px solid var(--glass-border);
         }
 
         .rank-medal {
@@ -145,29 +178,56 @@
     <a href="#historyScreen" class="skip-link">تخطي إلى المحتوى</a>
 	<header class="top-controls logo-only">
 		<div class="logo-container">
-            <a href="../index.html" class="logo-badge">
+            <a href="../" class="logo-badge">
                 <img id="logoImg" src="../photo/dashtype%20White%20Wordmark%20ar.png" alt="DashType" class="app-logo">
                 <span class="logo-beta" id="betaLabel">بيتا</span>
             </a>
 		</div>
 	</header>
 
-	<main class="game-card" id="historyScreen">
+    <div id="pageLoader" class="page-loading-overlay is-active" aria-live="polite" aria-busy="true">
+        <div class="page-loading-card" role="status">
+            <div class="page-loading-head">
+                <span class="page-loading-spinner" aria-hidden="true"></span>
+                <div id="pageLoaderTitle" class="page-loading-title">جاري تحميل السجل العالمي</div>
+            </div>
+            <div id="pageLoaderSubtitle" class="page-loading-subtitle">نجهز أسرع النتائج العالمية الآن...</div>
+            <div class="page-loading-skeleton" aria-hidden="true">
+                <span class="page-loading-line w-90"></span>
+                <span class="page-loading-line w-70"></span>
+                <span class="page-loading-line w-55"></span>
+            </div>
+        </div>
+    </div>
+
+	<main class="game-shell leaderboard-container" id="historyScreen">
+        <section class="game-card">
         <section class="game-top">
             <div class="game-title-group">
                 <h1 id="pageTitle" class="history-title">السجل العالمي</h1>
                 <p class="subtitle" id="pageSubtitle">ترتيب السرعة حسب الأنماط: الفردي، الثلاثي، المتتابع، والفقرة</p>
             </div>
             <div class="history-back-wrap">
-                    <a href="../index.html" class="inline-link">
-                    <button id="backBtn" class="filter-btn active btn-icon history-back-btn"><span class="icon icon-back" aria-hidden="true"></span><span id="backBtnText">العودة للرئيسية</span></button>
+                    <a href="../" class="inline-link">
+                    <button id="backBtn" class="btn-icon history-back-btn"><span class="icon icon-back" aria-hidden="true"></span><span id="backBtnText">العودة للرئيسية</span></button>
                 </a>
             </div>
         </section>
 
+        <div id="authRequiredMsg" class="auth-required is-hidden">
+            <p id="authMsg">يرجى تسجيل الدخول في الصفحة الرئيسية لعرض السجل العالمي</p>
+            <div class="auth-actions">
+                <a href="../" class="inline-link">
+                    <button id="backBtnGate" class="btn-icon" type="button"><span class="icon icon-back" aria-hidden="true"></span><span id="backBtnGateText">العودة للرئيسية</span></button>
+                </a>
+                <button id="signInLocalBtn" class="btn-icon signin-local-btn" type="button"><span class="icon icon-login" aria-hidden="true"></span><span id="signInLocalText">تسجيل الدخول هنا</span></button>
+            </div>
+        </div>
+
         <div class="mode-sections" id="leaderboardContent">
             <div id="loadingState" class="loading-state">جاري جلب أسرع الأوقات العالمية...</div>
         </div>
+        </section>
 	</main>
 
     <footer class="page-footer">
@@ -191,12 +251,13 @@
 		<p class="footer-meta">
             <span class="footer-meta-item">&copy; 2026 DashType. All rights reserved.</span>
             <span class="footer-meta-item"><span id="contactLabel" class="footer-contact-label">للتواصل معنا</span> <a class="footer-contact" href="mailto:contact@dashtype.tech">contact@dashtype.tech</a></span>
-            <span class="footer-meta-item"><span id="versionLabel" class="footer-contact-label">الإصدار</span> <span class="footer-version">0.7.000</span></span>
+            <span class="footer-meta-item"><span id="versionLabel" class="footer-contact-label">الإصدار</span> <span class="footer-version">0.8.000</span></span>
         </p>
     </footer>
 
     <script type="module">
         import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getDatabase, ref, get, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
         import { readTypingGameState } from "../scripts/app-state.js";
         import { resolveWordmarkSrc } from "../scripts/ui-utils.js";
@@ -212,15 +273,27 @@
 		};
 
         const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+		const auth = getAuth(app);
 		const db = getDatabase(app);
+        const FIRST_LEVEL_POINTS = 40;
+        const LEVEL_STEP_POINTS = 100;
+        const GLOBAL_LEADERBOARD_REQUIRED_LEVEL = 5;
+        const SHORT_ID_LENGTH = 4;
 
         const leaderboardContent = document.getElementById('leaderboardContent');
         const GLOBAL_LEADERBOARD_FETCH_LIMIT = 2500;
         const LEADERBOARD_PAGE_SIZE = 10;
+        const LEGACY_FALLBACK_TIMESTAMP = Date.UTC(2026, 2, 1, 0, 0, 0);
+        const pageLoader = document.getElementById('pageLoader');
+        const pageLoaderTitle = document.getElementById('pageLoaderTitle');
+        const pageLoaderSubtitle = document.getElementById('pageLoaderSubtitle');
 
         let currentLanguage = "ar";
         let allRoundsCache = [];
         let topLevelsCache = [];
+        let topCountriesCache = [];
+        let userNameByShortId = new Map();
+        let publicProfileByShortId = new Map();
         let currentRange = "all";
         let rangeListenerBound = false;
         const pageByMode = {
@@ -236,10 +309,14 @@
                 pageSubtitle: "ترتيب السرعة حسب الأنماط: الفردي، الثلاثي، المتتابع، والفقرة",
                 backBtn: "العودة للرئيسية",
                 loading: "جاري جلب أسرع الأوقات العالمية...",
+                pageLoaderTitle: "جاري تحميل السجل العالمي",
+                pageLoaderSubtitle: "نجهز أسرع النتائج العالمية الآن...",
                 noData: "لا توجد بيانات متاحة حالياً.",
-                unknownPlayer: "لاعب مجهول",
+                unknownPlayer: "لاعب",
+                legacyPlayer: "لاعب - مارس 2026",
                 statsHeader: "إحصائيات: أكثر الكلمات كتابةً عالمياً",
                 topLevelsHeader: "قائمة أعلى المستويات",
+                topCountriesHeader: "أعلى الدول بالنقاط",
                 times: "مرة",
                 singleMode: "الفردي",
                 tripleMode: "الثلاثي",
@@ -247,8 +324,12 @@
                 paragraphMode: "الفقرة",
                 level: "المستوى",
                 points: "النقاط",
+                country: "الدولة",
+                playersCount: "اللاعبون",
                 noTopLevels: "لا توجد بيانات مستويات بعد",
+                noTopCountries: "لا توجد بيانات دول متاحة",
                 noRounds: "لا توجد جولات بعد",
+                unknownCountry: "دولة غير معروفة",
                 sec: "ث",
                 rank: "المركز",
                 player: "اللاعب",
@@ -263,6 +344,9 @@
                 nextPage: "التالي",
                 pageLabel: "صفحة",
                 noDataForFilter: "لا توجد نتائج ضمن الفترة المحددة.",
+                authMsg: "يرجى تسجيل الدخول عبر الصفحة الرئيسية لعرض السجل العالمي.",
+                lockedMsg: "السجل العالمي يفتح بعد المستوى {required}. مستواك الحالي {current}.",
+                signInLocal: "تسجيل الدخول هنا",
                 errorLoad: "حدث خطأ أثناء الاتصال بقاعدة البيانات. تأكد من اتصالك بالإنترنت.",
                 mazenNameTxt: "مازن",
                 ahmedNameTxt: "أحمد",
@@ -275,10 +359,14 @@
                 pageSubtitle: "Speed ranking by modes: Single, Triple, Sequential, and Paragraph",
                 backBtn: "Back to Home",
                 loading: "Fetching fastest global times...",
+                pageLoaderTitle: "Loading global leaderboard",
+                pageLoaderSubtitle: "Preparing fastest global records...",
                 noData: "No data available currently.",
-                unknownPlayer: "Unknown Player",
+                unknownPlayer: "Player",
+                legacyPlayer: "Player - Mar 2026",
                 statsHeader: "Stats: Most Typed Words Globally",
                 topLevelsHeader: "Top Levels",
+                topCountriesHeader: "Top Countries by Points",
                 times: "times",
                 singleMode: "Single",
                 tripleMode: "Triple",
@@ -286,8 +374,12 @@
                 paragraphMode: "Paragraph",
                 level: "Level",
                 points: "Points",
+                country: "Country",
+                playersCount: "Players",
                 noTopLevels: "No level data yet",
+                noTopCountries: "No country data yet",
                 noRounds: "No rounds yet",
+                unknownCountry: "Unknown country",
                 sec: "s",
                 rank: "Rank",
                 player: "Player",
@@ -302,6 +394,9 @@
                 nextPage: "Next",
                 pageLabel: "Page",
                 noDataForFilter: "No results for the selected period.",
+                authMsg: "Please sign in from the home page to view the global leaderboard.",
+                lockedMsg: "Global leaderboard unlocks after level {required}. Your current level is {current}.",
+                signInLocal: "Sign in here",
                 errorLoad: "Error trying to connect to the database. Make sure you are connected to the internet.",
                 mazenNameTxt: "Mazen",
                 ahmedNameTxt: "Ahmed",
@@ -313,6 +408,14 @@
 
         function t(key) {
             return textMap[currentLanguage][key];
+        }
+
+        function setPageLoading(isLoading) {
+            if (!pageLoader) {
+                return;
+            }
+            pageLoader.classList.toggle("is-active", Boolean(isLoading));
+            pageLoader.setAttribute("aria-busy", isLoading ? "true" : "false");
         }
 
         function decodeLatin1AsUtf8(value) {
@@ -358,8 +461,147 @@
             return normalized || t('unknownPlayer');
         }
 
+        function resolveLegacyPlayerName(displayName, hasShortId) {
+            const normalized = normalizeDisplayName(displayName);
+            if (normalized !== t("unknownPlayer")) {
+                return normalized;
+            }
+            return hasShortId ? normalized : t("legacyPlayer");
+        }
+
+        function formatRoundDateTime(timestamp) {
+            const safeTimestamp = Number(timestamp || 0) || LEGACY_FALLBACK_TIMESTAMP;
+            return new Date(safeTimestamp).toLocaleString(currentLanguage === "ar" ? "ar-EG" : "en-US");
+        }
+
         function normalizeShortId(value) {
-            return String(value ?? "").trim().replace(/[^a-zA-Z0-9]/g, "").slice(0, 12);
+            return String(value ?? "").trim().replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, SHORT_ID_LENGTH);
+        }
+
+        function normalizeCountryCode(value) {
+            return String(value ?? "").trim().toUpperCase().replace(/[^A-Z]/g, "").slice(0, 2);
+        }
+
+        function normalizeCountryName(value) {
+            return String(value ?? "").trim().replace(/[<>]/g, "").slice(0, 60);
+        }
+
+        function countryFlagEmoji(countryCode) {
+            const code = normalizeCountryCode(countryCode);
+            if (code.length !== 2) {
+                return "";
+            }
+            return String.fromCodePoint(...[...code].map((char) => 127397 + char.charCodeAt(0)));
+        }
+
+        function buildPublicProfileMap(profilesData) {
+            const map = new Map();
+            if (!profilesData || typeof profilesData !== "object") {
+                return map;
+            }
+
+            Object.keys(profilesData).forEach((uid) => {
+                const node = profilesData[uid] || {};
+                const shortId = normalizeShortId(node.shortId || "");
+                if (!shortId) {
+                    return;
+                }
+
+                map.set(shortId, {
+                    uid,
+                    shortId,
+                    displayName: normalizeDisplayName(node.displayName || ""),
+                    showCountry: Boolean(node.showCountry),
+                    countryCode: normalizeCountryCode(node.countryCode || ""),
+                    countryName: normalizeCountryName(node.countryName || "")
+                });
+            });
+
+            return map;
+        }
+
+        function createProfileCellIdentity(row) {
+            const uid = String(row.uid || "").trim();
+            const shortId = normalizeShortId(row.shortId || "");
+            const displayName = normalizeDisplayName(row.playerName || row.displayName || "");
+            const nameQuery = displayName && displayName !== t("unknownPlayer")
+                ? `&name=${encodeURIComponent(displayName)}`
+                : "";
+            const profileHref = uid
+                ? `../profile/?uid=${encodeURIComponent(uid)}${shortId ? `&shortId=${encodeURIComponent(shortId)}` : ""}${nameQuery}`
+                : (shortId ? `../profile/?shortId=${encodeURIComponent(shortId)}${nameQuery}` : "");
+            const showCountry = Boolean(row.showCountry);
+            const countryName = normalizeCountryName(row.countryName || "");
+            const countryCode = normalizeCountryCode(row.countryCode || "");
+            const countryFlag = countryFlagEmoji(countryCode);
+            return { uid, shortId, profileHref, showCountry, countryName, countryFlag };
+        }
+
+        function formatTemplate(template, values) {
+            return Object.entries(values || {}).reduce((output, [key, value]) => {
+                return output.replaceAll(`{${key}}`, String(value));
+            }, String(template || ""));
+        }
+
+        function computeLevelFromPoints(totalPoints) {
+            const points = Math.max(0, Number(totalPoints || 0));
+            if (points < FIRST_LEVEL_POINTS) {
+                return 0;
+            }
+            return 1 + Math.floor((points - FIRST_LEVEL_POINTS) / LEVEL_STEP_POINTS);
+        }
+
+        async function loadViewerLevel(uid) {
+            if (!uid) return 0;
+            try {
+                const statsSnapshot = await get(ref(db, `users/${uid}/profile/stats`));
+                if (!statsSnapshot.exists()) {
+                    return 0;
+                }
+                const stats = statsSnapshot.val() || {};
+                return computeLevelFromPoints(Number(stats.totalPoints || 0));
+            } catch (_error) {
+                return 0;
+            }
+        }
+
+        function showGate(message, allowSignIn) {
+            const authWrap = document.getElementById("authRequiredMsg");
+            const authMsg = document.getElementById("authMsg");
+            const signInBtn = document.getElementById("signInLocalBtn");
+            authMsg.textContent = message;
+            authWrap.style.display = "block";
+            leaderboardContent.style.display = "none";
+            if (signInBtn) {
+                signInBtn.style.display = allowSignIn ? "inline-flex" : "none";
+            }
+        }
+
+        function buildUserIdentityMap(usersData) {
+            const map = new Map();
+            if (!usersData || typeof usersData !== "object") {
+                return map;
+            }
+
+            Object.keys(usersData).forEach((uid) => {
+                const userNode = usersData[uid] || {};
+                const profile = userNode.profile || {};
+                const shortId = normalizeShortId(profile.shortId || userNode.shortId || String(uid).slice(0, SHORT_ID_LENGTH));
+                if (!shortId) {
+                    return;
+                }
+
+                const displayName = normalizeDisplayName(
+                    profile.nickname
+                    || userNode.nickname
+                    || profile.displayName
+                    || userNode.displayName
+                    || t("unknownPlayer")
+                );
+                map.set(shortId, displayName);
+            });
+
+            return map;
         }
 
         function normalizeStatWord(value) {
@@ -430,12 +672,48 @@
             const uniqueRows = [];
             const seen = new Set();
             modeRows.forEach((row) => {
-                const key = `${row.playerName}|${row.shortId}|${row.timeTaken}`;
+                const key = `${row.shortId || row.playerName}|${row.timeTaken}`;
                 if (seen.has(key)) return;
                 seen.add(key);
                 uniqueRows.push(row);
             });
             return uniqueRows;
+        }
+
+        function buildTopCountriesByPoints(levelRows) {
+            const totals = new Map();
+            const rows = Array.isArray(levelRows) ? levelRows : [];
+
+            rows.forEach((row) => {
+                if (!row || !row.showCountry) {
+                    return;
+                }
+
+                const countryCode = normalizeCountryCode(row.countryCode || "");
+                const countryName = normalizeCountryName(row.countryName || "");
+                if (!countryCode && !countryName) {
+                    return;
+                }
+
+                const key = countryCode || countryName.toUpperCase();
+                const points = Math.max(0, Number(row.points || 0));
+                const current = totals.get(key) || {
+                    countryCode,
+                    countryName,
+                    points: 0,
+                    players: 0
+                };
+
+                current.countryCode = current.countryCode || countryCode;
+                current.countryName = current.countryName || countryName;
+                current.points += points;
+                current.players += 1;
+                totals.set(key, current);
+            });
+
+            return Array.from(totals.values())
+                .sort((a, b) => (b.points - a.points) || (b.players - a.players))
+                .slice(0, 10);
         }
 
         function createHeaderCell(label, width) {
@@ -450,6 +728,9 @@
         function createCard(title, options = {}) {
             const card = document.createElement("div");
             card.className = "leaderboard-card";
+            if (options.icon) {
+                card.setAttribute("data-icon", String(options.icon));
+            }
             if (options.fullWidth) {
                 card.style.gridColumn = "1 / -1";
                 card.style.marginBottom = "14px";
@@ -512,7 +793,7 @@
             leaderboardContent.appendChild(toolbar);
 
             if (topLevelsCache.length) {
-                const topLevelsCard = createCard(t("topLevelsHeader"), { fullWidth: true }).card;
+                const topLevelsCard = createCard(t("topLevelsHeader"), { fullWidth: true, icon: "global" }).card;
                 const table = document.createElement("table");
                 table.className = "history-table";
 
@@ -537,19 +818,35 @@
                     rankTd.appendChild(rankBadge);
 
                     const playerTd = document.createElement("td");
-                    const playerSpan = document.createElement("span");
-                    playerSpan.setAttribute("dir", "auto");
-                    playerSpan.style.unicodeBidi = "isolate";
-                    playerSpan.textContent = row.playerName;
-                    playerTd.appendChild(playerSpan);
-                    if (row.shortId) {
+                    const identity = createProfileCellIdentity(row);
+                    const playerTextEl = identity.profileHref
+                        ? document.createElement("a")
+                        : document.createElement("span");
+                    playerTextEl.setAttribute("dir", "auto");
+                    playerTextEl.style.unicodeBidi = "isolate";
+                    playerTextEl.textContent = `${row.playerName}${identity.showCountry && identity.countryFlag ? ` ${identity.countryFlag}` : ""}`;
+                    if (identity.profileHref) {
+                        playerTextEl.className = "inline-link";
+                        playerTextEl.href = identity.profileHref;
+                        playerTextEl.style.textDecoration = "none";
+                        playerTextEl.style.color = "inherit";
+                    }
+                    playerTd.appendChild(playerTextEl);
+                    if (identity.shortId) {
                         const shortIdSpan = document.createElement("span");
                         shortIdSpan.style.fontSize = "10px";
                         shortIdSpan.style.opacity = "0.6";
                         shortIdSpan.style.direction = "ltr";
                         shortIdSpan.style.unicodeBidi = "isolate";
-                        shortIdSpan.textContent = ` #${row.shortId}`;
+                        shortIdSpan.textContent = ` #${identity.shortId}`;
                         playerTd.appendChild(shortIdSpan);
+                    }
+                    if (identity.showCountry && (identity.countryName || identity.countryFlag)) {
+                        const countrySpan = document.createElement("div");
+                        countrySpan.style.fontSize = "10px";
+                        countrySpan.style.opacity = "0.75";
+                        countrySpan.textContent = `${identity.countryFlag ? `${identity.countryFlag} ` : ""}${identity.countryName}`.trim();
+                        playerTd.appendChild(countrySpan);
                     }
 
                     const levelTd = document.createElement("td");
@@ -566,7 +863,7 @@
                 topLevelsCard.appendChild(table);
                 leaderboardContent.appendChild(topLevelsCard);
             } else {
-                const topLevelsCard = createCard(t("topLevelsHeader"), { fullWidth: true }).card;
+                const topLevelsCard = createCard(t("topLevelsHeader"), { fullWidth: true, icon: "global" }).card;
                 const noLevelState = document.createElement("div");
                 noLevelState.className = "loading-state";
                 noLevelState.style.padding = "14px";
@@ -575,9 +872,64 @@
                 leaderboardContent.appendChild(topLevelsCard);
             }
 
+            if (topCountriesCache.length) {
+                const topCountriesCard = createCard(t("topCountriesHeader"), { fullWidth: true, icon: "global" }).card;
+                const table = document.createElement("table");
+                table.className = "history-table";
+
+                const thead = document.createElement("thead");
+                const headRow = document.createElement("tr");
+                headRow.append(
+                    createHeaderCell(t("rank"), "50px"),
+                    createHeaderCell(t("country")),
+                    createHeaderCell(t("playersCount"), "120px"),
+                    createHeaderCell(t("points"), "140px")
+                );
+                thead.appendChild(headRow);
+
+                const tbody = document.createElement("tbody");
+                topCountriesCache.forEach((row, index) => {
+                    const tr = document.createElement("tr");
+
+                    const rankTd = document.createElement("td");
+                    const rankBadge = document.createElement("div");
+                    rankBadge.className = `rank-medal ${index === 0 ? "rank-1" : index === 1 ? "rank-2" : index === 2 ? "rank-3" : "rank-other"}`;
+                    rankBadge.textContent = String(index + 1);
+                    rankTd.appendChild(rankBadge);
+
+                    const countryTd = document.createElement("td");
+                    const countryCode = normalizeCountryCode(row.countryCode || "");
+                    const countryFlag = countryFlagEmoji(countryCode);
+                    const countryName = normalizeCountryName(row.countryName || "") || countryCode || t("unknownCountry");
+                    countryTd.textContent = `${countryFlag ? `${countryFlag} ` : ""}${countryName}`;
+
+                    const playersTd = document.createElement("td");
+                    playersTd.textContent = String(Math.max(0, Number(row.players || 0)));
+
+                    const pointsTd = document.createElement("td");
+                    pointsTd.textContent = String(Math.max(0, Math.floor(Number(row.points || 0))));
+
+                    tr.append(rankTd, countryTd, playersTd, pointsTd);
+                    tbody.appendChild(tr);
+                });
+
+                table.append(thead, tbody);
+                topCountriesCard.appendChild(table);
+                leaderboardContent.appendChild(topCountriesCard);
+            } else {
+                const topCountriesCard = createCard(t("topCountriesHeader"), { fullWidth: true, icon: "global" }).card;
+                const noCountriesState = document.createElement("div");
+                noCountriesState.className = "loading-state";
+                noCountriesState.style.padding = "14px";
+                noCountriesState.textContent = t("noTopCountries");
+                topCountriesCard.appendChild(noCountriesState);
+                leaderboardContent.appendChild(topCountriesCard);
+            }
+
             if (sortedWords.length > 0) {
                 const wordsCard = createCard(t("statsHeader"), {
                     fullWidth: true,
+                    icon: "history",
                     headerStyle: {
                         background: "linear-gradient(120deg, #10b981, #059669)",
                         color: "white"
@@ -632,7 +984,7 @@
                     hasAnyRows = true;
                 }
 
-                const modeCard = createCard(modes[modeKey]).card;
+                const modeCard = createCard(modes[modeKey], { icon: modeKey }).card;
                 const table = document.createElement("table");
                 table.className = "history-table";
 
@@ -679,20 +1031,36 @@
                         playerTd.style.whiteSpace = "nowrap";
                         playerTd.title = row.shortId ? `${row.playerName} #${row.shortId}` : row.playerName;
 
-                        const playerSpan = document.createElement("span");
-                        playerSpan.setAttribute("dir", "auto");
-                        playerSpan.style.unicodeBidi = "isolate";
-                        playerSpan.textContent = row.playerName;
-                        playerTd.appendChild(playerSpan);
+                        const identity = createProfileCellIdentity(row);
+                        const playerTextEl = identity.profileHref
+                            ? document.createElement("a")
+                            : document.createElement("span");
+                        playerTextEl.setAttribute("dir", "auto");
+                        playerTextEl.style.unicodeBidi = "isolate";
+                        playerTextEl.textContent = `${row.playerName}${identity.showCountry && identity.countryFlag ? ` ${identity.countryFlag}` : ""}`;
+                        if (identity.profileHref) {
+                            playerTextEl.className = "inline-link";
+                            playerTextEl.href = identity.profileHref;
+                            playerTextEl.style.textDecoration = "none";
+                            playerTextEl.style.color = "inherit";
+                        }
+                        playerTd.appendChild(playerTextEl);
 
-                        if (row.shortId) {
+                        if (identity.shortId) {
                             const shortIdSpan = document.createElement("span");
                             shortIdSpan.style.fontSize = "10px";
                             shortIdSpan.style.opacity = "0.6";
                             shortIdSpan.style.direction = "ltr";
                             shortIdSpan.style.unicodeBidi = "isolate";
-                            shortIdSpan.textContent = ` #${row.shortId}`;
+                            shortIdSpan.textContent = ` #${identity.shortId}`;
                             playerTd.appendChild(shortIdSpan);
+                        }
+                        if (identity.showCountry && (identity.countryName || identity.countryFlag)) {
+                            const countrySpan = document.createElement("div");
+                            countrySpan.style.fontSize = "10px";
+                            countrySpan.style.opacity = "0.75";
+                            countrySpan.textContent = `${identity.countryFlag ? `${identity.countryFlag} ` : ""}${identity.countryName}`.trim();
+                            playerTd.appendChild(countrySpan);
                         }
 
                         const timeTd = document.createElement("td");
@@ -702,7 +1070,7 @@
                         const dateTd = document.createElement("td");
                         dateTd.style.opacity = "0.8";
                         dateTd.style.fontSize = "11px";
-                        dateTd.textContent = new Date(row.date).toLocaleDateString(currentLanguage === "ar" ? "ar-EG" : "en-US");
+                        dateTd.textContent = formatRoundDateTime(row.date);
 
                         tr.append(rankTd, playerTd, timeTd, dateTd);
                         tbody.appendChild(tr);
@@ -767,6 +1135,7 @@
                 }
 
                 let usersSnapshot = null;
+                let usersIdentitySnapshot = null;
                 try {
                     const usersQuery = query(
                         ref(db, 'users'),
@@ -781,6 +1150,28 @@
                         usersSnapshot = null;
                     }
                 }
+
+                try {
+                    usersIdentitySnapshot = await get(ref(db, 'users'));
+                } catch (_identityError) {
+                    usersIdentitySnapshot = usersSnapshot;
+                }
+
+                let publicProfilesSnapshot = null;
+                try {
+                    publicProfilesSnapshot = await get(ref(db, 'publicProfiles'));
+                } catch (_publicProfilesError) {
+                    publicProfilesSnapshot = null;
+                }
+
+                const usersIdentityData = usersIdentitySnapshot && usersIdentitySnapshot.exists()
+                    ? (usersIdentitySnapshot.val() || {})
+                    : {};
+                userNameByShortId = buildUserIdentityMap(usersIdentityData);
+                const publicProfilesData = publicProfilesSnapshot && publicProfilesSnapshot.exists()
+                    ? (publicProfilesSnapshot.val() || {})
+                    : {};
+                publicProfileByShortId = buildPublicProfileMap(publicProfilesData);
                 
                 const data = snapshot && snapshot.exists() ? (snapshot.val() || {}) : {};
                 const rounds = [];
@@ -800,28 +1191,38 @@
                         return;
                     }
 
-                    const displayName = normalizeDisplayName(r.playerName);
                     const shortId = normalizeShortId(r.shortId);
+                    const displayName = normalizeDisplayName(r.playerName);
+                    const publicIdentity = shortId ? publicProfileByShortId.get(shortId) : null;
+                    const publicDisplayName = normalizeDisplayName(publicIdentity?.displayName || "");
+                    const userDisplayName = normalizeDisplayName(userNameByShortId.get(shortId) || "");
+                    const resolvedName = shortId
+                        ? resolveLegacyPlayerName(publicDisplayName !== defaultName ? publicDisplayName : (userDisplayName !== defaultName ? userDisplayName : displayName), true)
+                        : resolveLegacyPlayerName(displayName || defaultName, false);
 
                     rounds.push({
-                        playerName: displayName || defaultName,
+                        uid: String(publicIdentity?.uid || ""),
+                        playerName: resolvedName,
                         shortId,
+                        showCountry: Boolean(publicIdentity?.showCountry),
+                        countryCode: normalizeCountryCode(publicIdentity?.countryCode || ""),
+                        countryName: normalizeCountryName(publicIdentity?.countryName || ""),
                         timeTaken: parsedTimeTaken,
                         mode: normalizedMode,
                         word: r.word,
-                        date: r.timestamp || 0
+                        date: Number(r.timestamp || 0) || LEGACY_FALLBACK_TIMESTAMP
                     });
                 });
 
                 const levels = [];
-                if (usersSnapshot && usersSnapshot.exists()) {
-                    const usersData = usersSnapshot.val();
-                    Object.keys(usersData).forEach((uid) => {
-                        const userNode = usersData[uid] || {};
+                const usersLevelsData = usersSnapshot && usersSnapshot.exists() ? (usersSnapshot.val() || {}) : usersIdentityData;
+                if (Object.keys(usersLevelsData).length) {
+                    Object.keys(usersLevelsData).forEach((uid) => {
+                        const userNode = usersLevelsData[uid] || {};
                         const profile = userNode.profile || {};
                         const stats = profile.stats || {};
-                        const level = Number(stats.level || 0);
                         const points = Number(stats.totalPoints || 0);
+                        const level = computeLevelFromPoints(points);
                         if (!Number.isFinite(level) || level <= 0) {
                             return;
                         }
@@ -833,17 +1234,23 @@
                             userNode.displayName ||
                             t('unknownPlayer')
                         );
-                        const shortId = normalizeShortId(profile.shortId || userNode.shortId || String(uid).slice(0, 6));
+                        const shortId = normalizeShortId(profile.shortId || userNode.shortId || String(uid).slice(0, SHORT_ID_LENGTH));
+                        const publicIdentity = shortId ? publicProfileByShortId.get(shortId) : null;
                         levels.push({
-                            playerName: displayName,
-                            shortId: shortId || String(uid).slice(0, 6),
+                            uid: String(publicIdentity?.uid || ""),
+                            playerName: publicIdentity?.displayName || displayName,
+                            shortId: shortId || String(uid).slice(0, SHORT_ID_LENGTH),
+                            showCountry: Boolean(publicIdentity?.showCountry),
+                            countryCode: normalizeCountryCode(publicIdentity?.countryCode || ""),
+                            countryName: normalizeCountryName(publicIdentity?.countryName || ""),
                             level: Math.floor(level),
                             points: Math.floor(points)
                         });
                     });
                 }
 
-                topLevelsCache = levels
+                topCountriesCache = buildTopCountriesByPoints(levels);
+                topLevelsCache = [...levels]
                     .sort((a, b) => (b.level - a.level) || (b.points - a.points))
                     .slice(0, 10);
 
@@ -901,6 +1308,8 @@
         document.getElementById("pageTitle").textContent = t("pageTitle");
         document.getElementById("pageSubtitle").textContent = t("pageSubtitle");
         document.getElementById("backBtnText").textContent = t("backBtn");
+        document.getElementById("backBtnGateText").textContent = t("backBtn");
+        document.getElementById("signInLocalText").textContent = t("signInLocal");
         const mazenTxt = document.getElementById("mazenNameTxt");
         const ahmedTxt = document.getElementById("ahmedNameTxt");
         if (mazenTxt) mazenTxt.textContent = t("mazenNameTxt");
@@ -913,6 +1322,8 @@
         if (betaLabel) betaLabel.textContent = t("betaLabel");
         const loadingEl = document.getElementById("loadingState");
         if (loadingEl) { loadingEl.textContent = t("loading"); }
+        if (pageLoaderTitle) { pageLoaderTitle.textContent = t("pageLoaderTitle"); }
+        if (pageLoaderSubtitle) { pageLoaderSubtitle.textContent = t("pageLoaderSubtitle"); }
 
         const theme = typeof saved.currentTheme === "string" ? saved.currentTheme : "ocean";
         const colorMode = typeof saved.currentColorMode === "string" ? saved.currentColorMode : "blur";
@@ -924,7 +1335,33 @@
             logoImg.src = resolveWordmarkSrc(colorMode, currentLanguage);
         }
 
-        loadGlobalLeaderboard();
+        document.getElementById("signInLocalBtn").addEventListener("click", () => {
+            window.location.href = "../";
+        });
+
+        onAuthStateChanged(auth, async (user) => {
+            setPageLoading(true);
+            if (!user) {
+                showGate(t("authMsg"), true);
+                setPageLoading(false);
+                return;
+            }
+
+            const viewerLevel = await loadViewerLevel(user.uid);
+            if (viewerLevel < GLOBAL_LEADERBOARD_REQUIRED_LEVEL) {
+                showGate(formatTemplate(t("lockedMsg"), {
+                    required: GLOBAL_LEADERBOARD_REQUIRED_LEVEL,
+                    current: viewerLevel
+                }), false);
+                setPageLoading(false);
+                return;
+            }
+
+            document.getElementById("authRequiredMsg").style.display = "none";
+            leaderboardContent.style.display = "grid";
+            await loadGlobalLeaderboard();
+            setPageLoading(false);
+        });
 	</script>
     <script src="../scripts/pwa-register.js"></script>
 </body>

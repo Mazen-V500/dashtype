@@ -7,6 +7,26 @@
     "ignore": [
       "firebase.json",
       "PROJECT_INSTRUCTIONS.txt",
+      "PROJECT_INSTRUCTIONS.encrypted.bak.txt",
+      "PROJECT_INSTRUCTIONS_UPDATES.md",
+      "USER_REQUESTS_LOG.txt",
+      "firebase-debug.log",
+      "fix_all.js",
+      "fix_points.js",
+      "removeBtn.js",
+      "scripts/game-factory.js",
+      "G1.html",
+      "G2.html",
+      "G3.html",
+      "G4.html",
+      "history.html",
+      "global-leaderboard.html",
+      "user-guide.html",
+      "admin.html",
+      "tools/**",
+      "**/*.md",
+      "**/*.txt",
+      "**/*.bak",
       "**/.*",
       "**/node_modules/**"
     ],
@@ -33,6 +53,10 @@
           {
             "key": "Strict-Transport-Security",
             "value": "max-age=31536000; includeSubDomains"
+          },
+          {
+            "key": "Content-Security-Policy",
+            "value": "default-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:;"
           }
         ]
       },
@@ -62,6 +86,48 @@
             "value": "noindex, nofollow"
           }
         ]
+      }
+    ],
+    "redirects": [
+      {
+        "source": "/G1.html",
+        "destination": "/single",
+        "type": 301
+      },
+      {
+        "source": "/G2.html",
+        "destination": "/triple",
+        "type": 301
+      },
+      {
+        "source": "/G3.html",
+        "destination": "/sequential",
+        "type": 301
+      },
+      {
+        "source": "/G4.html",
+        "destination": "/paragraph",
+        "type": 301
+      },
+      {
+        "source": "/history.html",
+        "destination": "/history",
+        "type": 301
+      },
+      {
+        "source": "/global-leaderboard.html",
+        "destination": "/leaderboard",
+        "type": 301
+      },
+      {
+        "source": "/user-guide.html",
+        "destination": "/guide",
+        "type": 301
+      },
+      {
+        "source": "/admin.html",
+        "destination": "/admin",
+        "type": 301
       }
     ],
     "cleanUrls": true,
@@ -97,6 +163,14 @@
       {
         "source": "/guide",
         "destination": "/guide/index.html"
+      },
+      {
+        "source": "/profile",
+        "destination": "/profile/index.html"
+      },
+      {
+        "source": "/friends",
+        "destination": "/friends/index.html"
       }
     ]
   }

@@ -3,7 +3,7 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 import { getDatabase, ref, get, set, update, push, onValue, query, orderByChild, equalTo, limitToFirst } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 import { loadUserPreferences, saveUserPreferences } from "./firebase-save.js";
 import { readTypingGameState, writeTypingGameState } from "./app-state.js";
-import { createUiToneShiftRunner, normalizeTypingInput, resolveWordmarkSrc } from "./ui-utils.js";
+import { createUiToneShiftRunner, normalizeTypingInput, resolveWordmarkSrc, setupConnectivityBanner } from "./ui-utils.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyABT9cJ3H2e1YaljPhmFb8dgXfaV7cZEQs",
@@ -22,6 +22,11 @@ const db = getDatabase(app);
 const MAX_WORDS = 1000;
 const RANDOM_WORD_COUNT = 120;
 const PARAGRAPH_LEADERBOARD_FETCH_LIMIT = 250;
+const PUBLIC_IDENTITY_CACHE_TTL_MS = 5 * 60 * 1000;
+const SHORT_ID_LENGTH = 4;
+const PARAGRAPH_UNLOCK_LEVEL = 4;
+const FIRST_LEVEL_POINTS = 40;
+const LEVEL_STEP_POINTS = 100;
 
 const wordsByLanguage = {
     ar: [
@@ -69,22 +74,31 @@ const textMap = {
         createRace: "إنشاء تحدي مباشر",
         gateStart: "بدء الجولة",
         startRound: "بدء جولة",
+        stopRound: "إيقاف الجولة",
         retryRound: "إعادة المحاولة",
         home: "الصفحة الرئيسية",
+        historyQuick: "السجل الشخصي",
+        modeIdentityTitle: "نمط الفقرة",
+        modeIdentityHint: "نصوص كاملة وتحديات مباشرة",
         timerLabel: "الوقت:",
         timerUnit: "ث",
         paragraphSaveReady: "احفظ فقرتك ثم ابدأ الجولة.",
         paragraphMissing: "لا يوجد نص للعب بعد",
         resultStart: "اختر أو أنشئ فقرة أولاً",
+        gainPoints: "+{points} نقطة",
+        gainLevelUpResult: "⭐ مستوى جديد: {level} - أداء رائع! استمر",
         resultStartTyping: "بدأ الوقت! اكتب الفقرة كاملة بدون أخطاء.",
         resultGoodContinue: "أداء ممتاز، استمر",
         resultWrong: "يوجد اختلاف عن النص، صحح ثم أكمل",
         resultDone: "أحسنت! أنهيت الفقرة خلال {time} ثانية",
         resultNeedLogin: "هذه الميزة تتطلب تسجيل الدخول بحسابك أولاً.",
         resultSavedPublic: "تم حفظ الفقرة كفقرة عامة ويمكن للجميع اللعب بها.",
-        resultSavedPrivate: "تم حفظ الفقرة كفقرة خاصة، اللعب عبر الرابط فقط.",
+        resultSavedPrivate: "تم حفظ الفقرة كفقرة خاصة، الوصول لصاحبها فقط.",
         resultLoadedShare: "تم تحميل الفقرة من رابط المشاركة.",
         resultLoadedPublic: "تم تحميل الفقرة العامة بنجاح.",
+        resultParagraphPrivate: "لا يمكنك فتح هذه الفقرة لأنها خاصة.",
+        resultParagraphModeLocked: "نمط الفقرة يفتح عند المستوى {required}. مستواك الحالي {current}.",
+        resultParagraphCreateLocked: "إنشاء فقرة جديدة متاح عند المستوى {required}. مستواك الحالي {current}.",
         resultMaxWords: "تم تقليص النص إلى الحد الأقصى: 1000 كلمة.",
         resultNeedParagraph: "أدخل فقرة أولاً قبل الحفظ أو اللعب.",
         resultNeedCreateMode: "انتقل إلى تبويب إنشاء إذا أردت حفظ فقرة جديدة.",
@@ -125,6 +139,7 @@ const textMap = {
         themeNeon: "أخضر وأصفر",
         themeViolet: "بنفسجي ووردي",
         themeBrown: "بني",
+        themeMaroon: "عنابي وأحمر داكن",
         darkMode: "داكن",
         blurMode: "ضبابي",
         lightMode: "فاتح",
@@ -164,22 +179,31 @@ const textMap = {
         createRace: "Create Live Race",
         gateStart: "Start Round",
         startRound: "Start Round",
+        stopRound: "Stop Round",
         retryRound: "Retry",
         home: "Home",
+        historyQuick: "Personal history",
+        modeIdentityTitle: "Paragraph Mode",
+        modeIdentityHint: "Full text and live challenges",
         timerLabel: "Time:",
         timerUnit: "s",
         paragraphSaveReady: "Save your paragraph, then start the round.",
         paragraphMissing: "No paragraph selected yet",
         resultStart: "Create or load a paragraph first",
+        gainPoints: "+{points} pts",
+        gainLevelUpResult: "⭐ New level: {level} - Great pace, keep it up",
         resultStartTyping: "Timer started! Type the full paragraph without mistakes.",
         resultGoodContinue: "Great pace, keep going",
         resultWrong: "Text mismatch detected, fix and continue",
         resultDone: "Great! You finished the paragraph in {time} seconds",
         resultNeedLogin: "This feature requires signing in with your account.",
         resultSavedPublic: "Paragraph saved as public and available for everyone.",
-        resultSavedPrivate: "Paragraph saved as private. It is playable by link only.",
+        resultSavedPrivate: "Paragraph saved as private. Owner-only access.",
         resultLoadedShare: "Paragraph loaded from shared link.",
         resultLoadedPublic: "Public paragraph loaded successfully.",
+        resultParagraphPrivate: "You cannot open this paragraph because it is private.",
+        resultParagraphModeLocked: "Paragraph mode unlocks at level {required}. Your current level is {current}.",
+        resultParagraphCreateLocked: "Creating a new paragraph unlocks at level {required}. Your current level is {current}.",
         resultMaxWords: "Text trimmed to the maximum limit: 1000 words.",
         resultNeedParagraph: "Enter a paragraph before saving or playing.",
         resultNeedCreateMode: "Switch to Create tab to save a new paragraph.",
@@ -220,6 +244,7 @@ const textMap = {
         themeNeon: "Green & Yellow",
         themeViolet: "Purple & Pink",
         themeBrown: "Brown",
+        themeMaroon: "Burgundy & Dark Red",
         darkMode: "Dark",
         blurMode: "Blurred",
         lightMode: "Light",
@@ -239,10 +264,15 @@ const timeValue = document.getElementById("timeValue");
 const resultText = document.getElementById("resultText");
 const paragraphSaveResult = document.getElementById("paragraphSaveResult");
 const startBtn = document.getElementById("startBtn");
+const startBtnText = document.getElementById("startBtnText");
 const gateStartBtn = document.getElementById("gateStartBtn");
 const startGate = document.getElementById("startGate");
 const nextBtn = document.getElementById("nextBtn");
 const homeBtn = document.getElementById("homeBtn");
+
+const historyQuickText = document.getElementById("historyQuickText");
+const historyPointsBadge = document.getElementById("historyPointsBadge");
+const logoHomeLink = document.getElementById("logoHomeLink");
 const progressText = document.getElementById("progressText");
 const playerGreeting = document.getElementById("playerGreeting");
 const gameTitle = document.getElementById("gameTitle");
@@ -297,11 +327,12 @@ const themeBerryBtn = document.getElementById("themeBerryBtn");
 const themeNeonBtn = document.getElementById("themeNeonBtn");
 const themeVioletBtn = document.getElementById("themeVioletBtn");
 const themeBrownBtn = document.getElementById("themeBrownBtn");
+const themeMaroonBtn = document.getElementById("themeMaroonBtn");
 const colorModeDarkBtn = document.getElementById("colorModeDarkBtn");
 const colorModeBlurBtn = document.getElementById("colorModeBlurBtn");
 const colorModeLightBtn = document.getElementById("colorModeLightBtn");
 
-const themeButtons = [themeOceanBtn, themeSunsetBtn, themeForestBtn, themeBerryBtn, themeNeonBtn, themeVioletBtn, themeBrownBtn];
+const themeButtons = [themeOceanBtn, themeSunsetBtn, themeForestBtn, themeBerryBtn, themeNeonBtn, themeVioletBtn, themeBrownBtn, themeMaroonBtn];
 const colorModeButtons = [colorModeDarkBtn, colorModeBlurBtn, colorModeLightBtn];
 
 let playerName = "لاعب";
@@ -321,10 +352,22 @@ let rafId = null;
 let isApplyingRemotePreferences = false;
 
 let currentUser = null;
+let currentUserLevel = 0;
 let raceListenerStop = null;
 let countdownTimer = null;
 let lastParagraphMistakeAt = 0;
+let roundRejected = false;
+let rejectionReason = "";
+let lastInputTimestamp = 0;
+let previousTypedValue = "";
+let keystrokeIntervals = [];
+const MAX_ALLOWED_WPM = 250;
+const MIN_INTERVAL_MS = 80;
+const MIN_INTERVAL_SAMPLE_SIZE = 8;
+const FAST_INTERVAL_RATIO_LIMIT = 0.72;
 const publicParagraphCache = new Map();
+const publicNameByShortId = new Map();
+let publicIdentityCacheAt = 0;
 const PROGRESSIVE_VISIT_KEY = "g4ProgressiveVisited";
 const LOCAL_LIBRARY_KEY = "g4LocalParagraphs";
 
@@ -336,6 +379,8 @@ const raceState = {
 };
 
 const runUiToneShift = createUiToneShiftRunner({ durationMs: 460 });
+let pointsToastEl = null;
+setupConnectivityBanner({ resolveLanguage: () => currentLanguage });
 
 function t(key) {
     return textMap[currentLanguage][key];
@@ -361,6 +406,48 @@ function countWords(value) {
     const compact = normalizeWhitespace(value);
     if (!compact) return 0;
     return compact.split(" ").length;
+}
+
+function computeLevelFromPoints(totalPoints) {
+    const points = Math.max(0, Number(totalPoints || 0));
+    if (points < FIRST_LEVEL_POINTS) {
+        return 0;
+    }
+    return 1 + Math.floor((points - FIRST_LEVEL_POINTS) / LEVEL_STEP_POINTS);
+}
+
+async function loadCurrentUserLevel(user) {
+    if (!user || !user.uid) {
+        currentUserLevel = 0;
+        return currentUserLevel;
+    }
+
+    try {
+        const statsSnapshot = await get(ref(db, `users/${user.uid}/profile/stats`));
+        if (!statsSnapshot.exists()) {
+            currentUserLevel = 0;
+            return currentUserLevel;
+        }
+        const stats = statsSnapshot.val() || {};
+        const explicitLevel = Number(stats.level || 0);
+        const inferredLevel = computeLevelFromPoints(Number(stats.totalPoints || 0));
+        currentUserLevel = Math.max(explicitLevel, inferredLevel);
+        return currentUserLevel;
+    } catch (_error) {
+        currentUserLevel = 0;
+        return currentUserLevel;
+    }
+}
+
+function canCreateParagraphText() {
+    return Number(currentUserLevel || 0) >= PARAGRAPH_UNLOCK_LEVEL;
+}
+
+function getParagraphLevelLockMessage(templateKey = "resultParagraphModeLocked") {
+    return format(t(templateKey), {
+        required: PARAGRAPH_UNLOCK_LEVEL,
+        current: Number(currentUserLevel || 0)
+    });
 }
 
 function trimToWordLimit(value, maxWords = MAX_WORDS) {
@@ -394,7 +481,7 @@ function getCurrentUserPayload() {
         return {
             uid: currentUser.uid,
             displayName: currentUser.displayName || currentUser.email || playerName,
-            shortId: currentUser.uid.substring(0, 6)
+            shortId: String(currentUser.uid || "").replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, SHORT_ID_LENGTH).padEnd(SHORT_ID_LENGTH, "0")
         };
     }
     const stored = getStoredUser();
@@ -402,10 +489,60 @@ function getCurrentUserPayload() {
         return {
             uid: stored.uid,
             displayName: stored.nickname || stored.displayName || stored.email || playerName,
-            shortId: stored.shortId || stored.uid.substring(0, 6)
+            shortId: normalizeShortId(stored.shortId || stored.uid)
         };
     }
     return null;
+}
+
+function normalizeShortId(value) {
+    const cleaned = String(value || "").trim().replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, SHORT_ID_LENGTH);
+    if (!cleaned) {
+        return "";
+    }
+    return cleaned.padEnd(SHORT_ID_LENGTH, "0");
+}
+
+function normalizeDisplayName(value) {
+    const cleaned = String(value || "").trim().replace(/\s+/g, " ");
+    return cleaned || (currentLanguage === "en" ? "Player" : "لاعب");
+}
+
+async function ensurePublicIdentityMap() {
+    const now = Date.now();
+    if (now - publicIdentityCacheAt < PUBLIC_IDENTITY_CACHE_TTL_MS && publicNameByShortId.size > 0) {
+        return;
+    }
+
+    publicNameByShortId.clear();
+    try {
+        const usersSnapshot = await get(ref(db, "users"));
+        if (!usersSnapshot.exists()) {
+            publicIdentityCacheAt = now;
+            return;
+        }
+
+        const usersData = usersSnapshot.val() || {};
+        Object.keys(usersData).forEach((uid) => {
+            const userNode = usersData[uid] || {};
+            const profile = userNode.profile || {};
+            const shortId = normalizeShortId(profile.shortId || userNode.shortId || String(uid).slice(0, SHORT_ID_LENGTH));
+            if (!shortId) {
+                return;
+            }
+            const displayName = normalizeDisplayName(
+                profile.nickname
+                || userNode.nickname
+                || profile.displayName
+                || userNode.displayName
+            );
+            publicNameByShortId.set(shortId, displayName);
+        });
+    } catch (_error) {
+        // Keep fallback names when identity map fetch fails.
+    }
+
+    publicIdentityCacheAt = now;
 }
 
 function hasVisitedMode4() {
@@ -458,10 +595,14 @@ function saveState() {
     writeTypingGameState(state);
 
     if (!isApplyingRemotePreferences) {
+        const typingSettings = window.DashTypeTypingSettings && typeof window.DashTypeTypingSettings.get === "function"
+            ? window.DashTypeTypingSettings.get()
+            : null;
         void saveUserPreferences({
             theme: state.currentTheme,
             colorMode: state.currentColorMode,
-            language: state.currentLanguage
+            language: state.currentLanguage,
+            ...(typingSettings ? { typingSettings } : {})
         });
     }
 }
@@ -537,6 +678,10 @@ async function applyRemotePreferences() {
         }
 
         setLanguage(currentLanguage);
+
+        if (remote.typingSettings && window.DashTypeTypingSettings && typeof window.DashTypeTypingSettings.apply === "function") {
+            window.DashTypeTypingSettings.apply(remote.typingSettings, { skipRemoteSave: true });
+        }
     } catch (error) {
         console.warn("Remote preferences sync failed:", error);
     } finally {
@@ -591,7 +736,7 @@ function updateParagraphMeta(overrideText = null) {
     paragraphCharsMeta.textContent = format(t("metaChars"), { count: chars });
     paragraphQualityMeta.textContent = format(t("metaQuality"), { level: quality });
 
-    saveParagraphBtn.disabled = words === 0;
+    saveParagraphBtn.disabled = words === 0 || !canCreateParagraphText();
 }
 
 function setSourceMode(mode) {
@@ -602,7 +747,34 @@ function setSourceMode(mode) {
     setComposePanelOpen(sourceMode === "create");
 
     updateParagraphMeta();
+    applyParagraphCreationAccess();
     saveState();
+}
+
+function applyParagraphCreationAccess() {
+    const unlocked = canCreateParagraphText();
+
+    if (generateParagraphBtn) {
+        generateParagraphBtn.disabled = !unlocked;
+    }
+    if (saveParagraphBtn) {
+        const hasWords = countWords(paragraphInput?.value || "") > 0;
+        saveParagraphBtn.disabled = !unlocked || !hasWords;
+    }
+    if (paragraphInput) {
+        paragraphInput.disabled = !unlocked;
+    }
+    if (sourceCreateBtn) {
+        sourceCreateBtn.disabled = !unlocked;
+    }
+    if (toggleCreatePanelBtn) {
+        toggleCreatePanelBtn.disabled = !unlocked;
+    }
+
+    if (!unlocked && sourceMode === "create") {
+        sourceMode = "library";
+        setComposePanelOpen(false);
+    }
 }
 
 function setComposePanelOpen(isOpen) {
@@ -648,6 +820,153 @@ function stopTimer() {
     finalTime = parseFloat(timeValue.textContent || "0");
 }
 
+function pulseClass(element, className) {
+    if (!element) return;
+    element.classList.remove(className);
+    void element.offsetWidth;
+    element.classList.add(className);
+    setTimeout(() => element.classList.remove(className), 280);
+}
+
+function playSuccessFeedback() {
+    pulseClass(wordBox, "word-animate-success");
+    pulseClass(resultText, "result-animate-success");
+}
+
+function playFailFeedback() {
+    pulseClass(resultText, "result-animate-warning");
+}
+
+function playRejectFeedback() {
+    pulseClass(wordBox, "word-reject");
+    pulseClass(resultText, "result-reject");
+    pulseClass(typingInput, "typing-reject");
+}
+
+function getRejectMessage(reason) {
+    if (currentLanguage === "en") {
+        if (reason === "paste") {
+            return "Round rejected: paste/drop is not allowed";
+        }
+        if (reason === "automation") {
+            return "Round rejected: non-human input detected";
+        }
+        return reason === "cadence"
+            ? "Round rejected: sustained keystrokes were too fast"
+            : "Round rejected: speed exceeded allowed threshold";
+    }
+    if (reason === "paste") {
+        return "تم رفض الجولة: اللصق أو السحب غير مسموح";
+    }
+    if (reason === "automation") {
+        return "تم رفض الجولة: تم اكتشاف إدخال غير بشري";
+    }
+    return reason === "cadence"
+        ? "تم رفض الجولة: تسارع مستمر أقل من الحد المسموح"
+        : "تم رفض الجولة: السرعة تجاوزت الحد المسموح";
+}
+
+function handleBlockedDirectInsert() {
+    setResultMessage(
+        currentLanguage === "en"
+            ? "Paste and drop are blocked during typing"
+            : "تم حظر اللصق والسحب أثناء الكتابة",
+        "result warning"
+    );
+    playRejectFeedback();
+
+    if (timerStarted && !roundRejected) {
+        rejectRound("paste");
+    }
+}
+
+function computeWpmFromChars(charCount, secondsElapsed) {
+    const safeChars = Math.max(1, Number(charCount) || 1);
+    const safeSeconds = Math.max(0.001, Number(secondsElapsed) || 0.001);
+    return ((safeChars / 5) / safeSeconds) * 60;
+}
+
+function getActiveRoundCharCount() {
+    return normalizeForCompare(currentParagraph).replace(/\s+/g, " ").length;
+}
+
+function validateRoundIntegrity() {
+    const totalChars = getActiveRoundCharCount();
+    const roundWpm = computeWpmFromChars(totalChars, finalTime);
+    if (totalChars >= 6 && roundWpm > MAX_ALLOWED_WPM) {
+        return { valid: false, reason: "wpm" };
+    }
+
+    if (keystrokeIntervals.length >= MIN_INTERVAL_SAMPLE_SIZE) {
+        const fastCount = keystrokeIntervals.filter((interval) => interval < MIN_INTERVAL_MS).length;
+        const fastRatio = fastCount / keystrokeIntervals.length;
+        if (fastRatio >= FAST_INTERVAL_RATIO_LIMIT) {
+            return { valid: false, reason: "cadence" };
+        }
+    }
+
+    return { valid: true, reason: "" };
+}
+
+function rejectRound(reason) {
+    if (roundRejected) {
+        return;
+    }
+
+    roundRejected = true;
+    rejectionReason = reason;
+    stopTimer();
+    setResultMessage(getRejectMessage(reason), "result warning");
+    playFailFeedback();
+    playRejectFeedback();
+    typingInput.disabled = true;
+    typingInput.value = "";
+    typingInput.blur();
+    showStartGate();
+    setStartButtonPlaying(false);
+}
+
+function monitorTypingIntegrity(typedValue) {
+    if (!timerStarted || roundRejected) {
+        previousTypedValue = typedValue;
+        return;
+    }
+
+    const insertedChars = Math.max(0, typedValue.length - previousTypedValue.length);
+    previousTypedValue = typedValue;
+    if (insertedChars <= 0) {
+        return;
+    }
+
+    const now = performance.now();
+    if (lastInputTimestamp > 0) {
+        const interval = now - lastInputTimestamp;
+        if (interval > 0 && interval < 2000) {
+            keystrokeIntervals.push(interval);
+            if (keystrokeIntervals.length > 80) {
+                keystrokeIntervals.shift();
+            }
+        }
+    }
+    lastInputTimestamp = now;
+
+    const elapsedSeconds = Math.max(0.001, (now - startTime) / 1000);
+    const activeChars = typedValue.replace(/\s+/g, " ").length;
+    const currentWpm = computeWpmFromChars(activeChars, elapsedSeconds);
+    if (activeChars >= 20 && currentWpm > MAX_ALLOWED_WPM) {
+        rejectRound("wpm");
+        return;
+    }
+
+    if (keystrokeIntervals.length >= MIN_INTERVAL_SAMPLE_SIZE) {
+        const fastCount = keystrokeIntervals.filter((interval) => interval < MIN_INTERVAL_MS).length;
+        const fastRatio = fastCount / keystrokeIntervals.length;
+        if (fastRatio >= FAST_INTERVAL_RATIO_LIMIT) {
+            rejectRound("cadence");
+        }
+    }
+}
+
 function updateTimer() {
     if (!timerStarted) return;
     const elapsed = (performance.now() - startTime) / 1000;
@@ -682,6 +1001,7 @@ function setActiveParagraph(paragraphData, sourceMessage = "") {
 
     setResultMessage(t("resultStart"), "result");
     showStartGate();
+    setStartButtonPlaying(false);
 
     if (currentParagraphId) {
         loadParagraphLeaderboard(currentParagraphId);
@@ -708,6 +1028,8 @@ function renderParagraphLeaderboard(rows) {
 
 async function loadParagraphLeaderboard(paragraphId) {
     try {
+        await ensurePublicIdentityMap();
+
         const roundsQuery = query(
             ref(db, "publicRounds"),
             orderByChild("paragraphId"),
@@ -730,9 +1052,15 @@ async function loadParagraphLeaderboard(paragraphId) {
             if (round.paragraphId !== paragraphId) return;
             if (typeof round.timeTaken !== "number") return;
 
+            const shortId = normalizeShortId(round.shortId || "");
+            const fallbackName = normalizeDisplayName(round.playerName);
+            const resolvedName = shortId
+                ? (publicNameByShortId.get(shortId) || fallbackName)
+                : fallbackName;
+
             rows.push({
-                playerName: round.playerName || "Player",
-                shortId: round.shortId || "",
+                playerName: resolvedName,
+                shortId,
                 timeTaken: parseFloat(round.timeTaken)
             });
         });
@@ -788,9 +1116,15 @@ function startRoundNow() {
     setResultMessage(t("resultStartTyping"), "result");
     timerStarted = true;
     startTime = performance.now();
+    roundRejected = false;
+    rejectionReason = "";
+    lastInputTimestamp = 0;
+    previousTypedValue = "";
+    keystrokeIntervals = [];
     updateTimer();
     updateProgress("");
     hideStartGate();
+    setStartButtonPlaying(true);
     typingInput.focus();
 }
 
@@ -799,15 +1133,41 @@ function resetRound() {
     typingInput.disabled = true;
     timeValue.textContent = "0.000";
     stopTimer();
+    roundRejected = false;
+    rejectionReason = "";
+    lastInputTimestamp = 0;
+    previousTypedValue = "";
+    keystrokeIntervals = [];
     updateProgress("");
     setResultMessage(t("resultStart"), "result");
     showStartGate();
+    setStartButtonPlaying(false);
 }
 
 function getComparisonState() {
     const typed = normalizeForCompare(typingInput.value);
     const target = normalizeForCompare(currentParagraph);
     return { typed, target };
+}
+
+function setStartButtonPlaying(isPlaying) {
+    if (startBtnText) {
+        startBtnText.textContent = isPlaying ? t("stopRound") : t("startRound");
+    }
+}
+
+function stopRoundManually() {
+    if (!timerStarted) {
+        return;
+    }
+
+    stopTimer();
+    setResultMessage(currentLanguage === "en" ? "Round stopped" : "تم إيقاف الجولة", "result warning");
+    typingInput.disabled = true;
+    typingInput.value = "";
+    typingInput.blur();
+    showStartGate();
+    setStartButtonPlaying(false);
 }
 
 async function tryFinalizeRace() {
@@ -836,11 +1196,19 @@ function getRaceWinner(participantsMap) {
 
 async function finishRound() {
     stopTimer();
+    const integrity = validateRoundIntegrity();
+    if (!integrity.valid) {
+        rejectRound(integrity.reason);
+        return;
+    }
+
     const doneMessage = format(t("resultDone"), { time: finalTime.toFixed(3) });
     setResultMessage(doneMessage, "result success");
+    playSuccessFeedback();
 
     typingInput.disabled = true;
     showStartGate();
+    setStartButtonPlaying(false);
 
     if (window.saveRoundDataToFirebase) {
         window.saveRoundDataToFirebase(currentParagraph, finalTime, "paragraph", currentLanguage, {
@@ -890,6 +1258,11 @@ async function saveParagraph(isPublic) {
     const user = getCurrentUserPayload();
     if (!user) {
         setBuilderMessage(t("resultNeedLogin"), "result warning");
+        return;
+    }
+
+    if (!canCreateParagraphText()) {
+        setBuilderMessage(getParagraphLevelLockMessage("resultParagraphCreateLocked"), "result warning");
         return;
     }
 
@@ -956,10 +1329,7 @@ async function loadPublicParagraphs(selectedParagraphId = "") {
 
     try {
         if (user) {
-            const [savedSnapshot, paragraphsSnapshot] = await Promise.all([
-                get(ref(db, `users/${user.uid}/savedParagraphs`)),
-                get(ref(db, "paragraphs"))
-            ]);
+            const savedSnapshot = await get(ref(db, `users/${user.uid}/savedParagraphs`));
 
             if (savedSnapshot.exists()) {
                 const savedItems = Object.values(savedSnapshot.val());
@@ -968,19 +1338,6 @@ async function loadPublicParagraphs(selectedParagraphId = "") {
                         merged.set(item.paragraphId, item);
                     }
                 });
-            }
-
-            if (paragraphsSnapshot.exists()) {
-                const allParagraphs = Object.values(paragraphsSnapshot.val());
-                allParagraphs
-                    .filter((item) => item?.paragraphId && item?.text && item.ownerUid === user.uid)
-                    .forEach((item) => {
-                        const existing = merged.get(item.paragraphId) || {};
-                        merged.set(item.paragraphId, {
-                            ...normalizeLibraryEntry(item, "owned"),
-                            lastOpenedAt: existing.lastOpenedAt || item.createdAt || Date.now()
-                        });
-                    });
             }
         } else {
             getLocalLibrary().forEach((item) => {
@@ -1026,26 +1383,35 @@ async function loadPublicParagraphs(selectedParagraphId = "") {
 async function loadParagraphById(paragraphId, fromShare = false) {
     if (!paragraphId) return;
 
-    const snapshot = await get(ref(db, `paragraphs/${paragraphId}`));
-    if (!snapshot.exists()) {
+    try {
+        const snapshot = await get(ref(db, `paragraphs/${paragraphId}`));
+        if (!snapshot.exists()) {
+            setBuilderMessage(t("resultNeedParagraph"), "result warning");
+            return;
+        }
+
+        const paragraphData = snapshot.val();
+        setActiveParagraph(paragraphData, fromShare ? t("resultLoadedShare") : t("resultLoadedPublic"));
+        paragraphInput.value = paragraphData.text || "";
+        updateParagraphMeta(paragraphData.text || "");
+        shareLinkInput.value = `${window.location.origin}${window.location.pathname}?paragraph=${paragraphData.paragraphId}`;
+
+        if (fromShare) {
+            await saveParagraphToLibrary(paragraphData, "linked");
+            setBuilderMessage(t("resultSavedToLibrary"), "result success");
+        }
+
+        markVisitedMode4();
+        await loadPublicParagraphs(paragraphData.paragraphId);
+        applyProgressiveDisclosure();
+    } catch (error) {
+        if (String(error?.code || "").includes("permission")) {
+            setBuilderMessage(t("resultParagraphPrivate"), "result warning");
+            return;
+        }
+        console.error("Failed to load paragraph by id:", error);
         setBuilderMessage(t("resultNeedParagraph"), "result warning");
-        return;
     }
-
-    const paragraphData = snapshot.val();
-    setActiveParagraph(paragraphData, fromShare ? t("resultLoadedShare") : t("resultLoadedPublic"));
-    paragraphInput.value = paragraphData.text || "";
-    updateParagraphMeta(paragraphData.text || "");
-    shareLinkInput.value = `${window.location.origin}${window.location.pathname}?paragraph=${paragraphData.paragraphId}`;
-
-    if (fromShare) {
-        await saveParagraphToLibrary(paragraphData, "linked");
-        setBuilderMessage(t("resultSavedToLibrary"), "result success");
-    }
-
-    markVisitedMode4();
-    await loadPublicParagraphs(paragraphData.paragraphId);
-    applyProgressiveDisclosure();
 }
 
 async function loadSelectedPublicParagraph() {
@@ -1190,6 +1556,11 @@ async function createRace() {
     }
 
     if (!currentParagraph) {
+        if (!canCreateParagraphText()) {
+            setBuilderMessage(getParagraphLevelLockMessage("resultParagraphCreateLocked"), "result warning");
+            return;
+        }
+
         const trimmed = trimToWordLimit(paragraphInput.value, MAX_WORDS);
         paragraphInput.value = trimmed.text;
         if (!trimmed.text) {
@@ -1334,6 +1705,12 @@ function applyTexts() {
     document.getElementById("gateStartText").textContent = t("gateStart");
     document.getElementById("nextBtnText").textContent = t("retryRound");
     document.getElementById("homeBtnText").textContent = t("home");
+    if (historyQuickText) historyQuickText.textContent = t("historyQuick");
+    
+    const modeIdentityTitle = document.getElementById("modeIdentityTitle");
+    const modeIdentityHint = document.getElementById("modeIdentityHint");
+    if (modeIdentityTitle) modeIdentityTitle.textContent = t("modeIdentityTitle");
+    if (modeIdentityHint) modeIdentityHint.textContent = t("modeIdentityHint");
 
     timerLabel.textContent = t("timerLabel");
     timerUnit.textContent = t("timerUnit");
@@ -1353,7 +1730,8 @@ function applyTexts() {
         [themeBerryBtn, "themeBerry"],
         [themeNeonBtn, "themeNeon"],
         [themeVioletBtn, "themeViolet"],
-        [themeBrownBtn, "themeBrown"]
+        [themeBrownBtn, "themeBrown"],
+        [themeMaroonBtn, "themeMaroon"]
     ];
     themeMap.forEach(([btn, key]) => {
         btn.title = t(key);
@@ -1387,6 +1765,7 @@ function applyTexts() {
     if (betaLabel) betaLabel.textContent = t("betaLabel");
 
     updateProgress(typingInput.value);
+    setStartButtonPlaying(timerStarted);
     if (!currentParagraph) {
         wordBox.textContent = t("paragraphMissing");
     }
@@ -1409,7 +1788,7 @@ function setLanguage(lang) {
 }
 
 function getHomeUrl() {
-    return new URL("../index.html", import.meta.url).href;
+    return new URL("../", import.meta.url).href;
 }
 
 function goHome() {
@@ -1417,9 +1796,49 @@ function goHome() {
     window.location.href = getHomeUrl();
 }
 
+function getHistoryUrl() {
+    return new URL("../history/", import.meta.url).href;
+}
+
+function goHistory() {
+    saveState();
+    window.location.href = getHistoryUrl();
+}
+
+function showHistoryPoints(points) {
+    if (!Number.isFinite(points) || points <= 0) {
+        return;
+    }
+    if (!pointsToastEl) {
+        pointsToastEl = document.createElement("div");
+        pointsToastEl.className = "round-gain-note round-gain-corner-toast";
+        pointsToastEl.setAttribute("aria-live", "polite");
+        document.body.appendChild(pointsToastEl);
+    }
+    pointsToastEl.textContent = `+${Math.round(points)}`;
+    pointsToastEl.classList.remove("is-visible", "is-level-up");
+    void pointsToastEl.offsetWidth;
+    pointsToastEl.classList.add("is-visible");
+    setTimeout(() => pointsToastEl.classList.remove("is-visible", "is-level-up"), 2200);
+}
+
+function showLevelUpResult(levelAfter = 0) {
+    const nextLevel = Number(levelAfter || 0);
+    if (!Number.isFinite(nextLevel) || nextLevel <= 0) {
+        return;
+    }
+    setResultMessage(format(t("gainLevelUpResult"), { level: nextLevel }), "result success");
+    playSuccessFeedback();
+}
+
 function ensureParagraphExists() {
     if (currentParagraph) {
         return true;
+    }
+
+    if (!canCreateParagraphText()) {
+        setBuilderMessage(getParagraphLevelLockMessage("resultParagraphCreateLocked"), "result warning");
+        return false;
     }
 
     const trimmed = trimToWordLimit(paragraphInput.value, MAX_WORDS);
@@ -1457,10 +1876,39 @@ function handleStartRequest() {
     startRoundNow();
 }
 
-typingInput.addEventListener("input", () => {
+typingInput.addEventListener("beforeinput", (event) => {
+    const inputType = String(event.inputType || "");
+    if (inputType === "insertFromPaste" || inputType === "insertFromDrop") {
+        event.preventDefault();
+        handleBlockedDirectInsert();
+    }
+});
+
+typingInput.addEventListener("paste", (event) => {
+    event.preventDefault();
+    handleBlockedDirectInsert();
+});
+
+typingInput.addEventListener("drop", (event) => {
+    event.preventDefault();
+    handleBlockedDirectInsert();
+});
+
+typingInput.addEventListener("input", (event) => {
+    if (timerStarted && event.isTrusted === false) {
+        rejectRound("automation");
+        return;
+    }
+
     if (!currentParagraph) return;
 
     const { typed, target } = getComparisonState();
+    monitorTypingIntegrity(typed);
+
+    if (roundRejected) {
+        return;
+    }
+
     updateProgress(typingInput.value);
 
     if (typed === target) {
@@ -1470,6 +1918,7 @@ typingInput.addEventListener("input", () => {
 
     if (!target.startsWith(typed)) {
         setResultMessage(t("resultWrong"), "result warning");
+        playRejectFeedback();
         const now = Date.now();
         if (now - lastParagraphMistakeAt > 900) {
             lastParagraphMistakeAt = now;
@@ -1502,7 +1951,13 @@ paragraphInput.addEventListener("input", () => {
     }
 });
 
-startBtn.addEventListener("click", handleStartRequest);
+startBtn.addEventListener("click", () => {
+    if (timerStarted) {
+        stopRoundManually();
+        return;
+    }
+    handleStartRequest();
+});
 gateStartBtn.addEventListener("click", handleStartRequest);
 
 nextBtn.addEventListener("click", () => {
@@ -1510,6 +1965,28 @@ nextBtn.addEventListener("click", () => {
 });
 
 homeBtn.addEventListener("click", goHome);
+
+if (logoHomeLink) {
+    logoHomeLink.href = getHomeUrl();
+    logoHomeLink.addEventListener("click", (event) => {
+        event.preventDefault();
+        goHome();
+    });
+}
+
+window.addEventListener("dashType:round-save", (event) => {
+    const detail = event.detail || {};
+    if (!detail.success || detail.cached || detail.rejected) {
+        return;
+    }
+    showHistoryPoints(Number(detail.points || 0));
+    const levelBefore = Number(detail.levelBefore || 0);
+    const levelAfter = Number(detail.levelAfter || detail.level || 0);
+    const leveledUp = Boolean(detail.leveledUp) || (levelAfter > levelBefore);
+    if (leveledUp) {
+        showLevelUpResult(levelAfter);
+    }
+});
 
 generateParagraphBtn.addEventListener("click", generateRandomParagraph);
 saveParagraphBtn.addEventListener("click", () => saveParagraph(paragraphVisibility === "public"));
@@ -1551,6 +2028,17 @@ colorModeButtons.forEach((btn) => {
     btn.addEventListener("click", () => setColorMode(btn.dataset.colorMode));
 });
 
+window.addEventListener("dashType:typing-settings-changed", (event) => {
+    if (isApplyingRemotePreferences) {
+        return;
+    }
+    const nextSettings = event.detail && typeof event.detail === "object" ? event.detail : null;
+    if (!nextSettings) {
+        return;
+    }
+    void saveUserPreferences({ typingSettings: nextSettings });
+});
+
 document.addEventListener("keydown", (event) => {
     if (event.key !== "Enter" || event.shiftKey) return;
 
@@ -1571,6 +2059,19 @@ onAuthStateChanged(auth, async (user) => {
     const paragraphId = params.get("paragraph") || "";
     entryByExternalLink = Boolean(raceId || paragraphId);
 
+    await loadCurrentUserLevel(user || null);
+    applyParagraphCreationAccess();
+
+    const modeUnlocked = Number(currentUserLevel || 0) >= PARAGRAPH_UNLOCK_LEVEL;
+    if (!entryByExternalLink && !modeUnlocked) {
+        const lockMessage = getParagraphLevelLockMessage("resultParagraphModeLocked");
+        setResultMessage(lockMessage, "result warning");
+        setBuilderMessage(lockMessage, "result warning");
+        alert(lockMessage);
+        window.location.href = getHomeUrl();
+        return;
+    }
+
     await loadPublicParagraphs();
     applyProgressiveDisclosure();
 
@@ -1587,11 +2088,12 @@ onAuthStateChanged(auth, async (user) => {
     applyProgressiveDisclosure();
 });
 
+isApplyingRemotePreferences = true;
 loadState();
 applyTexts();
 setLanguage(currentLanguage);
+isApplyingRemotePreferences = false;
 showStartGate();
 resetRound();
 loadPublicParagraphs();
 applyProgressiveDisclosure();
-void applyRemotePreferences();

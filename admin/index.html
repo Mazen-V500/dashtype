@@ -108,6 +108,28 @@
             border-color: transparent;
         }
 
+        .admin-broadcast-card {
+            display: grid;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .admin-broadcast-input {
+            width: 100%;
+            min-height: 96px;
+            resize: vertical;
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            background: var(--glass-surface-soft);
+            color: var(--ink);
+            padding: 10px 12px;
+            font-size: 14px;
+        }
+
+        .admin-broadcast-status {
+            min-height: 20px;
+        }
+
         @keyframes admin-spin {
             from {
                 transform: rotate(0deg);
@@ -241,6 +263,28 @@
                     <pre id="accountRawData" class="admin-json"></pre>
                 </section>
             </div>
+
+            <section class="status-card admin-broadcast-card">
+                <h2 class="admin-section-title">الإشعارات العامة</h2>
+                <p class="admin-muted">يمكنك إرسال إشعار فوري يظهر لجميع الحسابات في الرئيسية.</p>
+                <textarea id="broadcastMessageInput" class="admin-broadcast-input" maxlength="220" placeholder="اكتب نص الإشعار هنا..."></textarea>
+                <div class="admin-user-actions">
+                    <button id="sendBroadcastBtn" class="filter-btn active btn-icon" type="button"><span class="icon icon-bell" aria-hidden="true"></span><span>إرسال الإشعار</span></button>
+                    <span id="broadcastStatus" class="admin-muted admin-broadcast-status"></span>
+                </div>
+                <div id="broadcastRecentWrap" class="hidden admin-table-wrap">
+                    <table class="history-table admin-table">
+                        <thead>
+                            <tr>
+                                <th>الرسالة</th>
+                                <th>المرسل</th>
+                                <th>التاريخ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="broadcastRecentBody"></tbody>
+                    </table>
+                </div>
+            </section>
         </section>
     </main>
 
@@ -248,7 +292,7 @@
     <script type="module">
         import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getDatabase, ref, get, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getDatabase, ref, get, set, push, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
         import { hasAdminRoleFromUserNode } from "../scripts/role-utils.js";
 
         const firebaseConfig = {
@@ -292,11 +336,21 @@
         const openHistoryLink = document.getElementById("openHistoryLink");
         const accountRoundsBody = document.getElementById("accountRoundsBody");
         const accountRawData = document.getElementById("accountRawData");
+        const broadcastMessageInput = document.getElementById("broadcastMessageInput");
+        const sendBroadcastBtn = document.getElementById("sendBroadcastBtn");
+        const broadcastStatus = document.getElementById("broadcastStatus");
+        const broadcastRecentWrap = document.getElementById("broadcastRecentWrap");
+        const broadcastRecentBody = document.getElementById("broadcastRecentBody");
 
         let anomalies = [];
         let currentPage = 1;
         let usersCache = {};
         let allPublicRounds = [];
+        let userNameByShortId = new Map();
+        let currentAdminUser = null;
+        let broadcastFeedUnsubscribe = null;
+        const GLOBAL_NOTIFICATIONS_PATH = "globalNotifications";
+        const GLOBAL_NOTIFICATIONS_LIMIT = 20;
 
         function setAccessChecking(message) {
             if (accessSpinner) {
@@ -336,7 +390,7 @@
         }
 
         function formatDate(value) {
-            return new Date(Number(value || 0)).toLocaleString("ar-SA");
+            return new Date(Number(value || 0)).toLocaleString("ar-SA-u-nu-latn");
         }
 
         function normalizeDisplayName(input) {
@@ -345,8 +399,151 @@
         }
 
         function normalizeShortId(input, uid) {
-            const value = String(input || "").trim();
-            return value || String(uid || "").slice(0, 6);
+            const value = String(input || "").trim().replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 4);
+            if (value) {
+                return value;
+            }
+            return String(uid || "").replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 4).padEnd(4, "0");
+        }
+
+        function rebuildUserIdentityMap() {
+            const map = new Map();
+            Object.keys(usersCache || {}).forEach((uid) => {
+                const node = usersCache[uid] || {};
+                const profile = node.profile || {};
+                const shortId = normalizeShortId(profile.shortId || node.shortId, uid);
+                if (!shortId) {
+                    return;
+                }
+                const displayName = normalizeDisplayName(
+                    profile.nickname
+                    || node.nickname
+                    || profile.displayName
+                    || node.displayName
+                    || "لاعب"
+                );
+                map.set(shortId, displayName);
+            });
+            userNameByShortId = map;
+        }
+
+        function resolveRoundDisplayName(round) {
+            const shortId = normalizeShortId(round.shortId || "", "");
+            if (shortId && userNameByShortId.has(shortId)) {
+                return userNameByShortId.get(shortId);
+            }
+            return normalizeDisplayName(round.playerName);
+        }
+
+        function setBroadcastStatus(message, isError = false) {
+            if (!broadcastStatus) return;
+            broadcastStatus.textContent = String(message || "");
+            broadcastStatus.className = isError
+                ? "result warning admin-broadcast-status"
+                : "result success admin-broadcast-status";
+        }
+
+        function formatBroadcastDate(timestamp) {
+            return new Date(Number(timestamp || 0)).toLocaleString("ar-SA-u-nu-latn");
+        }
+
+        function renderBroadcastRecent(rows) {
+            if (!broadcastRecentWrap || !broadcastRecentBody) return;
+
+            broadcastRecentBody.textContent = "";
+            if (!rows.length) {
+                broadcastRecentWrap.classList.add("hidden");
+                return;
+            }
+
+            rows.forEach((row) => {
+                const tr = document.createElement("tr");
+
+                const messageTd = document.createElement("td");
+                messageTd.textContent = String(row.message || "");
+
+                const senderTd = document.createElement("td");
+                senderTd.textContent = String(row.createdByName || "DashType");
+
+                const dateTd = document.createElement("td");
+                dateTd.textContent = formatBroadcastDate(row.createdAt);
+
+                tr.append(messageTd, senderTd, dateTd);
+                broadcastRecentBody.appendChild(tr);
+            });
+
+            broadcastRecentWrap.classList.remove("hidden");
+        }
+
+        function stopBroadcastFeed() {
+            if (typeof broadcastFeedUnsubscribe === "function") {
+                broadcastFeedUnsubscribe();
+            }
+            broadcastFeedUnsubscribe = null;
+            renderBroadcastRecent([]);
+        }
+
+        function startBroadcastFeed() {
+            stopBroadcastFeed();
+            const notificationQuery = query(
+                ref(db, GLOBAL_NOTIFICATIONS_PATH),
+                orderByChild("createdAt"),
+                limitToLast(GLOBAL_NOTIFICATIONS_LIMIT)
+            );
+            broadcastFeedUnsubscribe = onValue(notificationQuery, (snapshot) => {
+                const rows = snapshot.exists() ? (snapshot.val() || {}) : {};
+                const parsed = Object.keys(rows).map((id) => ({
+                    id,
+                    message: String(rows[id]?.message || "").trim(),
+                    createdByName: String(rows[id]?.createdByName || "DashType").trim() || "DashType",
+                    createdAt: Number(rows[id]?.createdAt || 0)
+                }))
+                .filter((row) => row.message)
+                .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+
+                renderBroadcastRecent(parsed);
+            });
+        }
+
+        async function sendBroadcastNotification() {
+            if (!currentAdminUser || !sendBroadcastBtn || !broadcastMessageInput) {
+                return;
+            }
+
+            const message = String(broadcastMessageInput.value || "").trim();
+            if (!message) {
+                setBroadcastStatus("اكتب رسالة الإشعار أولاً.", true);
+                return;
+            }
+
+            sendBroadcastBtn.disabled = true;
+            setBroadcastStatus("جاري إرسال الإشعار...");
+            try {
+                const profile = usersCache[currentAdminUser.uid]?.profile || {};
+                const senderName = normalizeDisplayName(
+                    profile.nickname
+                    || usersCache[currentAdminUser.uid]?.nickname
+                    || currentAdminUser.displayName
+                    || currentAdminUser.email
+                    || "DashType"
+                );
+
+                const newRef = push(ref(db, GLOBAL_NOTIFICATIONS_PATH));
+                await set(newRef, {
+                    message,
+                    createdAt: Date.now(),
+                    createdByUid: currentAdminUser.uid,
+                    createdByName: senderName
+                });
+
+                broadcastMessageInput.value = "";
+                setBroadcastStatus("تم إرسال الإشعار لجميع الحسابات.");
+            } catch (error) {
+                console.error(error);
+                setBroadcastStatus("فشل إرسال الإشعار. تحقق من الصلاحيات.", true);
+            } finally {
+                sendBroadcastBtn.disabled = false;
+            }
         }
 
         function analyzeRound(round) {
@@ -354,12 +551,13 @@
             const time = Number(round.timeTaken || 0);
             const words = countWords(round.word);
             const secPerWord = words > 0 ? time / words : time;
+            const displayName = resolveRoundDisplayName(round);
 
             if (!round.word || words === 0) reasons.push("نص فارغ");
             if (!Number.isFinite(time) || time <= 0 || time > 300) reasons.push("وقت غير صالح");
             if (words > 0 && secPerWord < 0.08) reasons.push("سرعة غير منطقية (سريعة جداً)");
             if (words > 0 && secPerWord > 20) reasons.push("سرعة غير منطقية (بطيئة جداً)");
-            if (!round.playerName || String(round.playerName).trim().length < 2) reasons.push("اسم لاعب غير واضح");
+            if (!displayName || String(displayName).trim().length < 2) reasons.push("اسم لاعب غير واضح");
 
             return reasons;
         }
@@ -388,7 +586,7 @@
                 const playerTd = document.createElement("td");
                 const playerSpan = document.createElement("span");
                 playerSpan.setAttribute("dir", "auto");
-                playerSpan.textContent = normalizeDisplayName(item.playerName);
+                playerSpan.textContent = normalizeDisplayName(item.displayName || item.playerName);
                 playerTd.appendChild(playerSpan);
 
                 const modeTd = document.createElement("td");
@@ -605,11 +803,14 @@
 
             allPublicRounds = rounds;
             usersCache = usersSnapshot && usersSnapshot.exists() ? (usersSnapshot.val() || {}) : {};
+            rebuildUserIdentityMap();
 
             const parsed = rounds.map((round) => {
+                const displayName = resolveRoundDisplayName(round || {});
                 const reasons = analyzeRound(round || {});
                 return {
                     ...round,
+                    displayName,
                     reasons
                 };
             });
@@ -665,6 +866,12 @@
             renderAnomalyPage();
         });
 
+        if (sendBroadcastBtn) {
+            sendBroadcastBtn.addEventListener("click", () => {
+                void sendBroadcastNotification();
+            });
+        }
+
         accountsBody.addEventListener("click", (event) => {
             const button = event.target.closest("button[data-uid]");
             if (!button) {
@@ -675,6 +882,8 @@
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
+                currentAdminUser = null;
+                stopBroadcastFeed();
                 setAccessEnabled(false, "سجل الدخول أولاً من الصفحة الرئيسية للدخول إلى لوحة الجودة");
                 return;
             }
@@ -682,14 +891,20 @@
             setAccessChecking("جاري التحقق من صلاحية الحساب من قاعدة البيانات...");
             const access = await getAdminAccess(user.uid);
             if (!access.isAdmin) {
+                currentAdminUser = null;
+                stopBroadcastFeed();
                 setAccessEnabled(false, "تم رفض الوصول: الحساب الحالي لا يملك دور مسؤول موثّق");
                 return;
             }
 
             try {
+                currentAdminUser = user;
                 await loadAdminData();
+                startBroadcastFeed();
             } catch (error) {
                 console.error(error);
+                currentAdminUser = null;
+                stopBroadcastFeed();
                 setAccessEnabled(false, "فشل تحميل لوحة الجودة");
             }
         });

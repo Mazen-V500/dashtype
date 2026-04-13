@@ -1,0 +1,3117 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DashType - الملف الشخصي</title>
+    <meta name="description" content="الملف الشخصي في DashType: عرض المستوى، النقاط، والخصوصية وإعدادات الدولة.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://dashtype.tech/profile">
+    <link rel="stylesheet" href="../style.css">
+    <link rel="manifest" href="../manifest.webmanifest">
+    <link rel="icon" type="image/png" sizes="32x32" href="../photo/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../photo/favicon-16.png">
+    <link rel="apple-touch-icon" href="../photo/favicon-64.png">
+    <style>
+        .profile-layout {
+            display: grid;
+            gap: 12px;
+            position: relative;
+            isolation: isolate;
+            min-width: 0;
+            --profile-glow-a: color-mix(in srgb, var(--accent-a) 22%, transparent);
+            --profile-glow-b: color-mix(in srgb, var(--accent-b) 24%, transparent);
+        }
+
+        .profile-layout::before {
+            content: "";
+            position: absolute;
+            inset: -24px -10px auto -10px;
+            height: 180px;
+            z-index: -1;
+            pointer-events: none;
+            background:
+                radial-gradient(circle at 18% 32%, var(--profile-glow-a) 0%, transparent 58%),
+                radial-gradient(circle at 82% 18%, var(--profile-glow-b) 0%, transparent 56%);
+            filter: blur(6px);
+        }
+
+        body.profile-view-public .profile-layout {
+            --profile-glow-a: color-mix(in srgb, #22c55e 28%, transparent);
+            --profile-glow-b: color-mix(in srgb, #f59e0b 28%, transparent);
+        }
+
+        body.profile-view-private .profile-layout {
+            --profile-glow-a: color-mix(in srgb, #475569 32%, transparent);
+            --profile-glow-b: color-mix(in srgb, #0f172a 42%, transparent);
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            min-width: 0;
+        }
+
+        #profileMain {
+            width: min(1160px, 100%);
+            min-width: 0;
+            margin-inline: auto;
+        }
+
+        .profile-layout .status-card {
+            min-width: 0;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 12px 28px rgba(0, 0, 0, 0.16);
+        }
+
+        .profile-stat {
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            background:
+                radial-gradient(circle at top right, rgba(255, 255, 255, 0.14), transparent 56%),
+                var(--glass-surface-soft);
+            padding: 12px;
+            display: grid;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+            min-width: 0;
+            -webkit-backdrop-filter: blur(12px) saturate(130%);
+            backdrop-filter: blur(12px) saturate(130%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 10px 24px rgba(0, 0, 0, 0.14);
+            transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
+        }
+
+        .profile-stat:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.28);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 14px 28px rgba(0, 0, 0, 0.2);
+        }
+
+        .profile-stat::after {
+            content: "";
+            position: absolute;
+            inset-inline: 10px;
+            top: 0;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.24);
+            pointer-events: none;
+        }
+
+        .profile-stat-label {
+            opacity: 0.78;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+        }
+
+        .profile-stat-value {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-strong);
+            overflow-wrap: anywhere;
+        }
+
+        .play-map-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .play-map-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px 10px;
+            border-radius: var(--radius-pill);
+            border: 1px solid var(--glass-border);
+            background: var(--glass-surface-soft);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .friends-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .friend-preview-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 34px;
+            padding: 6px 10px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--glass-border);
+            background: var(--glass-surface-soft);
+            font-size: 12px;
+            font-weight: 700;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .privacy-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+            align-items: center;
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 10px 12px;
+            background: var(--glass-surface-soft);
+        }
+
+        .privacy-title {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .privacy-help {
+            margin: 4px 0 0;
+            opacity: 0.78;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        .privacy-row input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent-b);
+        }
+
+        .country-wrap {
+            display: grid;
+            gap: 8px;
+        }
+
+        .country-field {
+            width: 100%;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--ink);
+            padding: 10px 12px;
+            font-size: 14px;
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .social-tiles-section {
+            display: grid;
+            gap: 12px;
+        }
+
+        .social-group {
+            display: grid;
+            gap: 8px;
+        }
+
+        .social-group-title {
+            margin: 0;
+            font-size: 13px;
+            font-weight: 800;
+            opacity: 0.84;
+        }
+
+        .social-tiles-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: stretch;
+        }
+
+        .social-tile {
+            min-width: 110px;
+            max-width: 180px;
+            min-height: 62px;
+            padding: 8px 10px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--glass-border);
+            background: var(--glass-surface-soft);
+            display: grid;
+            align-content: center;
+            gap: 2px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .social-tile-name {
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .social-tile-meta {
+            font-size: 10px;
+            opacity: 0.68;
+            direction: ltr;
+            unicode-bidi: isolate;
+        }
+
+        .panel-identity {
+            background: linear-gradient(145deg, color-mix(in srgb, var(--glass-surface) 88%, rgba(34, 197, 94, 0.2)), var(--glass-surface));
+        }
+
+        .panel-public {
+            background: linear-gradient(145deg, color-mix(in srgb, var(--glass-surface) 88%, rgba(245, 158, 11, 0.2)), var(--glass-surface));
+        }
+
+        .panel-connect {
+            background: linear-gradient(145deg, color-mix(in srgb, var(--glass-surface) 88%, rgba(56, 189, 248, 0.2)), var(--glass-surface));
+        }
+
+        .panel-privacy {
+            background: linear-gradient(145deg, color-mix(in srgb, var(--glass-surface) 88%, rgba(163, 230, 53, 0.18)), var(--glass-surface));
+        }
+
+        body.profile-view-private .panel-identity,
+        body.profile-view-private .panel-public,
+        body.profile-view-private .panel-connect,
+        body.profile-view-private .panel-privacy {
+            background: linear-gradient(150deg, color-mix(in srgb, var(--glass-surface) 92%, rgba(15, 23, 42, 0.34)), var(--glass-surface));
+        }
+
+        .profile-actions .btn-icon {
+            min-width: 170px;
+        }
+
+        @media (max-width: 760px) {
+            .profile-layout {
+                gap: 10px;
+            }
+
+            .profile-layout::before {
+                inset: -16px -8px auto -8px;
+                height: 128px;
+                filter: blur(4px);
+            }
+
+            .profile-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .profile-stat {
+                padding: 11px;
+            }
+
+            .profile-stat-value {
+                font-size: 17px;
+            }
+
+            .privacy-row {
+                grid-template-columns: 1fr;
+                align-items: start;
+                gap: 8px;
+            }
+
+            .privacy-row input[type="checkbox"] {
+                width: 20px;
+                height: 20px;
+            }
+
+            .profile-actions .btn-icon,
+            .friend-request-layout .btn-icon {
+                width: 100%;
+                min-width: 0;
+                justify-content: center;
+            }
+
+            .profile-stat:hover {
+                transform: none;
+            }
+        }
+
+        .viewer-note {
+            font-size: 13px;
+            opacity: 0.8;
+            line-height: 1.7;
+            overflow-wrap: anywhere;
+        }
+
+        .friend-request-layout {
+            display: grid;
+            gap: 8px;
+        }
+
+        .friend-request-message {
+            width: 100%;
+            min-height: 86px;
+            resize: vertical;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--ink);
+            padding: 10px 12px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .is-hidden {
+            display: none !important;
+        }
+
+        .hero-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .hero-action-btn {
+            min-height: 42px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-surface-soft);
+            color: var(--ink);
+            padding: 8px 12px;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .hero-action-btn:disabled {
+            opacity: 0.56;
+            cursor: not-allowed;
+            transform: none;
+            filter: none;
+        }
+
+        .hero-action-btn .icon {
+            width: 16px;
+            height: 16px;
+            opacity: 0.92;
+        }
+
+        .hero-action-link {
+            text-decoration: none;
+        }
+
+        .hero-action-text {
+            display: inline-block;
+            line-height: 1.2;
+        }
+
+        .logo-home-link {
+            display: inline-flex;
+            text-decoration: none;
+            border-radius: 999px;
+            transition: transform 0.18s ease, filter 0.18s ease;
+        }
+
+        .logo-home-link:hover {
+            transform: translateY(-1px);
+            filter: saturate(1.08);
+        }
+
+        .logo-home-link:active {
+            transform: translateY(0);
+        }
+
+        .follow-layout {
+            display: grid;
+            gap: 8px;
+            margin-top: 2px;
+        }
+
+        .follow-note {
+            font-size: 12px;
+            opacity: 0.82;
+        }
+
+        .hero-head {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 12px;
+            align-items: start;
+        }
+
+        .profile-grid-main {
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .profile-grid-main .profile-stat {
+            min-height: 108px;
+        }
+
+        .tile-name { grid-column: span 4; }
+        .tile-id { grid-column: span 2; }
+        .tile-level { grid-column: span 2; }
+        .tile-points { grid-column: span 2; }
+        .tile-visibility { grid-column: span 2; }
+        .tile-words { grid-column: span 3; }
+        .tile-chars { grid-column: span 3; }
+        .tile-avg { grid-column: span 3; }
+        .tile-best { grid-column: span 3; }
+        .tile-rounds { grid-column: span 3; }
+        .tile-month { grid-column: span 3; }
+        .tile-badge { grid-column: span 2; }
+        .tile-followers { grid-column: span 2; }
+        .tile-country { grid-column: span 2; }
+        .tile-language { grid-column: span 2; }
+        .tile-join { grid-column: span 4; }
+
+        .tile-name .profile-stat-value,
+        .tile-points .profile-stat-value,
+        .tile-level .profile-stat-value {
+            font-size: 22px;
+        }
+
+        .owner-profile-quick-btn {
+            border-color: rgba(255, 255, 255, 0.3);
+            background:
+                radial-gradient(120% 145% at 100% 0%, color-mix(in srgb, var(--accent-a) 20%, transparent) 0%, transparent 58%),
+                var(--glass-surface-soft);
+        }
+
+        .hero-home-btn {
+            border-color: rgba(255, 255, 255, 0.28);
+            background:
+                radial-gradient(120% 145% at 0% 0%, color-mix(in srgb, var(--accent-b) 18%, transparent) 0%, transparent 58%),
+                var(--glass-surface-soft);
+        }
+
+        .hero-social-btn {
+            border-color: rgba(255, 255, 255, 0.3);
+            background: var(--glass-surface-soft);
+        }
+
+        .follow-hero-btn {
+            background:
+                radial-gradient(120% 145% at 0% 0%, color-mix(in srgb, var(--accent-a) 16%, transparent) 0%, transparent 58%),
+                var(--glass-surface-soft);
+        }
+
+        .friend-request-hero-btn {
+            background:
+                radial-gradient(120% 145% at 100% 0%, color-mix(in srgb, var(--accent-b) 20%, transparent) 0%, transparent 58%),
+                var(--glass-surface-soft);
+        }
+
+        .hero-inline-result {
+            width: 100%;
+            margin: 2px 0 0;
+        }
+
+        .friend-request-modal-card {
+            width: min(560px, 94vw);
+        }
+
+        .friend-request-modal-note {
+            font-size: 12px;
+            opacity: 0.82;
+            line-height: 1.6;
+            margin: 2px 0 0;
+        }
+
+        .profile-privacy-modal {
+            width: min(620px, 94vw);
+            max-height: min(88vh, 820px);
+        }
+
+        .profile-privacy-modal #privacySection {
+            margin: 0;
+            border: 0;
+            box-shadow: none;
+            padding: 0;
+            background: transparent;
+        }
+
+        body.profile-view-public .panel-identity,
+        body.profile-view-public .panel-public,
+        body.profile-view-public .panel-connect,
+        body.profile-view-public .panel-privacy {
+            background: linear-gradient(150deg, color-mix(in srgb, var(--glass-surface) 86%, rgba(14, 165, 233, 0.16)), var(--glass-surface));
+        }
+
+        body.profile-view-private .panel-identity,
+        body.profile-view-private .panel-public,
+        body.profile-view-private .panel-connect,
+        body.profile-view-private .panel-privacy {
+            background: linear-gradient(150deg, color-mix(in srgb, var(--glass-surface) 90%, rgba(15, 23, 42, 0.42)), color-mix(in srgb, var(--glass-surface) 96%, rgba(2, 6, 23, 0.42)));
+            border-color: rgba(71, 85, 105, 0.44);
+        }
+
+        body.profile-view-private .profile-stat {
+            background: color-mix(in srgb, var(--glass-surface-soft) 92%, rgba(15, 23, 42, 0.36));
+        }
+
+        body.profile-view-public .profile-stat {
+            background:
+                radial-gradient(circle at top right, rgba(255, 255, 255, 0.14), transparent 56%),
+                color-mix(in srgb, var(--glass-surface-soft) 94%, rgba(16, 185, 129, 0.12));
+        }
+
+        @media (max-width: 980px) {
+            .hero-head {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-actions {
+                justify-content: flex-start;
+            }
+
+            .profile-grid-main {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 10px;
+            }
+
+            .profile-grid-main .profile-stat {
+                grid-column: span 1;
+                min-height: 92px;
+            }
+
+            .friends-preview-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tile-name,
+            .tile-join,
+            .tile-words,
+            .tile-chars,
+            .tile-avg,
+            .tile-best,
+            .tile-rounds,
+            .tile-month {
+                grid-column: span 2;
+            }
+        }
+    </style>
+</head>
+<body class="mode-page">
+    <a href="#profileMain" class="skip-link">تخطي إلى المحتوى</a>
+
+    <header class="top-controls logo-only">
+        <div class="logo-container">
+            <a href="../" class="logo-home-link" id="logoHomeLink" aria-label="العودة للرئيسية">
+                <div class="logo-badge">
+                    <img id="logoImg" src="../photo/dashtype%20White%20Wordmark%20ar.png" alt="DashType" class="app-logo">
+                    <span class="logo-beta" id="betaLabel">بيتا</span>
+                </div>
+            </a>
+        </div>
+    </header>
+
+    <div id="pageLoader" class="page-loading-overlay is-active" aria-live="polite" aria-busy="true">
+        <div class="page-loading-card" role="status">
+            <div class="page-loading-head">
+                <span class="page-loading-spinner" aria-hidden="true"></span>
+                <div id="pageLoaderTitle" class="page-loading-title">جاري تحميل الملف الشخصي</div>
+            </div>
+            <div id="pageLoaderSubtitle" class="page-loading-subtitle">نجهز بياناتك وإعداداتك الآن...</div>
+            <div class="page-loading-skeleton" aria-hidden="true">
+                <span class="page-loading-line w-90"></span>
+                <span class="page-loading-line w-70"></span>
+                <span class="page-loading-line w-55"></span>
+            </div>
+        </div>
+    </div>
+
+    <main id="profileMain" class="game-shell">
+        <section class="game-card profile-layout">
+            <div class="hero-head">
+                <div>
+                    <h1 id="pageTitle">الملف الشخصي</h1>
+                    <p id="pageSubtitle" class="subtitle">عرض أهم معلومات الحساب والتحكم في خصوصية الملف الشخصي.</p>
+                </div>
+                <div class="hero-actions">
+                    <button id="ownerProfileQuickBtn" class="btn-icon hero-action-btn owner-profile-quick-btn is-hidden" type="button" aria-label="إعدادات الملف الشخصي" title="إعدادات الملف الشخصي"><span class="icon icon-user" aria-hidden="true"></span><span id="ownerProfileQuickText" class="hero-action-text">إعدادات الملف الشخصي</span></button>
+                    <button id="friendRequestOpenBtn" class="btn-icon hero-action-btn hero-social-btn friend-request-hero-btn is-hidden" type="button" aria-label="طلب صداقة" title="طلب صداقة"><span class="icon icon-next" aria-hidden="true"></span><span id="friendRequestOpenText" class="hero-action-text">طلب صداقة</span></button>
+                    <button id="followToggleBtn" class="btn-icon hero-action-btn hero-social-btn follow-hero-btn is-hidden" type="button" aria-label="متابعة" title="متابعة"><span class="icon icon-users" aria-hidden="true"></span><span id="followToggleText" class="hero-action-text">متابعة</span></button>
+                    <a href="../" class="inline-link hero-action-link btn-icon hero-action-btn hero-home-btn" id="backBtn" aria-label="العودة للرئيسية" title="العودة للرئيسية"><span class="icon icon-home" aria-hidden="true"></span><span id="backBtnText" class="hero-action-text">العودة للرئيسية</span></a>
+                    <div id="followStatus" class="result hero-inline-result is-hidden"></div>
+                </div>
+            </div>
+
+            <section class="status-card panel-identity">
+                <div class="profile-grid profile-grid-main">
+                    <div id="nameStatCard" class="profile-stat tile-name">
+                        <span id="nameLabel" class="profile-stat-label">الاسم</span>
+                        <span id="nameValue" class="profile-stat-value">—</span>
+                    </div>
+                    <div id="idStatCard" class="profile-stat tile-id">
+                        <span id="idLabel" class="profile-stat-label">المعرّف</span>
+                        <span id="idValue" class="profile-stat-value">—</span>
+                    </div>
+                    <div id="levelStatCard" class="profile-stat tile-level">
+                        <span id="levelLabel" class="profile-stat-label">المستوى</span>
+                        <span id="levelValue" class="profile-stat-value">0</span>
+                    </div>
+                    <div id="pointsStatCard" class="profile-stat tile-points">
+                        <span id="pointsLabel" class="profile-stat-label">النقاط</span>
+                        <span id="pointsValue" class="profile-stat-value">0</span>
+                    </div>
+                    <div id="wordsStatCard" class="profile-stat tile-words">
+                        <span id="wordsLabel" class="profile-stat-label">عدد الكلمات المكتوبة</span>
+                        <span id="wordsValue" class="profile-stat-value">0</span>
+                    </div>
+                    <div id="charsStatCard" class="profile-stat tile-chars">
+                        <span id="charsLabel" class="profile-stat-label">عدد الحروف المكتوبة</span>
+                        <span id="charsValue" class="profile-stat-value">0</span>
+                    </div>
+                    <div id="joinDateStatCard" class="profile-stat tile-join">
+                        <span id="joinDateLabel" class="profile-stat-label">تاريخ الانضمام</span>
+                        <span id="joinDateValue" class="profile-stat-value">—</span>
+                    </div>
+                    <div id="bestSpeedStatCard" class="profile-stat tile-best">
+                        <span id="bestSpeedLabel" class="profile-stat-label">أسرع كتابة</span>
+                        <span id="bestSpeedValue" class="profile-stat-value">—</span>
+                    </div>
+                    <div id="avgSpeedStatCard" class="profile-stat tile-avg">
+                        <span id="avgSpeedLabel" class="profile-stat-label">متوسط السرعة</span>
+                        <span id="avgSpeedValue" class="profile-stat-value">—</span>
+                    </div>
+                    <div id="monthPointsStatCard" class="profile-stat tile-month">
+                        <span id="monthPointsLabel" class="profile-stat-label">نقاط هذا الشهر</span>
+                        <span id="monthPointsValue" class="profile-stat-value">0</span>
+                    </div>
+                    <div id="roundsStatCard" class="profile-stat tile-rounds">
+                        <span id="roundsLabel" class="profile-stat-label">إجمالي الجولات</span>
+                        <span id="roundsValue" class="profile-stat-value">0</span>
+                    </div>
+                    <div id="badgeStatCard" class="profile-stat tile-badge">
+                        <span id="badgeLabel" class="profile-stat-label">الشارة</span>
+                        <span id="badgeValue" class="profile-stat-value">—</span>
+                    </div>
+                    <div id="visibilityStatCard" class="profile-stat tile-visibility">
+                        <span id="visibilityLabel" class="profile-stat-label">حالة الحساب</span>
+                        <span id="visibilityValue" class="profile-stat-value">خاص</span>
+                    </div>
+                    <div id="followersStatCard" class="profile-stat tile-followers">
+                        <span id="followersLabel" class="profile-stat-label">عدد المتابعين</span>
+                        <span id="followersValue" class="profile-stat-value">0</span>
+                    </div>
+                    <div id="countryStatCard" class="profile-stat tile-country">
+                        <span id="countryLabel" class="profile-stat-label">الدولة</span>
+                        <span id="countryValue" class="profile-stat-value">مخفية</span>
+                    </div>
+                    <div id="languageStatCard" class="profile-stat tile-language">
+                        <span id="languageLabel" class="profile-stat-label">اللغة</span>
+                        <span id="languageValue" class="profile-stat-value">—</span>
+                    </div>
+                </div>
+                <p id="viewerNote" class="viewer-note"></p>
+                <p id="bioText" class="viewer-note is-hidden"></p>
+            </section>
+
+            <section id="publicModulesSection" class="status-card panel-public is-hidden">
+                <h2 id="publicModulesTitle" class="progress">المحتوى العام</h2>
+                <div class="profile-grid">
+                    <div id="friendsModuleCard" class="profile-stat">
+                        <span id="friendsModuleLabel" class="profile-stat-label">الأصدقاء</span>
+                        <span id="friendsModuleValue" class="profile-stat-value">—</span>
+                        <span id="friendsPreviewLabel" class="profile-stat-label">الأصدقاء</span>
+                        <div id="friendsPreviewGrid" class="friends-preview-grid"></div>
+                    </div>
+                    <div id="playMapModuleCard" class="profile-stat">
+                        <span id="playMapLabel" class="profile-stat-label">خريطة اللعب</span>
+                        <div id="playMapValue" class="play-map-list"></div>
+                    </div>
+                </div>
+            </section>
+
+        </section>
+    </main>
+    <div id="privacyModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-card profile-privacy-modal" role="dialog" aria-modal="true" aria-labelledby="privacyTitle">
+            <section id="privacySection" class="status-card panel-privacy">
+                <h2 id="privacyTitle" class="progress">إعدادات الخصوصية</h2>
+
+                <div class="privacy-row">
+                    <div>
+                        <p id="privateModeTitle" class="privacy-title">الحساب خاص</p>
+                        <p id="privateModeHelp" class="privacy-help">الحساب يبدأ خاصًا افتراضيًا. فتحه للعامة متاح من المستوى 3.</p>
+                    </div>
+                    <input id="isPrivateInput" type="checkbox" checked>
+                </div>
+
+                <div class="privacy-row">
+                    <div>
+                        <p id="showCountryTitle" class="privacy-title">إظهار الدولة</p>
+                        <p id="showCountryHelp" class="privacy-help">افتراضيًا لا يتم إظهار الدولة في الملف العام.</p>
+                    </div>
+                    <input id="showCountryInput" type="checkbox">
+                </div>
+
+                <div class="privacy-row">
+                    <div>
+                        <p id="showFriendsSectionTitle" class="privacy-title">إظهار قسم الأصدقاء</p>
+                        <p id="showFriendsSectionHelp" class="privacy-help">السماح بعرض عدد الأصدقاء في الملف العام.</p>
+                    </div>
+                    <input id="showFriendsSectionInput" type="checkbox" checked>
+                </div>
+
+                <div class="privacy-row">
+                    <div>
+                        <p id="showPlayMapSectionTitle" class="privacy-title">إظهار خريطة اللعب</p>
+                        <p id="showPlayMapSectionHelp" class="privacy-help">السماح بعرض توزيع الجولات على الأنماط.</p>
+                    </div>
+                    <input id="showPlayMapSectionInput" type="checkbox" checked>
+                </div>
+
+                <div class="country-wrap">
+                    <label id="countryInputLabel" for="countryInput">الدولة (تلقائي)</label>
+                    <input id="countryInput" class="country-field" type="text" maxlength="60" placeholder="يتم اكتشافها تلقائياً" readonly>
+                </div>
+
+                <div class="country-wrap">
+                    <label id="bioInputLabel" for="bioInput">البايو</label>
+                    <textarea id="bioInput" class="friend-request-message" maxlength="180" placeholder="اكتب بايو قصير يظهر في ملفك"></textarea>
+                </div>
+
+                <div class="profile-actions">
+                    <button id="savePrivacyBtn" class="btn-icon" type="button"><span class="icon icon-save" aria-hidden="true"></span><span id="savePrivacyText">حفظ الإعدادات</span></button>
+                </div>
+                <div id="privacyStatus" class="result"></div>
+            </section>
+            <div class="modal-actions">
+                <button id="privacyModalCloseBtn" class="btn-icon" type="button"><span class="icon icon-cancel" aria-hidden="true"></span><span id="privacyModalCloseText">إغلاق</span></button>
+            </div>
+        </div>
+    </div>
+
+    <div id="friendRequestModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-card friend-request-modal-card" role="dialog" aria-modal="true" aria-labelledby="friendRequestTitle">
+            <h2 id="friendRequestTitle" class="settings-title">طلب صداقة</h2>
+            <div class="friend-request-layout">
+                <label id="friendRequestMessageLabel" for="friendRequestMessageInput">رسالة الطلب</label>
+                <textarea id="friendRequestMessageInput" class="friend-request-message" maxlength="220" placeholder="اكتب رسالة الطلب..."></textarea>
+                <p id="followNote" class="friend-request-modal-note">يمكنك المتابعة حتى للحسابات الخاصة.</p>
+                <div id="friendRequestStatus" class="result"></div>
+            </div>
+            <div class="modal-actions">
+                <button id="friendRequestSendBtn" class="btn-icon" type="button"><span class="icon icon-next" aria-hidden="true"></span><span id="friendRequestSendText">إرسال طلب الصداقة</span></button>
+                <button id="friendRequestCancelBtn" class="btn-icon" type="button"><span class="icon icon-cancel" aria-hidden="true"></span><span id="friendRequestCancelText">إلغاء</span></button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="page-footer">
+        <p class="footer-meta">
+            <span class="footer-meta-item">&copy; 2026 DashType. All rights reserved.</span>
+            <span class="footer-meta-item"><span id="versionLabel" class="footer-contact-label">الإصدار</span> <span class="footer-version">0.8.000</span></span>
+        </p>
+    </footer>
+
+    <script type="module">
+        import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getDatabase, ref, get, update, push, query, orderByChild, equalTo, limitToFirst } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { readTypingGameState } from "../scripts/app-state.js";
+        import { resolveWordmarkSrc, setupConnectivityBanner } from "../scripts/ui-utils.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyABT9cJ3H2e1YaljPhmFb8dgXfaV7cZEQs",
+            authDomain: "dashtype-9855c.firebaseapp.com",
+            projectId: "dashtype-9855c",
+            storageBucket: "dashtype-9855c.firebasestorage.app",
+            messagingSenderId: "758504188835",
+            appId: "1:758504188835:web:a75d6f9452f09a067f0816",
+            databaseURL: "https://dashtype-9855c-default-rtdb.firebaseio.com"
+        };
+
+        const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        const FIRST_LEVEL_POINTS = 40;
+        const LEVEL_STEP_POINTS = 100;
+        const PUBLIC_UNLOCK_LEVEL = 3;
+        const SHORT_ID_LENGTH = 4;
+
+        const textMap = {
+            ar: {
+                pageTitle: "الملف الشخصي",
+                pageSubtitle: "عرض أهم معلومات الحساب والتحكم في خصوصية الملف الشخصي.",
+                backBtn: "العودة للرئيسية",
+                name: "الاسم",
+                userId: "المعرّف",
+                level: "المستوى",
+                points: "النقاط",
+                wordsWritten: "عدد الكلمات المكتوبة",
+                charsWritten: "عدد الحروف المكتوبة",
+                joinDate: "تاريخ الانضمام",
+                bestSpeed: "أسرع كتابة",
+                avgSpeed: "متوسط السرعة",
+                monthPoints: "نقاط هذا الشهر",
+                totalRounds: "إجمالي الجولات",
+                badge: "الشارة",
+                badgeNone: "بدون",
+                visibility: "حالة الحساب",
+                visibilityPrivate: "خاص",
+                visibilityPublic: "عام",
+                followers: "عدد المتابعين",
+                country: "الدولة",
+                language: "اللغة",
+                languageArabic: "العربية",
+                languageEnglish: "الإنجليزية",
+                countryHidden: "مخفية",
+                statUnavailable: "—",
+                publicModulesTitle: "المحتوى العام",
+                socialTilesTitle: "قائمة العلاقات",
+                friendsTilesTitle: "الأصدقاء",
+                followersTilesTitle: "المتابعون",
+                socialTilesEmpty: "لا يوجد عناصر بعد",
+                friendsModule: "الأصدقاء",
+                friendsPreviewTitle: "عرض الأصدقاء",
+                friendsPreviewEmpty: "لا يوجد أصدقاء بعد",
+                playMap: "خريطة اللعب",
+                playMapNone: "لا يوجد نشاط بعد",
+                speedFormatAr: "{value} كلمة/د",
+                bestSpeedFormatAr: "{value} ث/كلمة",
+                viewerMine: "هذا ملفك الشخصي. عدّل الخصوصية من نافذة الإعدادات.",
+                viewerPublic: "هذا ملف عام يمكن للاعبين الاطلاع عليه.",
+                viewerPrivate: "هذا الحساب خاص ولا يمكن عرض تفاصيله العامة.",
+                countryWithFlagFormat: "{flag} {country}",
+                privacyTitle: "إعدادات الخصوصية",
+                privateModeTitle: "الحساب خاص",
+                privateModeHelp: "الحساب يبدأ خاصًا افتراضيًا. فتحه للعامة متاح من المستوى 3.",
+                showCountryTitle: "إظهار الدولة",
+                showCountryHelp: "افتراضيًا لا يتم إظهار الدولة في الملف العام.",
+                showFriendsSectionTitle: "إظهار قسم الأصدقاء",
+                showFriendsSectionHelp: "السماح بعرض عدد الأصدقاء في الملف العام.",
+                showPlayMapSectionTitle: "إظهار خريطة اللعب",
+                showPlayMapSectionHelp: "السماح بعرض توزيع الجولات على الأنماط.",
+                countryInputLabel: "الدولة (تلقائي)",
+                countryPlaceholder: "يتم اكتشافها تلقائياً",
+                bioInputLabel: "البايو",
+                bioPlaceholder: "اكتب بايو قصير يظهر في ملفك",
+                save: "حفظ الإعدادات",
+                ownerAccountSettings: "إعدادات الحساب",
+                ownerProfileSettings: "إعدادات الملف الشخصي",
+                pageLoaderTitle: "جاري تحميل الملف الشخصي",
+                pageLoaderSubtitle: "نجهز بياناتك وإعداداتك الآن...",
+                accountQuickTitle: "إعدادات الحساب",
+                accountQuickSubtitle: "وصول سريع لإدارة حسابك من نفس الصفحة.",
+                accountQuickProfile: "إعدادات الملف الشخصي",
+                accountQuickHistory: "السجل الشخصي",
+                accountQuickFriends: "إدارة الأصدقاء",
+                accountQuickHome: "إعدادات الصفحة الرئيسية",
+                accountQuickClose: "إغلاق",
+                close: "إغلاق",
+                saveOk: "تم حفظ إعدادات الخصوصية بنجاح.",
+                saveFail: "تعذر حفظ الإعدادات الآن.",
+                friendRequestTitle: "طلب صداقة",
+                friendRequestOpen: "طلب صداقة",
+                friendRequestOpenPending: "طلب مُرسل",
+                friendRequestOpenFriend: "صديق",
+                friendRequestOpenUnavailable: "غير متاح",
+                friendRequestMessageLabel: "رسالة الطلب",
+                friendRequestMessagePlaceholder: "اكتب رسالة الطلب...",
+                friendRequestDefaultMessage: "مرحبًا، أرسل لك طلب صداقة في DashType.",
+                friendRequestSend: "إرسال طلب الصداقة",
+                friendRequestCancel: "إلغاء",
+                friendRequestSent: "تم إرسال طلب الصداقة بنجاح.",
+                friendRequestAlreadyFriend: "هذا اللاعب موجود بالفعل في قائمة أصدقائك.",
+                friendRequestAlreadyPending: "لديك طلب صداقة معلّق مع هذا اللاعب.",
+                friendRequestPrivate: "هذا الحساب خاص ولا يستقبل طلبات حالياً.",
+                friendRequestFail: "تعذر إرسال الطلب حالياً.",
+                follow: "متابعة",
+                unfollow: "إلغاء المتابعة",
+                followNote: "يمكنك المتابعة حتى للحسابات الخاصة.",
+                followSuccess: "تمت المتابعة بنجاح.",
+                unfollowSuccess: "تم إلغاء المتابعة.",
+                followFail: "تعذر تنفيذ المتابعة الآن.",
+                logoHomeAria: "العودة للرئيسية",
+                needSignIn: "سجّل الدخول أولًا لعرض ملفك الشخصي.",
+                profileMissing: "تعذر العثور على الملف المطلوب.",
+                profileLimitedData: "بيانات محدودة: هذا الحساب لم يُكمل إعداد الملف العام بعد.",
+                profileLoadFail: "تعذر تحميل بيانات الملف الشخصي الآن. حاول تحديث الصفحة.",
+                loadingProfile: "جاري تحميل لوحة الملف الشخصي...",
+                publicLock: "التحويل إلى حساب عام متاح من المستوى 3.",
+                versionLabel: "الإصدار",
+                betaLabel: "بيتا"
+            },
+            en: {
+                pageTitle: "Profile",
+                pageSubtitle: "View key account details and manage profile privacy.",
+                backBtn: "Back Home",
+                name: "Name",
+                userId: "ID",
+                level: "Level",
+                points: "Points",
+                wordsWritten: "Words Typed",
+                charsWritten: "Characters Typed",
+                joinDate: "Join Date",
+                bestSpeed: "Fastest Typing",
+                avgSpeed: "Average Speed",
+                monthPoints: "This Month Points",
+                totalRounds: "Total Rounds",
+                badge: "Badge",
+                badgeNone: "None",
+                visibility: "Visibility",
+                visibilityPrivate: "Private",
+                visibilityPublic: "Public",
+                followers: "Followers",
+                country: "Country",
+                language: "Language",
+                languageArabic: "Arabic",
+                languageEnglish: "English",
+                countryHidden: "Hidden",
+                statUnavailable: "—",
+                publicModulesTitle: "Public Modules",
+                socialTilesTitle: "Connections",
+                friendsTilesTitle: "Friends",
+                followersTilesTitle: "Followers",
+                socialTilesEmpty: "No items yet",
+                friendsModule: "Friends",
+                friendsPreviewTitle: "Friends Preview",
+                friendsPreviewEmpty: "No friends yet",
+                playMap: "Play Map",
+                playMapNone: "No activity yet",
+                speedFormatEn: "{value} WPM",
+                bestSpeedFormatEn: "{value} sec/word",
+                viewerMine: "This is your profile. Manage privacy from the settings popup.",
+                viewerPublic: "This is a public profile visible to players.",
+                viewerPrivate: "This account is private and its public profile is hidden.",
+                countryWithFlagFormat: "{flag} {country}",
+                privacyTitle: "Privacy Settings",
+                privateModeTitle: "Private account",
+                privateModeHelp: "Accounts are private by default. Public mode unlocks at level 3.",
+                showCountryTitle: "Show country",
+                showCountryHelp: "Country is hidden in public profile by default.",
+                showFriendsSectionTitle: "Show friends module",
+                showFriendsSectionHelp: "Allow showing friends count on your public profile.",
+                showPlayMapSectionTitle: "Show play map",
+                showPlayMapSectionHelp: "Allow showing rounds distribution by mode.",
+                countryInputLabel: "Country (auto)",
+                countryPlaceholder: "Detected automatically",
+                bioInputLabel: "Bio",
+                bioPlaceholder: "Write a short bio to show on your profile",
+                save: "Save Settings",
+                ownerAccountSettings: "Account settings",
+                ownerProfileSettings: "Profile settings",
+                pageLoaderTitle: "Loading profile",
+                pageLoaderSubtitle: "Preparing your account data and settings...",
+                accountQuickTitle: "Account Settings",
+                accountQuickSubtitle: "Quick access to account controls from this page.",
+                accountQuickProfile: "Profile Settings",
+                accountQuickHistory: "Personal History",
+                accountQuickFriends: "Manage Friends",
+                accountQuickHome: "Home Settings",
+                accountQuickClose: "Close",
+                close: "Close",
+                saveOk: "Privacy settings saved successfully.",
+                saveFail: "Failed to save settings.",
+                friendRequestTitle: "Friend Request",
+                friendRequestOpen: "Friend Request",
+                friendRequestOpenPending: "Request Sent",
+                friendRequestOpenFriend: "Friend",
+                friendRequestOpenUnavailable: "Unavailable",
+                friendRequestMessageLabel: "Request message",
+                friendRequestMessagePlaceholder: "Write your request message...",
+                friendRequestDefaultMessage: "Hi, I am sending you a friend request on DashType.",
+                friendRequestSend: "Send Friend Request",
+                friendRequestCancel: "Cancel",
+                friendRequestSent: "Friend request sent successfully.",
+                friendRequestAlreadyFriend: "This player is already in your friends list.",
+                friendRequestAlreadyPending: "You already have a pending friend request with this player.",
+                friendRequestPrivate: "This account is private and not accepting requests.",
+                friendRequestFail: "Failed to send request right now.",
+                follow: "Follow",
+                unfollow: "Unfollow",
+                followNote: "Following is available even for private accounts.",
+                followSuccess: "Now following this profile.",
+                unfollowSuccess: "Unfollowed successfully.",
+                followFail: "Could not update follow state right now.",
+                logoHomeAria: "Back to home",
+                needSignIn: "Please sign in first.",
+                profileMissing: "Could not find the requested profile.",
+                profileLimitedData: "Limited data: this account has not completed public profile setup yet.",
+                profileLoadFail: "Could not load profile data right now. Please refresh the page.",
+                loadingProfile: "Loading profile panel...",
+                publicLock: "Public account is available from level 3.",
+                versionLabel: "Version",
+                betaLabel: "Beta"
+            }
+        };
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const requestedUid = String(urlParams.get("uid") || "").trim();
+        const requestedShortId = String(urlParams.get("shortId") || "").trim();
+        const requestedDisplayName = String(urlParams.get("name") || "").trim();
+
+        let currentLanguage = "ar";
+        let viewerUid = "";
+        let viewerProfile = null;
+        let viewerStats = null;
+        let activePublicProfileUid = "";
+        let activePublicProfile = null;
+        let isFollowingActiveProfile = false;
+        let friendRequestOpenState = "available";
+
+        setupConnectivityBanner({ resolveLanguage: () => currentLanguage });
+
+        const pageTitle = document.getElementById("pageTitle");
+        const pageSubtitle = document.getElementById("pageSubtitle");
+        const backBtnText = document.getElementById("backBtnText");
+        const ownerProfileQuickBtn = document.getElementById("ownerProfileQuickBtn");
+        const ownerProfileQuickText = document.getElementById("ownerProfileQuickText");
+        const nameLabel = document.getElementById("nameLabel");
+        const idLabel = document.getElementById("idLabel");
+        const levelLabel = document.getElementById("levelLabel");
+        const pointsLabel = document.getElementById("pointsLabel");
+        const wordsLabel = document.getElementById("wordsLabel");
+        const charsLabel = document.getElementById("charsLabel");
+        const joinDateLabel = document.getElementById("joinDateLabel");
+        const bestSpeedLabel = document.getElementById("bestSpeedLabel");
+        const avgSpeedLabel = document.getElementById("avgSpeedLabel");
+        const monthPointsLabel = document.getElementById("monthPointsLabel");
+        const roundsLabel = document.getElementById("roundsLabel");
+        const badgeLabel = document.getElementById("badgeLabel");
+        const visibilityLabel = document.getElementById("visibilityLabel");
+        const followersLabel = document.getElementById("followersLabel");
+        const countryLabel = document.getElementById("countryLabel");
+        const languageLabel = document.getElementById("languageLabel");
+        const nameValue = document.getElementById("nameValue");
+        const idValue = document.getElementById("idValue");
+        const levelValue = document.getElementById("levelValue");
+        const pointsValue = document.getElementById("pointsValue");
+        const wordsValue = document.getElementById("wordsValue");
+        const charsValue = document.getElementById("charsValue");
+        const joinDateValue = document.getElementById("joinDateValue");
+        const bestSpeedValue = document.getElementById("bestSpeedValue");
+        const avgSpeedValue = document.getElementById("avgSpeedValue");
+        const monthPointsValue = document.getElementById("monthPointsValue");
+        const roundsValue = document.getElementById("roundsValue");
+        const badgeValue = document.getElementById("badgeValue");
+        const visibilityValue = document.getElementById("visibilityValue");
+        const followersValue = document.getElementById("followersValue");
+        const countryValue = document.getElementById("countryValue");
+        const languageValue = document.getElementById("languageValue");
+        const nameStatCard = document.getElementById("nameStatCard");
+        const idStatCard = document.getElementById("idStatCard");
+        const levelStatCard = document.getElementById("levelStatCard");
+        const pointsStatCard = document.getElementById("pointsStatCard");
+        const wordsStatCard = document.getElementById("wordsStatCard");
+        const charsStatCard = document.getElementById("charsStatCard");
+        const joinDateStatCard = document.getElementById("joinDateStatCard");
+        const bestSpeedStatCard = document.getElementById("bestSpeedStatCard");
+        const avgSpeedStatCard = document.getElementById("avgSpeedStatCard");
+        const monthPointsStatCard = document.getElementById("monthPointsStatCard");
+        const roundsStatCard = document.getElementById("roundsStatCard");
+        const badgeStatCard = document.getElementById("badgeStatCard");
+        const visibilityStatCard = document.getElementById("visibilityStatCard");
+        const followersStatCard = document.getElementById("followersStatCard");
+        const countryStatCard = document.getElementById("countryStatCard");
+        const languageStatCard = document.getElementById("languageStatCard");
+        const viewerNote = document.getElementById("viewerNote");
+        const bioText = document.getElementById("bioText");
+        const publicModulesSection = document.getElementById("publicModulesSection");
+        const publicModulesTitle = document.getElementById("publicModulesTitle");
+        const socialTilesSection = document.getElementById("socialTilesSection");
+        const socialTilesTitle = document.getElementById("socialTilesTitle");
+        const friendsTilesTitle = document.getElementById("friendsTilesTitle");
+        const followersTilesTitle = document.getElementById("followersTilesTitle");
+        const friendsTilesGrid = document.getElementById("friendsTilesGrid");
+        const followersTilesGrid = document.getElementById("followersTilesGrid");
+        const friendsModuleCard = document.getElementById("friendsModuleCard");
+        const playMapModuleCard = document.getElementById("playMapModuleCard");
+        const friendsModuleLabel = document.getElementById("friendsModuleLabel");
+        const friendsPreviewLabel = document.getElementById("friendsPreviewLabel");
+        const friendsPreviewGrid = document.getElementById("friendsPreviewGrid");
+        const playMapLabel = document.getElementById("playMapLabel");
+        const friendsModuleValue = document.getElementById("friendsModuleValue");
+        const playMapValue = document.getElementById("playMapValue");
+        const friendRequestOpenBtn = document.getElementById("friendRequestOpenBtn");
+        const friendRequestOpenText = document.getElementById("friendRequestOpenText");
+        const friendRequestTitle = document.getElementById("friendRequestTitle");
+        const friendRequestMessageLabel = document.getElementById("friendRequestMessageLabel");
+        const friendRequestMessageInput = document.getElementById("friendRequestMessageInput");
+        const friendRequestSendBtn = document.getElementById("friendRequestSendBtn");
+        const friendRequestSendText = document.getElementById("friendRequestSendText");
+        const friendRequestCancelBtn = document.getElementById("friendRequestCancelBtn");
+        const friendRequestCancelText = document.getElementById("friendRequestCancelText");
+        const friendRequestStatus = document.getElementById("friendRequestStatus");
+        const friendRequestModal = document.getElementById("friendRequestModal");
+        const followToggleBtn = document.getElementById("followToggleBtn");
+        const followToggleText = document.getElementById("followToggleText");
+        const followStatus = document.getElementById("followStatus");
+        const followNote = document.getElementById("followNote");
+        const privacyModal = document.getElementById("privacyModal");
+        const privacyModalCloseBtn = document.getElementById("privacyModalCloseBtn");
+        const privacyModalCloseText = document.getElementById("privacyModalCloseText");
+        const pageLoader = document.getElementById("pageLoader");
+        const pageLoaderTitle = document.getElementById("pageLoaderTitle");
+        const pageLoaderSubtitle = document.getElementById("pageLoaderSubtitle");
+        const logoHomeLink = document.getElementById("logoHomeLink");
+        const privacySection = document.getElementById("privacySection");
+        const privacyTitle = document.getElementById("privacyTitle");
+        const privateModeTitle = document.getElementById("privateModeTitle");
+        const privateModeHelp = document.getElementById("privateModeHelp");
+        const showCountryTitle = document.getElementById("showCountryTitle");
+        const showCountryHelp = document.getElementById("showCountryHelp");
+        const showFriendsSectionTitle = document.getElementById("showFriendsSectionTitle");
+        const showFriendsSectionHelp = document.getElementById("showFriendsSectionHelp");
+        const showPlayMapSectionTitle = document.getElementById("showPlayMapSectionTitle");
+        const showPlayMapSectionHelp = document.getElementById("showPlayMapSectionHelp");
+        const countryInputLabel = document.getElementById("countryInputLabel");
+        const countryInput = document.getElementById("countryInput");
+        const bioInputLabel = document.getElementById("bioInputLabel");
+        const bioInput = document.getElementById("bioInput");
+        const savePrivacyBtn = document.getElementById("savePrivacyBtn");
+        const savePrivacyText = document.getElementById("savePrivacyText");
+        const privacyStatus = document.getElementById("privacyStatus");
+        const isPrivateInput = document.getElementById("isPrivateInput");
+        const showCountryInput = document.getElementById("showCountryInput");
+        const showFriendsSectionInput = document.getElementById("showFriendsSectionInput");
+        const showPlayMapSectionInput = document.getElementById("showPlayMapSectionInput");
+        const versionLabel = document.getElementById("versionLabel");
+        const betaLabel = document.getElementById("betaLabel");
+        const statCards = {
+            nameStatCard,
+            idStatCard,
+            levelStatCard,
+            pointsStatCard,
+            wordsStatCard,
+            charsStatCard,
+            joinDateStatCard,
+            bestSpeedStatCard,
+            avgSpeedStatCard,
+            monthPointsStatCard,
+            roundsStatCard,
+            badgeStatCard,
+            visibilityStatCard,
+            followersStatCard,
+            countryStatCard,
+            languageStatCard
+        };
+
+        function t(key) {
+            return (textMap[currentLanguage] && textMap[currentLanguage][key]) || key;
+        }
+
+        function sanitizeShortId(value) {
+            return String(value || "").trim().replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, SHORT_ID_LENGTH);
+        }
+
+        function normalizeShortId(value, fallback = "") {
+            const normalized = sanitizeShortId(value);
+            if (normalized) {
+                return normalized;
+            }
+            return sanitizeShortId(fallback);
+        }
+
+        function ensureShortId(value, fallback = "") {
+            const normalized = normalizeShortId(value, fallback);
+            if (!normalized) {
+                return "0000";
+            }
+            return normalized.padEnd(SHORT_ID_LENGTH, "0").slice(0, SHORT_ID_LENGTH);
+        }
+
+        function setPageLoading(isLoading) {
+            if (!pageLoader) {
+                return;
+            }
+            pageLoader.classList.toggle("is-active", Boolean(isLoading));
+            pageLoader.setAttribute("aria-busy", isLoading ? "true" : "false");
+        }
+
+        function normalizeDisplayName(value, fallback = "لاعب") {
+            const compact = String(value || "").trim().replace(/\s+/g, " ");
+            return compact || fallback;
+        }
+
+        function normalizeCountryCode(value) {
+            return String(value || "").trim().toUpperCase().replace(/[^A-Z]/g, "").slice(0, 2);
+        }
+
+        function normalizeCountryName(value) {
+            return String(value || "").replace(/[<>]/g, "").trim().slice(0, 60);
+        }
+
+        function countryFlagEmoji(countryCode) {
+            const code = normalizeCountryCode(countryCode);
+            if (code.length !== 2) {
+                return "";
+            }
+            return String.fromCodePoint(...[...code].map((char) => 127397 + char.charCodeAt(0)));
+        }
+
+        function sanitizeRequestMessage(value, fallbackText) {
+            const cleaned = String(value || "").replace(/[<>]/g, "").trim().slice(0, 220);
+            if (cleaned) {
+                return cleaned;
+            }
+            return String(fallbackText || "").replace(/[<>]/g, "").trim().slice(0, 220);
+        }
+
+        function normalizeBio(value) {
+            return String(value || "").replace(/[<>]/g, "").trim().slice(0, 180);
+        }
+
+        async function resolveCountryFromConnection() {
+            const fallbackFromLocale = () => {
+                const locale = String(navigator.language || "");
+                const region = locale.includes("-") ? locale.split("-").pop() : "";
+                return {
+                    countryName: "",
+                    countryCode: normalizeCountryCode(region || "")
+                };
+            };
+
+            try {
+                const response = await fetch("https://ipwho.is/?fields=country,country_code,success", { cache: "no-store" });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.success !== false) {
+                        return {
+                            countryName: normalizeCountryName(data.country || ""),
+                            countryCode: normalizeCountryCode(String(data.country_code || ""))
+                        };
+                    }
+                }
+            } catch (_error) {
+                // Fallback below.
+            }
+
+            return fallbackFromLocale();
+        }
+
+        function computeLevelFromPoints(totalPoints) {
+            const points = Math.max(0, Number(totalPoints || 0));
+            if (points < FIRST_LEVEL_POINTS) return 0;
+            return 1 + Math.floor((points - FIRST_LEVEL_POINTS) / LEVEL_STEP_POINTS);
+        }
+
+        function countWordsFromText(text) {
+            return String(text || "")
+                .trim()
+                .split(/\s+/)
+                .filter(Boolean)
+                .length;
+        }
+
+        function countCharsFromText(text) {
+            return String(text || "")
+                .replace(/\s+/g, " ")
+                .trim()
+                .length;
+        }
+
+        function getMonthKey(timestamp) {
+            const date = new Date(Number(timestamp || Date.now()));
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+        }
+
+        function normalizeModeKey(value) {
+            const mode = String(value || "").toLowerCase();
+            if (mode === "g1" || mode === "single" || mode.includes("single")) return "single";
+            if (mode === "g2" || mode === "triple" || mode.includes("triple")) return "triple";
+            if (mode === "g3" || mode === "sequential" || mode.includes("sequential")) return "sequential";
+            if (mode === "g4" || mode === "paragraph" || mode.includes("paragraph")) return "paragraph";
+            return "single";
+        }
+
+        function formatNumber(value) {
+            const locale = currentLanguage === "en" ? "en-US" : "ar-SA-u-nu-latn";
+            return new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(Number(value || 0));
+        }
+
+        function formatDateValue(timestamp) {
+            const value = Number(timestamp || 0);
+            if (!value) return t("statUnavailable");
+            const locale = currentLanguage === "en" ? "en-US" : "ar-SA-u-nu-latn";
+            return new Date(value).toLocaleDateString(locale);
+        }
+
+        function formatBestSpeedValue(secondsPerWord) {
+            const value = Number(secondsPerWord || 0);
+            if (!value || !Number.isFinite(value)) return t("statUnavailable");
+            if (currentLanguage === "en") {
+                return t("bestSpeedFormatEn").replace("{value}", value.toFixed(2));
+            }
+            return t("bestSpeedFormatAr").replace("{value}", value.toFixed(2));
+        }
+
+        function formatAverageSpeedValue(averageWpm) {
+            const value = Number(averageWpm || 0);
+            if (!value || !Number.isFinite(value)) return t("statUnavailable");
+            if (currentLanguage === "en") {
+                return t("speedFormatEn").replace("{value}", value.toFixed(1));
+            }
+            return t("speedFormatAr").replace("{value}", value.toFixed(1));
+        }
+
+        function setPlayMapChips(modeCounts = {}) {
+            if (!playMapValue) return;
+            playMapValue.textContent = "";
+
+            const labels = {
+                single: currentLanguage === "en" ? "Single" : "الفردي",
+                triple: currentLanguage === "en" ? "Triple" : "الثلاثي",
+                sequential: currentLanguage === "en" ? "Sequential" : "المتتابع",
+                paragraph: currentLanguage === "en" ? "Paragraph" : "الفقرة"
+            };
+
+            const pairs = ["single", "triple", "sequential", "paragraph"].map((key) => ({
+                key,
+                count: Number(modeCounts[key] || 0)
+            }));
+            const hasActivity = pairs.some((item) => item.count > 0);
+            if (!hasActivity) {
+                const chip = document.createElement("span");
+                chip.className = "play-map-chip";
+                chip.textContent = t("playMapNone");
+                playMapValue.appendChild(chip);
+                return;
+            }
+
+            pairs.forEach((item) => {
+                if (item.count <= 0) return;
+                const chip = document.createElement("span");
+                chip.className = "play-map-chip";
+                chip.textContent = `${labels[item.key]}: ${formatNumber(item.count)}`;
+                playMapValue.appendChild(chip);
+            });
+        }
+
+        function renderFriendsPreview(friendsPreview = []) {
+            if (!friendsPreviewGrid) {
+                return;
+            }
+
+            friendsPreviewGrid.textContent = "";
+            const rows = Array.isArray(friendsPreview) ? friendsPreview : [];
+            if (!rows.length) {
+                const emptyChip = document.createElement("span");
+                emptyChip.className = "friend-preview-chip";
+                emptyChip.textContent = t("friendsPreviewEmpty");
+                friendsPreviewGrid.appendChild(emptyChip);
+                return;
+            }
+
+            rows.slice(0, 8).forEach((friend) => {
+                const chip = document.createElement("span");
+                chip.className = "friend-preview-chip";
+                const friendName = normalizeDisplayName(friend?.name || "", currentLanguage === "en" ? "Player" : "لاعب");
+                chip.textContent = friendName;
+                chip.title = friendName;
+                friendsPreviewGrid.appendChild(chip);
+            });
+        }
+
+        async function countFriends(uid) {
+            if (!uid) return 0;
+            try {
+                const snapshot = await get(ref(db, `users/${uid}/friends`));
+                if (!snapshot.exists()) return 0;
+                return Object.keys(snapshot.val() || {}).length;
+            } catch (_error) {
+                return 0;
+            }
+        }
+
+        async function fetchFriendsPreview(uid, limit = 8) {
+            if (!uid) {
+                return [];
+            }
+            try {
+                const snapshot = await get(ref(db, `users/${uid}/friends`));
+                if (!snapshot.exists()) {
+                    return [];
+                }
+                const rows = Object.values(snapshot.val() || {});
+                return rows
+                    .map((row) => ({
+                        uid: String(row?.uid || ""),
+                        shortId: ensureShortId(row?.shortId || "", ""),
+                        name: normalizeDisplayName(row?.name || "", currentLanguage === "en" ? "Player" : "لاعب")
+                    }))
+                    .slice(0, Math.max(1, Number(limit || 8)));
+            } catch (_error) {
+                return [];
+            }
+        }
+
+        async function fetchFollowersPreview(uid, limit = 8) {
+            if (!uid) {
+                return [];
+            }
+            try {
+                const snapshot = await get(ref(db, `users/${uid}/followers`));
+                if (!snapshot.exists()) {
+                    return [];
+                }
+                const rows = Object.values(snapshot.val() || {});
+                return rows
+                    .map((row) => ({
+                        uid: String(row?.uid || ""),
+                        shortId: ensureShortId(row?.shortId || "", ""),
+                        name: normalizeDisplayName(row?.name || "", currentLanguage === "en" ? "Player" : "لاعب")
+                    }))
+                    .slice(0, Math.max(1, Number(limit || 8)));
+            } catch (_error) {
+                return [];
+            }
+        }
+
+        function renderSocialTiles(profile, isOwner) {
+            if (!socialTilesSection || !friendsTilesGrid || !followersTilesGrid) {
+                return;
+            }
+
+            const source = profile && typeof profile === "object" ? profile : {};
+            const isPrivate = Boolean(source.isPrivate);
+            const showFriendsSection = Boolean(source.showFriendsSection);
+            const canRender = isOwner || (!isPrivate && showFriendsSection);
+            socialTilesSection.classList.toggle("is-hidden", !canRender);
+            if (!canRender) {
+                return;
+            }
+
+            const renderGrid = (target, rows) => {
+                target.textContent = "";
+                const list = Array.isArray(rows) ? rows : [];
+                if (!list.length) {
+                    const empty = document.createElement("span");
+                    empty.className = "social-tile";
+                    empty.textContent = t("socialTilesEmpty");
+                    target.appendChild(empty);
+                    return;
+                }
+
+                list.slice(0, 24).forEach((entry) => {
+                    const uid = String(entry?.uid || "").trim();
+                    const name = normalizeDisplayName(entry?.name || "", currentLanguage === "en" ? "Player" : "لاعب");
+                    const shortId = ensureShortId(entry?.shortId || "", uid);
+                    const tile = uid
+                        ? document.createElement("a")
+                        : document.createElement("div");
+                    tile.className = "social-tile";
+                    if (uid) {
+                        tile.href = `../profile/?uid=${encodeURIComponent(uid)}`;
+                    }
+
+                    const nameEl = document.createElement("span");
+                    nameEl.className = "social-tile-name";
+                    nameEl.textContent = name;
+
+                    const metaEl = document.createElement("span");
+                    metaEl.className = "social-tile-meta";
+                    metaEl.textContent = shortId ? `#${shortId}` : "";
+
+                    tile.appendChild(nameEl);
+                    tile.appendChild(metaEl);
+                    target.appendChild(tile);
+                });
+            };
+
+            renderGrid(friendsTilesGrid, source.friendsPreview || []);
+            renderGrid(followersTilesGrid, source.followersPreview || []);
+        }
+
+        async function countFollowers(uid) {
+            if (!uid) return 0;
+            try {
+                const snapshot = await get(ref(db, `users/${uid}/followers`));
+                if (!snapshot.exists()) return 0;
+                return Object.keys(snapshot.val() || {}).length;
+            } catch (_error) {
+                return 0;
+            }
+        }
+
+        async function computeRoundAggregates(uid) {
+            if (!uid) {
+                return {
+                    totalWords: 0,
+                    totalCharacters: 0,
+                    totalRounds: 0,
+                    averageWpm: 0,
+                    bestSecondsPerWord: 0,
+                    modeCounts: { single: 0, triple: 0, sequential: 0, paragraph: 0 }
+                };
+            }
+
+            try {
+                const roundsSnapshot = await get(ref(db, `users/${uid}/rounds`));
+                if (!roundsSnapshot.exists()) {
+                    return {
+                        totalWords: 0,
+                        totalCharacters: 0,
+                        totalRounds: 0,
+                        averageWpm: 0,
+                        bestSecondsPerWord: 0,
+                        modeCounts: { single: 0, triple: 0, sequential: 0, paragraph: 0 }
+                    };
+                }
+
+                const rounds = roundsSnapshot.val() || {};
+                let totalWords = 0;
+                let totalCharacters = 0;
+                let totalRounds = 0;
+                let totalWpm = 0;
+                let wpmSamples = 0;
+                let bestSecondsPerWord = Number.POSITIVE_INFINITY;
+                const modeCounts = { single: 0, triple: 0, sequential: 0, paragraph: 0 };
+
+                Object.keys(rounds).forEach((roundId) => {
+                    const round = rounds[roundId] || {};
+                    const wordText = String(round.word || "");
+                    const roundWords = Math.max(1, Number(round.wordCount || countWordsFromText(wordText)));
+                    const roundChars = Math.max(1, Number(round.charCount || countCharsFromText(wordText)));
+                    const timeTaken = Math.max(0, Number(round.timeTaken || 0));
+                    let roundWpm = Number(round.wpm || 0);
+                    if (!roundWpm && timeTaken > 0) {
+                        roundWpm = (roundChars / 5) / (timeTaken / 60);
+                    }
+                    const secondsPerWord = Number(round.secondsPerWord || (timeTaken > 0 ? (timeTaken / roundWords) : 0));
+                    const modeKey = normalizeModeKey(round.mode || round.modeId || "single");
+
+                    totalRounds += 1;
+                    totalWords += Math.max(0, roundWords);
+                    totalCharacters += Math.max(0, roundChars);
+                    modeCounts[modeKey] = Number(modeCounts[modeKey] || 0) + 1;
+                    if (roundWpm > 0 && Number.isFinite(roundWpm)) {
+                        totalWpm += roundWpm;
+                        wpmSamples += 1;
+                    }
+                    if (secondsPerWord > 0 && Number.isFinite(secondsPerWord)) {
+                        bestSecondsPerWord = Math.min(bestSecondsPerWord, secondsPerWord);
+                    }
+                });
+
+                return {
+                    totalWords,
+                    totalCharacters,
+                    totalRounds,
+                    averageWpm: wpmSamples > 0 ? Number((totalWpm / wpmSamples).toFixed(2)) : 0,
+                    bestSecondsPerWord: Number.isFinite(bestSecondsPerWord) ? Number(bestSecondsPerWord.toFixed(4)) : 0,
+                    modeCounts
+                };
+            } catch (_error) {
+                return {
+                    totalWords: 0,
+                    totalCharacters: 0,
+                    totalRounds: 0,
+                    averageWpm: 0,
+                    bestSecondsPerWord: 0,
+                    modeCounts: { single: 0, triple: 0, sequential: 0, paragraph: 0 }
+                };
+            }
+        }
+
+        function applyThemeAndLanguage() {
+            const saved = readTypingGameState();
+            const nextTheme = String(saved.currentTheme || "ocean");
+            const nextColorMode = String(saved.currentColorMode || "blur");
+            currentLanguage = saved.currentLanguage === "en" ? "en" : "ar";
+            document.documentElement.lang = currentLanguage;
+            document.documentElement.dir = "rtl";
+            document.documentElement.setAttribute("data-theme", nextTheme);
+            document.documentElement.setAttribute("data-color-mode", nextColorMode);
+            const logoImg = document.getElementById("logoImg");
+            if (logoImg) {
+                logoImg.src = resolveWordmarkSrc(nextColorMode, currentLanguage);
+            }
+        }
+
+        function applyProfileVisualMode(isPrivate) {
+            document.body.classList.toggle("profile-view-private", Boolean(isPrivate));
+            document.body.classList.toggle("profile-view-public", !Boolean(isPrivate));
+        }
+
+        function applyTexts() {
+            pageTitle.textContent = t("pageTitle");
+            pageSubtitle.textContent = t("pageSubtitle");
+            backBtnText.textContent = t("backBtn");
+            if (ownerProfileQuickText) ownerProfileQuickText.textContent = t("ownerProfileSettings");
+            if (ownerProfileQuickBtn) {
+                ownerProfileQuickBtn.title = t("ownerProfileSettings");
+                ownerProfileQuickBtn.setAttribute("aria-label", t("ownerProfileSettings"));
+            }
+            nameLabel.textContent = t("name");
+            idLabel.textContent = t("userId");
+            levelLabel.textContent = t("level");
+            pointsLabel.textContent = t("points");
+            wordsLabel.textContent = t("wordsWritten");
+            charsLabel.textContent = t("charsWritten");
+            joinDateLabel.textContent = t("joinDate");
+            bestSpeedLabel.textContent = t("bestSpeed");
+            avgSpeedLabel.textContent = t("avgSpeed");
+            monthPointsLabel.textContent = t("monthPoints");
+            roundsLabel.textContent = t("totalRounds");
+            badgeLabel.textContent = t("badge");
+            visibilityLabel.textContent = t("visibility");
+            followersLabel.textContent = t("followers");
+            countryLabel.textContent = t("country");
+            languageLabel.textContent = t("language");
+            publicModulesTitle.textContent = t("publicModulesTitle");
+            if (socialTilesTitle) socialTilesTitle.textContent = t("socialTilesTitle");
+            if (friendsTilesTitle) friendsTilesTitle.textContent = t("friendsTilesTitle");
+            if (followersTilesTitle) followersTilesTitle.textContent = t("followersTilesTitle");
+            friendsModuleLabel.textContent = t("friendsModule");
+            if (friendsPreviewLabel) friendsPreviewLabel.textContent = t("friendsPreviewTitle");
+            playMapLabel.textContent = t("playMap");
+            privacyTitle.textContent = t("privacyTitle");
+            privateModeTitle.textContent = t("privateModeTitle");
+            privateModeHelp.textContent = t("privateModeHelp");
+            showCountryTitle.textContent = t("showCountryTitle");
+            showCountryHelp.textContent = t("showCountryHelp");
+            showFriendsSectionTitle.textContent = t("showFriendsSectionTitle");
+            showFriendsSectionHelp.textContent = t("showFriendsSectionHelp");
+            showPlayMapSectionTitle.textContent = t("showPlayMapSectionTitle");
+            showPlayMapSectionHelp.textContent = t("showPlayMapSectionHelp");
+            countryInputLabel.textContent = t("countryInputLabel");
+            countryInput.placeholder = t("countryPlaceholder");
+            if (bioInputLabel) bioInputLabel.textContent = t("bioInputLabel");
+            if (bioInput) bioInput.placeholder = t("bioPlaceholder");
+            savePrivacyText.textContent = t("save");
+            if (privacyModalCloseText) privacyModalCloseText.textContent = t("close");
+            if (pageLoaderTitle) pageLoaderTitle.textContent = t("pageLoaderTitle");
+            if (pageLoaderSubtitle) pageLoaderSubtitle.textContent = t("pageLoaderSubtitle");
+            setFriendRequestOpenState(friendRequestOpenState);
+            friendRequestTitle.textContent = t("friendRequestTitle");
+            friendRequestMessageLabel.textContent = t("friendRequestMessageLabel");
+            friendRequestMessageInput.placeholder = t("friendRequestMessagePlaceholder");
+            if (!String(friendRequestMessageInput.value || "").trim()) {
+                friendRequestMessageInput.value = t("friendRequestDefaultMessage");
+            }
+            friendRequestSendText.textContent = t("friendRequestSend");
+            if (friendRequestCancelText) friendRequestCancelText.textContent = t("friendRequestCancel");
+            followToggleText.textContent = isFollowingActiveProfile ? t("unfollow") : t("follow");
+            if (followNote) followNote.textContent = t("followNote");
+            versionLabel.textContent = t("versionLabel");
+            betaLabel.textContent = t("betaLabel");
+            if (logoHomeLink) {
+                logoHomeLink.setAttribute("aria-label", t("logoHomeAria"));
+            }
+        }
+
+        function setFriendRequestStatus(message, type = "") {
+            friendRequestStatus.textContent = message;
+            friendRequestStatus.className = type ? `result ${type}` : "result";
+        }
+
+        function setFollowStatus(message, type = "") {
+            if (!followStatus) return;
+            const nextMessage = String(message || "");
+            followStatus.textContent = nextMessage;
+            if (type) {
+                followStatus.className = `result hero-inline-result ${type}`;
+            } else if (!nextMessage.trim()) {
+                followStatus.className = "result hero-inline-result";
+            }
+            const isSocialVisible = Boolean(followToggleBtn) && !followToggleBtn.classList.contains("is-hidden");
+            followStatus.classList.toggle("is-hidden", !nextMessage.trim() || !isSocialVisible);
+        }
+
+        function setOwnerQuickControlsVisible(isVisible) {
+            const show = Boolean(isVisible);
+            if (ownerProfileQuickBtn) ownerProfileQuickBtn.classList.toggle("is-hidden", !show);
+        }
+
+        function setSocialActionsVisible(isVisible) {
+            const show = Boolean(isVisible);
+            if (friendRequestOpenBtn) friendRequestOpenBtn.classList.toggle("is-hidden", !show);
+            if (followToggleBtn) followToggleBtn.classList.toggle("is-hidden", !show);
+            if (!show) {
+                closeFriendRequestModal();
+            }
+            const hasFollowMessage = String(followStatus?.textContent || "").trim().length > 0;
+            if (followStatus) {
+                followStatus.classList.toggle("is-hidden", !show || !hasFollowMessage);
+            }
+        }
+
+        function setFriendRequestOpenState(state = "available") {
+            const normalized = state === "pending"
+                || state === "friend"
+                || state === "unavailable"
+                ? state
+                : "available";
+            friendRequestOpenState = normalized;
+
+            if (!friendRequestOpenBtn || !friendRequestOpenText) {
+                return;
+            }
+
+            let labelKey = "friendRequestOpen";
+            let disabled = false;
+
+            if (normalized === "pending") {
+                labelKey = "friendRequestOpenPending";
+                disabled = true;
+            } else if (normalized === "friend") {
+                labelKey = "friendRequestOpenFriend";
+                disabled = true;
+            } else if (normalized === "unavailable") {
+                labelKey = "friendRequestOpenUnavailable";
+                disabled = true;
+            }
+
+            const label = t(labelKey);
+            friendRequestOpenText.textContent = label;
+            friendRequestOpenBtn.title = label;
+            friendRequestOpenBtn.setAttribute("aria-label", label);
+            friendRequestOpenBtn.disabled = disabled;
+        }
+
+        async function refreshFriendRequestState(targetProfile) {
+            if (!viewerUid || !targetProfile || !targetProfile.uid) {
+                setFriendRequestOpenState("unavailable");
+                return;
+            }
+
+            const targetUid = String(targetProfile.uid || "");
+            if (!targetUid || targetUid === viewerUid) {
+                setFriendRequestOpenState("unavailable");
+                return;
+            }
+
+            if (Boolean(targetProfile.isPrivate)) {
+                setFriendRequestOpenState("unavailable");
+                return;
+            }
+
+            try {
+                const [friendSnapshot, outgoingSnapshot, incomingSnapshot] = await Promise.all([
+                    get(ref(db, `users/${viewerUid}/friends/${targetUid}`)),
+                    get(ref(db, `users/${viewerUid}/friendRequests/outgoing/${targetUid}`)),
+                    get(ref(db, `users/${viewerUid}/friendRequests/incoming/${targetUid}`))
+                ]);
+
+                if (friendSnapshot.exists()) {
+                    setFriendRequestOpenState("friend");
+                    return;
+                }
+
+                if (outgoingSnapshot.exists() || incomingSnapshot.exists()) {
+                    setFriendRequestOpenState("pending");
+                    return;
+                }
+
+                setFriendRequestOpenState("available");
+            } catch (_error) {
+                setFriendRequestOpenState("available");
+            }
+        }
+
+        function openFriendRequestModal() {
+            if (!friendRequestModal) return;
+            if (friendRequestOpenBtn?.disabled) return;
+            if (!String(friendRequestMessageInput.value || "").trim()) {
+                friendRequestMessageInput.value = t("friendRequestDefaultMessage");
+            }
+            setFriendRequestStatus("");
+            friendRequestModal.classList.add("active");
+            friendRequestModal.setAttribute("aria-hidden", "false");
+            setTimeout(() => friendRequestMessageInput?.focus(), 0);
+        }
+
+        function closeFriendRequestModal() {
+            if (!friendRequestModal) return;
+            friendRequestModal.classList.remove("active");
+            friendRequestModal.setAttribute("aria-hidden", "true");
+        }
+
+        function openPrivacyModal() {
+            if (!privacyModal) return;
+            privacyModal.classList.add("active");
+            privacyModal.setAttribute("aria-hidden", "false");
+        }
+
+        function closePrivacyModal() {
+            if (!privacyModal) return;
+            privacyModal.classList.remove("active");
+            privacyModal.setAttribute("aria-hidden", "true");
+        }
+
+        async function sendFriendRequestFromProfile(targetProfile) {
+            if (!viewerUid || !viewerProfile || !targetProfile || !targetProfile.uid) {
+                return;
+            }
+
+            const targetUid = String(targetProfile.uid || "");
+            if (!targetUid || targetUid === viewerUid) {
+                return;
+            }
+
+            if (Boolean(targetProfile.isPrivate)) {
+                setFriendRequestOpenState("unavailable");
+                setFriendRequestStatus(t("friendRequestPrivate"), "warning");
+                return;
+            }
+
+            const [friendSnapshot, outgoingSnapshot, incomingSnapshot] = await Promise.all([
+                get(ref(db, `users/${viewerUid}/friends/${targetUid}`)),
+                get(ref(db, `users/${viewerUid}/friendRequests/outgoing/${targetUid}`)),
+                get(ref(db, `users/${viewerUid}/friendRequests/incoming/${targetUid}`))
+            ]);
+
+            if (friendSnapshot.exists()) {
+                setFriendRequestOpenState("friend");
+                setFriendRequestStatus(t("friendRequestAlreadyFriend"), "warning");
+                return;
+            }
+
+            if (outgoingSnapshot.exists() || incomingSnapshot.exists()) {
+                setFriendRequestOpenState("pending");
+                setFriendRequestStatus(t("friendRequestAlreadyPending"), "warning");
+                return;
+            }
+
+            const requestMessage = sanitizeRequestMessage(friendRequestMessageInput.value, t("friendRequestDefaultMessage"));
+            const fromName = normalizeDisplayName(viewerProfile.displayName, currentLanguage === "en" ? "Player" : "لاعب");
+            const fromShortId = ensureShortId(viewerProfile.shortId, viewerUid);
+            const toName = normalizeDisplayName(targetProfile.displayName, currentLanguage === "en" ? "Player" : "لاعب");
+            const toShortId = ensureShortId(targetProfile.shortId, targetUid);
+            const now = Date.now();
+            const notificationId = push(ref(db, `users/${targetUid}/notifications`)).key;
+
+            const payload = {
+                [`users/${targetUid}/friendRequests/incoming/${viewerUid}`]: {
+                    fromUid: viewerUid,
+                    toUid: targetUid,
+                    fromShortId,
+                    fromName,
+                    requestMessage,
+                    createdAt: now
+                },
+                [`users/${viewerUid}/friendRequests/outgoing/${targetUid}`]: {
+                    fromUid: viewerUid,
+                    toUid: targetUid,
+                    toShortId,
+                    toName,
+                    requestMessage,
+                    createdAt: now
+                }
+            };
+
+            if (notificationId) {
+                payload[`users/${targetUid}/notifications/${notificationId}`] = {
+                    type: "friend_request",
+                    message: requestMessage,
+                    messageAr: requestMessage,
+                    messageEn: requestMessage,
+                    fromUid: viewerUid,
+                    toUid: targetUid,
+                    fromName,
+                    fromShortId,
+                    requestMessage,
+                    createdAt: now
+                };
+            }
+
+            try {
+                friendRequestSendBtn.disabled = true;
+                await update(ref(db), payload);
+                setFriendRequestOpenState("pending");
+                setFriendRequestStatus(t("friendRequestSent"), "success");
+                closeFriendRequestModal();
+            } catch (_error) {
+                setFriendRequestStatus(t("friendRequestFail"), "warning");
+            } finally {
+                friendRequestSendBtn.disabled = false;
+            }
+        }
+
+        async function refreshFollowState(targetUid) {
+            if (!viewerUid || !targetUid || targetUid === viewerUid) {
+                isFollowingActiveProfile = false;
+                followToggleText.textContent = t("follow");
+                return;
+            }
+
+            try {
+                const snapshot = await get(ref(db, `users/${viewerUid}/following/${targetUid}`));
+                isFollowingActiveProfile = snapshot.exists();
+            } catch (_error) {
+                isFollowingActiveProfile = false;
+            }
+
+            followToggleText.textContent = isFollowingActiveProfile ? t("unfollow") : t("follow");
+        }
+
+        async function toggleFollowFromProfile(targetProfile) {
+            if (!viewerUid || !viewerProfile || !targetProfile || !targetProfile.uid) {
+                return;
+            }
+
+            const targetUid = String(targetProfile.uid || "");
+            if (!targetUid || targetUid === viewerUid) {
+                return;
+            }
+
+            const fromName = normalizeDisplayName(viewerProfile.displayName, currentLanguage === "en" ? "Player" : "لاعب");
+            const fromShortId = ensureShortId(viewerProfile.shortId, viewerUid);
+            const toName = normalizeDisplayName(targetProfile.displayName, currentLanguage === "en" ? "Player" : "لاعب");
+            const toShortId = ensureShortId(targetProfile.shortId, targetUid);
+            const now = Date.now();
+            const payload = {};
+
+            if (isFollowingActiveProfile) {
+                payload[`users/${viewerUid}/following/${targetUid}`] = null;
+                payload[`users/${targetUid}/followers/${viewerUid}`] = null;
+            } else {
+                payload[`users/${viewerUid}/following/${targetUid}`] = {
+                    uid: targetUid,
+                    shortId: toShortId,
+                    name: toName,
+                    since: now
+                };
+                payload[`users/${targetUid}/followers/${viewerUid}`] = {
+                    uid: viewerUid,
+                    shortId: fromShortId,
+                    name: fromName,
+                    since: now
+                };
+            }
+
+            followToggleBtn.disabled = true;
+            try {
+                await update(ref(db), payload);
+                isFollowingActiveProfile = !isFollowingActiveProfile;
+                const liveFollowerCount = await countFollowers(targetUid);
+                targetProfile.followerCount = liveFollowerCount;
+                followersValue.textContent = formatNumber(liveFollowerCount);
+                followToggleText.textContent = isFollowingActiveProfile ? t("unfollow") : t("follow");
+                setFollowStatus(isFollowingActiveProfile ? t("followSuccess") : t("unfollowSuccess"), "success");
+            } catch (_error) {
+                setFollowStatus(t("followFail"), "warning");
+            } finally {
+                followToggleBtn.disabled = false;
+            }
+        }
+
+        async function fetchViewerData(uid) {
+            const [userSnapshot, publicSnapshot] = await Promise.all([
+                get(ref(db, `users/${uid}`)),
+                get(ref(db, `publicProfiles/${uid}`))
+            ]);
+
+            if (!userSnapshot.exists()) {
+                return null;
+            }
+
+            const userNode = userSnapshot.val() || {};
+            const profile = userNode.profile || {};
+            const stats = profile.stats || {};
+            const privacy = (profile.privacy && typeof profile.privacy === "object") ? profile.privacy : {};
+            const preferences = (profile.preferences && typeof profile.preferences === "object") ? profile.preferences : {};
+
+            const level = Number(stats.level || computeLevelFromPoints(Number(stats.totalPoints || 0)));
+            const totalPoints = Number(stats.totalPoints || 0);
+            let totalWords = Number(stats.totalWords || 0);
+            let totalCharacters = Number(stats.totalCharacters || 0);
+            let totalRounds = Number(stats.totalRounds || 0);
+            let averageWpm = 0;
+            let bestSecondsPerWord = Number(stats.bestSecondsPerWord || 0);
+            const displayName = normalizeDisplayName(profile.nickname || profile.displayName || userNode.nickname || userNode.displayName, currentLanguage === "en" ? "Player" : "لاعب");
+            const shortId = ensureShortId(profile.shortId || userNode.shortId || uid, uid);
+            const photoURL = String(profile.photoURL || userNode.photoURL || "");
+            const joinedAt = Number(profile.joinedAt || userNode.joinedAt || 0);
+            const monthKey = getMonthKey(Date.now());
+            const monthlyPointsMap = (stats.monthlyPoints && typeof stats.monthlyPoints === "object") ? stats.monthlyPoints : {};
+            const monthlyPoints = Number(monthlyPointsMap[monthKey] || 0);
+            const badges = Array.isArray(stats.badges) ? stats.badges : [];
+            const preferredLanguage = (preferences.language === "en" || preferences.language === "ar")
+                ? preferences.language
+                : currentLanguage;
+
+            const roundAggregates = await computeRoundAggregates(uid);
+            const [friendsCount, followerCount, friendsPreview, followersPreview] = await Promise.all([
+                countFriends(uid),
+                countFollowers(uid),
+                fetchFriendsPreview(uid, 8),
+                fetchFollowersPreview(uid, 8)
+            ]);
+
+            if (totalWords <= 0 || totalCharacters <= 0) {
+                totalWords = Math.max(totalWords, Number(roundAggregates.totalWords || 0));
+                totalCharacters = Math.max(totalCharacters, Number(roundAggregates.totalCharacters || 0));
+
+                if (totalWords > Number(stats.totalWords || 0) || totalCharacters > Number(stats.totalCharacters || 0)) {
+                    void update(ref(db), {
+                        [`users/${uid}/profile/stats/totalWords`]: totalWords,
+                        [`users/${uid}/profile/stats/totalCharacters`]: totalCharacters,
+                        [`users/${uid}/profile/stats/updatedAt`]: Date.now()
+                    });
+                }
+            }
+
+            totalRounds = Math.max(totalRounds, Number(roundAggregates.totalRounds || 0));
+            averageWpm = Number(roundAggregates.averageWpm || 0);
+            bestSecondsPerWord = bestSecondsPerWord > 0
+                ? bestSecondsPerWord
+                : Number(roundAggregates.bestSecondsPerWord || 0);
+
+            const existingPublic = publicSnapshot.exists() ? (publicSnapshot.val() || {}) : {};
+            const isPrivate = typeof existingPublic.isPrivate === "boolean"
+                ? existingPublic.isPrivate
+                : (typeof privacy.isPrivate === "boolean" ? privacy.isPrivate : true);
+            const showCountry = typeof existingPublic.showCountry === "boolean"
+                ? existingPublic.showCountry
+                : (typeof privacy.showCountry === "boolean" ? privacy.showCountry : false);
+            const showFriendsSection = typeof existingPublic.showFriendsSection === "boolean"
+                ? existingPublic.showFriendsSection
+                : (typeof privacy.showFriendsSection === "boolean" ? privacy.showFriendsSection : true);
+            const showPlayMapSection = typeof existingPublic.showPlayMapSection === "boolean"
+                ? existingPublic.showPlayMapSection
+                : (typeof privacy.showPlayMapSection === "boolean" ? privacy.showPlayMapSection : true);
+            const countryNameRaw = normalizeCountryName(existingPublic.countryName || privacy.countryName || "");
+            const countryCodeRaw = normalizeCountryCode(existingPublic.countryCode || privacy.countryCode || "");
+            const countryName = showCountry ? countryNameRaw : "";
+            const countryCode = showCountry ? countryCodeRaw : "";
+            const bio = normalizeBio(existingPublic.bio || profile.bio || userNode.bio || "");
+            const topBadge = String(existingPublic.topBadge || badges[badges.length - 1] || "").trim();
+            const modeCounts = {
+                single: Number(existingPublic.modeCounts?.single || roundAggregates.modeCounts.single || 0),
+                triple: Number(existingPublic.modeCounts?.triple || roundAggregates.modeCounts.triple || 0),
+                sequential: Number(existingPublic.modeCounts?.sequential || roundAggregates.modeCounts.sequential || 0),
+                paragraph: Number(existingPublic.modeCounts?.paragraph || roundAggregates.modeCounts.paragraph || 0)
+            };
+
+            const publicProfile = {
+                uid,
+                shortId,
+                displayName,
+                level,
+                totalPoints,
+                totalWords,
+                totalCharacters,
+                totalRounds,
+                monthlyPoints,
+                averageWpm,
+                bestSecondsPerWord,
+                joinedAt,
+                topBadge,
+                friendsCount,
+                friendsPreview,
+                followerCount,
+                followersPreview,
+                modeCounts,
+                preferredLanguage,
+                isPrivate,
+                showCountry,
+                showFriendsSection,
+                showPlayMapSection,
+                countryCode,
+                countryName,
+                bio,
+                updatedAt: Date.now(),
+                ...(photoURL ? { photoURL } : {})
+            };
+
+            return {
+                userNode,
+                profile,
+                stats: {
+                    ...stats,
+                    totalPoints,
+                    totalWords,
+                    totalCharacters,
+                    totalRounds,
+                    monthlyPoints,
+                    averageWpm,
+                    bestSecondsPerWord,
+                    joinedAt,
+                    topBadge,
+                    friendsCount,
+                    friendsPreview,
+                    followerCount,
+                    followersPreview,
+                    bio,
+                    modeCounts
+                },
+                publicProfile,
+                hasPublicProfile: publicSnapshot.exists()
+            };
+        }
+
+        function buildRequestedProfileFallback() {
+            if (!requestedUid && !requestedShortId) {
+                return null;
+            }
+
+            const shortId = ensureShortId(requestedShortId || "", requestedUid || "");
+            if (!requestedUid && !shortId) {
+                return null;
+            }
+
+            return {
+                uid: requestedUid || "",
+                shortId,
+                displayName: normalizeDisplayName(requestedDisplayName || "", currentLanguage === "en" ? "Player" : "لاعب"),
+                level: 0,
+                totalPoints: 0,
+                totalWords: 0,
+                totalCharacters: 0,
+                totalRounds: 0,
+                monthlyPoints: 0,
+                averageWpm: 0,
+                bestSecondsPerWord: 0,
+                joinedAt: 0,
+                topBadge: "",
+                preferredLanguage: currentLanguage === "en" ? "en" : "ar",
+                isPrivate: true,
+                showCountry: false,
+                showFriendsSection: false,
+                showPlayMapSection: false,
+                countryCode: "",
+                countryName: "",
+                bio: "",
+                friendsCount: 0,
+                friendsPreview: [],
+                followerCount: 0,
+                followersPreview: [],
+                modeCounts: { single: 0, triple: 0, sequential: 0, paragraph: 0 },
+                isPartialPublicProfile: true
+            };
+        }
+
+        async function findRequestedPublicProfile() {
+            if (!requestedUid && !requestedShortId) {
+                return null;
+            }
+
+            try {
+                if (requestedUid) {
+                    let publicSnapshot = null;
+                    let userProfileSnapshot = null;
+                    try { publicSnapshot = await get(ref(db, `publicProfiles/${requestedUid}`)); } catch (e) {}
+                    try { userProfileSnapshot = await get(ref(db, `users/${requestedUid}/profile`)); } catch (e) {}
+
+                    if (publicSnapshot && publicSnapshot.exists()) {
+                        return { uid: requestedUid, ...(publicSnapshot.val() || {}) };
+                    }
+                    if (userProfileSnapshot && userProfileSnapshot.exists()) {
+                        const profileNode = userProfileSnapshot.val() || {};
+                        const privacyNode = (profileNode.privacy && typeof profileNode.privacy === "object") ? profileNode.privacy : {};
+                        return {
+                            uid: requestedUid,
+                            shortId: ensureShortId(profileNode.shortId || requestedUid, requestedUid),
+                            displayName: normalizeDisplayName(profileNode.nickname || profileNode.displayName || "", currentLanguage === "en" ? "Player" : "لاعب"),
+                            isPrivate: typeof privacyNode.isPrivate === "boolean" ? privacyNode.isPrivate : true,
+                            showCountry: typeof privacyNode.showCountry === "boolean" ? privacyNode.showCountry : false,
+                            showFriendsSection: typeof privacyNode.showFriendsSection === "boolean" ? privacyNode.showFriendsSection : true,
+                            showPlayMapSection: typeof privacyNode.showPlayMapSection === "boolean" ? privacyNode.showPlayMapSection : true,
+                            countryCode: normalizeCountryCode(privacyNode.countryCode || ""),
+                            countryName: normalizeCountryName(privacyNode.countryName || ""),
+                            bio: normalizeBio(profileNode.bio || "")
+                        };
+                    }
+                    return null;
+                }
+
+                const normalizedShortId = normalizeShortId(requestedShortId);
+                if (!normalizedShortId) {
+                    return null;
+                }
+
+                const shortIdQuery = query(
+                    ref(db, "publicProfiles"),
+                    orderByChild("shortId"),
+                    equalTo(normalizedShortId),
+                    limitToFirst(1)
+                );
+                const snapshot = await get(shortIdQuery);
+                if (snapshot.exists()) {
+                    const rows = snapshot.val() || {};
+                    const uid = Object.keys(rows)[0] || "";
+                    return uid ? { uid, ...(rows[uid] || {}) } : null;
+                }
+
+                const publicProfilesSnapshot = await get(ref(db, "publicProfiles"));
+                if (publicProfilesSnapshot.exists()) {
+                    const profilesRows = publicProfilesSnapshot.val() || {};
+                    const matchedUid = Object.keys(profilesRows).find((uid) => {
+                        const node = profilesRows[uid] || {};
+                        return normalizeShortId(node.shortId || "") === normalizedShortId;
+                    }) || "";
+                    if (matchedUid) {
+                        return { uid: matchedUid, ...(profilesRows[matchedUid] || {}) };
+                    }
+                }
+
+                const usersByShortIdQuery = query(
+                    ref(db, "users"),
+                    orderByChild("profile/shortId"),
+                    equalTo(normalizedShortId),
+                    limitToFirst(1)
+                );
+                const usersSnapshot = await get(usersByShortIdQuery);
+                if (!usersSnapshot.exists()) {
+                    return null;
+                }
+                const rows = usersSnapshot.val() || {};
+                const uid = Object.keys(rows)[0] || "";
+                if (!uid) {
+                    return null;
+                }
+                const userNode = rows[uid] || {};
+                const profileNode = userNode.profile || {};
+                const privacyNode = (profileNode.privacy && typeof profileNode.privacy === "object") ? profileNode.privacy : {};
+                return {
+                    uid,
+                    shortId: ensureShortId(profileNode.shortId || uid, uid),
+                    displayName: normalizeDisplayName(profileNode.nickname || profileNode.displayName || userNode.nickname || userNode.displayName || "", currentLanguage === "en" ? "Player" : "لاعب"),
+                    isPrivate: typeof privacyNode.isPrivate === "boolean" ? privacyNode.isPrivate : true,
+                    showCountry: typeof privacyNode.showCountry === "boolean" ? privacyNode.showCountry : false,
+                    showFriendsSection: typeof privacyNode.showFriendsSection === "boolean" ? privacyNode.showFriendsSection : true,
+                    showPlayMapSection: typeof privacyNode.showPlayMapSection === "boolean" ? privacyNode.showPlayMapSection : true,
+                    countryCode: normalizeCountryCode(privacyNode.countryCode || ""),
+                    countryName: normalizeCountryName(privacyNode.countryName || ""),
+                    bio: normalizeBio(profileNode.bio || "")
+                };
+            } catch (_error) {
+                return null;
+            }
+        }
+
+        function setPrivacyStatus(message, type = "") {
+            privacyStatus.textContent = message;
+            privacyStatus.className = type ? `result ${type}` : "result";
+        }
+
+        async function enrichRequestedPublicProfile(profile) {
+            const source = profile && typeof profile === "object" ? { ...profile } : {};
+            const uid = String(source.uid || "");
+            if (!uid) return source;
+
+            const monthKey = getMonthKey(Date.now());
+            const roundAggregates = await computeRoundAggregates(uid);
+            let profileNode = {};
+            let statsNode = {};
+            let preferencesNode = {};
+
+            try {
+                const snapshot = await get(ref(db, `users/${uid}/profile`));
+                profileNode = snapshot.exists() ? (snapshot.val() || {}) : {};
+                statsNode = (profileNode.stats && typeof profileNode.stats === "object") ? profileNode.stats : {};
+                preferencesNode = (profileNode.preferences && typeof profileNode.preferences === "object") ? profileNode.preferences : {};
+            } catch (_error) {
+                profileNode = {};
+                statsNode = {};
+                preferencesNode = {};
+            }
+
+            const badges = Array.isArray(statsNode.badges) ? statsNode.badges : [];
+            const showCountry = Boolean(source.showCountry);
+            const countryCode = showCountry
+                ? normalizeCountryCode(source.countryCode || profileNode.privacy?.countryCode || "")
+                : "";
+            const countryName = showCountry
+                ? normalizeCountryName(source.countryName || profileNode.privacy?.countryName || "")
+                : "";
+            const showFriendsSection = typeof source.showFriendsSection === "boolean" ? source.showFriendsSection : true;
+            const showPlayMapSection = typeof source.showPlayMapSection === "boolean" ? source.showPlayMapSection : true;
+            const [friendsCount, followerCount, friendsPreview, followersPreview] = showFriendsSection
+                ? await Promise.all([
+                    countFriends(uid),
+                    countFollowers(uid),
+                    fetchFriendsPreview(uid, 8),
+                    fetchFollowersPreview(uid, 8)
+                ])
+                : [0, 0, [], []];
+
+            return {
+                ...source,
+                displayName: normalizeDisplayName(source.displayName || profileNode.nickname || profileNode.displayName || "", currentLanguage === "en" ? "Player" : "لاعب"),
+                shortId: ensureShortId(source.shortId || profileNode.shortId || uid, uid),
+                totalPoints: Number(source.totalPoints || statsNode.totalPoints || 0),
+                totalWords: Number(source.totalWords || statsNode.totalWords || roundAggregates.totalWords || 0),
+                totalCharacters: Number(source.totalCharacters || statsNode.totalCharacters || roundAggregates.totalCharacters || 0),
+                totalRounds: Number(source.totalRounds || statsNode.totalRounds || roundAggregates.totalRounds || 0),
+                averageWpm: Number(source.averageWpm || roundAggregates.averageWpm || 0),
+                bestSecondsPerWord: Number(source.bestSecondsPerWord || statsNode.bestSecondsPerWord || roundAggregates.bestSecondsPerWord || 0),
+                joinedAt: Number(source.joinedAt || profileNode.joinedAt || 0),
+                monthlyPoints: Number(source.monthlyPoints || (statsNode.monthlyPoints && Number(statsNode.monthlyPoints[monthKey] || 0)) || 0),
+                topBadge: String(source.topBadge || badges[badges.length - 1] || "").trim(),
+                preferredLanguage: source.preferredLanguage === "en"
+                    ? "en"
+                    : ((preferencesNode.language === "en" || preferencesNode.language === "ar")
+                        ? preferencesNode.language
+                        : currentLanguage),
+                countryCode,
+                countryName,
+                showFriendsSection,
+                showPlayMapSection,
+                friendsCount,
+                friendsPreview,
+                followersPreview,
+                followerCount: Number(followerCount || 0),
+                bio: normalizeBio(source.bio || profileNode.bio || ""),
+                modeCounts: {
+                    single: Number(source.modeCounts?.single || roundAggregates.modeCounts.single || 0),
+                    triple: Number(source.modeCounts?.triple || roundAggregates.modeCounts.triple || 0),
+                    sequential: Number(source.modeCounts?.sequential || roundAggregates.modeCounts.sequential || 0),
+                    paragraph: Number(source.modeCounts?.paragraph || roundAggregates.modeCounts.paragraph || 0)
+                }
+            };
+        }
+
+        function renderPublicModules(profile, isOwner) {
+            const source = profile && typeof profile === "object" ? profile : {};
+            const isPrivate = Boolean(source.isPrivate);
+            const showFriendsSection = Boolean(source.showFriendsSection);
+            const showPlayMapSection = Boolean(source.showPlayMapSection);
+            const canRenderModules = isOwner
+                ? (showFriendsSection || showPlayMapSection)
+                : (!isPrivate && (showFriendsSection || showPlayMapSection));
+
+            publicModulesSection.classList.toggle("is-hidden", !canRenderModules);
+            if (!canRenderModules) {
+                return;
+            }
+
+            friendsModuleCard.classList.toggle("is-hidden", !showFriendsSection);
+            playMapModuleCard.classList.toggle("is-hidden", !showPlayMapSection);
+
+            if (showFriendsSection) {
+                friendsModuleValue.textContent = formatNumber(Number(source.friendsCount || 0));
+                renderFriendsPreview(source.friendsPreview || []);
+            } else {
+                renderFriendsPreview([]);
+            }
+
+            if (showPlayMapSection) {
+                setPlayMapChips(source.modeCounts || {});
+            }
+        }
+
+        function applyProfileCardVisibility(profile, isOwner) {
+            const source = profile && typeof profile === "object" ? profile : {};
+            const isPrivate = Boolean(source.isPrivate);
+            const showCountry = Boolean(source.showCountry);
+            const canShowPublicStats = isOwner || !isPrivate;
+
+            const visibilityMap = {
+                nameStatCard: true,
+                idStatCard: true,
+                levelStatCard: canShowPublicStats,
+                pointsStatCard: canShowPublicStats,
+                wordsStatCard: canShowPublicStats,
+                charsStatCard: canShowPublicStats,
+                joinDateStatCard: canShowPublicStats,
+                bestSpeedStatCard: canShowPublicStats,
+                avgSpeedStatCard: canShowPublicStats,
+                monthPointsStatCard: canShowPublicStats,
+                roundsStatCard: canShowPublicStats,
+                badgeStatCard: canShowPublicStats,
+                visibilityStatCard: true,
+                followersStatCard: true,
+                countryStatCard: showCountry
+            };
+
+            Object.keys(visibilityMap).forEach((key) => {
+                const node = statCards[key];
+                if (!node) return;
+                node.classList.toggle("is-hidden", !visibilityMap[key]);
+            });
+        }
+
+        function renderProfileCard(data, isOwner) {
+            const profile = data || {};
+            const level = Number(profile.level || 0);
+            const points = Number(profile.totalPoints || 0);
+            const words = Number(profile.totalWords || 0);
+            const chars = Number(profile.totalCharacters || 0);
+            const totalRounds = Number(profile.totalRounds || 0);
+            const joinedAt = Number(profile.joinedAt || 0);
+            const averageWpm = Number(profile.averageWpm || 0);
+            const bestSecondsPerWord = Number(profile.bestSecondsPerWord || 0);
+            const monthlyPoints = Number(profile.monthlyPoints || 0);
+            const topBadge = String(profile.topBadge || "").trim();
+            const shortId = ensureShortId(profile.shortId || "", profile.uid || "");
+            const displayName = normalizeDisplayName(profile.displayName || "", currentLanguage === "en" ? "Player" : "لاعب");
+            const isPrivate = Boolean(profile.isPrivate);
+            const showCountry = Boolean(profile.showCountry);
+            const preferredLanguage = profile.preferredLanguage === "en" ? "en" : "ar";
+            const followerCount = Number(profile.followerCount || 0);
+            const countryName = String(profile.countryName || "").trim();
+            const countryFlag = countryFlagEmoji(profile.countryCode || "");
+            const bio = normalizeBio(profile.bio || "");
+            const canShowPublicStats = isOwner || !isPrivate;
+
+            applyProfileCardVisibility(profile, isOwner);
+            applyProfileVisualMode(isPrivate);
+
+            nameValue.textContent = displayName;
+            idValue.textContent = shortId ? `#${shortId}` : "—";
+            levelValue.textContent = canShowPublicStats ? formatNumber(level) : t("statUnavailable");
+            pointsValue.textContent = canShowPublicStats ? formatNumber(points) : t("statUnavailable");
+            wordsValue.textContent = canShowPublicStats ? formatNumber(words) : t("statUnavailable");
+            charsValue.textContent = canShowPublicStats ? formatNumber(chars) : t("statUnavailable");
+            joinDateValue.textContent = canShowPublicStats ? formatDateValue(joinedAt) : t("statUnavailable");
+            bestSpeedValue.textContent = canShowPublicStats ? formatBestSpeedValue(bestSecondsPerWord) : t("statUnavailable");
+            avgSpeedValue.textContent = canShowPublicStats ? formatAverageSpeedValue(averageWpm) : t("statUnavailable");
+            monthPointsValue.textContent = canShowPublicStats ? formatNumber(monthlyPoints) : t("statUnavailable");
+            roundsValue.textContent = canShowPublicStats ? formatNumber(totalRounds) : t("statUnavailable");
+            badgeValue.textContent = canShowPublicStats ? (topBadge || t("badgeNone")) : t("statUnavailable");
+            visibilityValue.textContent = isPrivate ? t("visibilityPrivate") : t("visibilityPublic");
+            followersValue.textContent = formatNumber(followerCount);
+            languageValue.textContent = preferredLanguage === "en" ? t("languageEnglish") : t("languageArabic");
+            if (showCountry) {
+                if (countryName) {
+                    countryValue.textContent = countryFlag
+                        ? t("countryWithFlagFormat").replace("{flag}", countryFlag).replace("{country}", countryName)
+                        : countryName;
+                } else {
+                    countryValue.textContent = t("statUnavailable");
+                }
+            } else {
+                countryValue.textContent = t("countryHidden");
+            }
+
+            if (isOwner) {
+                viewerNote.textContent = t("viewerMine");
+            } else {
+                viewerNote.textContent = isPrivate ? t("viewerPrivate") : t("viewerPublic");
+            }
+
+            if (bioText) {
+                const canShowBio = isOwner || !isPrivate;
+                bioText.classList.toggle("is-hidden", !(canShowBio && bio));
+                bioText.textContent = canShowBio && bio ? bio : "";
+            }
+
+            renderPublicModules(profile, isOwner);
+            renderSocialTiles(profile, isOwner);
+        }
+
+        async function refreshDetectedCountryPreview() {
+            if (!countryInput || !showCountryInput) {
+                return;
+            }
+
+            if (!showCountryInput.checked) {
+                countryInput.value = "";
+                return;
+            }
+
+            try {
+                const detected = await resolveCountryFromConnection();
+                const detectedName = normalizeCountryName(detected?.countryName || "");
+                const detectedCode = normalizeCountryCode(detected?.countryCode || "");
+                countryInput.value = detectedName || detectedCode || "";
+            } catch (_error) {
+                countryInput.value = "";
+            }
+        }
+
+        async function syncDetectedCountryForOwnerProfile() {
+            if (!viewerUid || !viewerProfile || !Boolean(viewerProfile.showCountry)) {
+                return false;
+            }
+
+            let detected = null;
+            try {
+                detected = await resolveCountryFromConnection();
+            } catch (_error) {
+                return false;
+            }
+
+            const nextCountryCode = normalizeCountryCode(detected?.countryCode || "");
+            const nextCountryName = normalizeCountryName(detected?.countryName || "");
+            if (!nextCountryCode && !nextCountryName) {
+                return false;
+            }
+
+            const currentCountryCode = normalizeCountryCode(viewerProfile.countryCode || "");
+            const currentCountryName = normalizeCountryName(viewerProfile.countryName || "");
+            if (nextCountryCode === currentCountryCode && nextCountryName === currentCountryName) {
+                return false;
+            }
+
+            try {
+                const now = Date.now();
+                await update(ref(db), {
+                    [`users/${viewerUid}/profile/privacy/countryCode`]: nextCountryCode,
+                    [`users/${viewerUid}/profile/privacy/countryName`]: nextCountryName,
+                    [`publicProfiles/${viewerUid}/countryCode`]: nextCountryCode,
+                    [`publicProfiles/${viewerUid}/countryName`]: nextCountryName,
+                    [`publicProfiles/${viewerUid}/updatedAt`]: now
+                });
+
+                viewerProfile.countryCode = nextCountryCode;
+                viewerProfile.countryName = nextCountryName;
+                if (activePublicProfile) {
+                    activePublicProfile = {
+                        ...activePublicProfile,
+                        countryCode: nextCountryCode,
+                        countryName: nextCountryName,
+                        updatedAt: now
+                    };
+                }
+                return true;
+            } catch (_error) {
+                return false;
+            }
+        }
+
+        function renderOwnerControls(profile) {
+            setOwnerQuickControlsVisible(true);
+            const isPrivate = Boolean(profile.isPrivate);
+            const showCountry = Boolean(profile.showCountry);
+            const showFriendsSection = typeof profile.showFriendsSection === "boolean" ? profile.showFriendsSection : true;
+            const showPlayMapSection = typeof profile.showPlayMapSection === "boolean" ? profile.showPlayMapSection : true;
+            const bio = normalizeBio(profile.bio || "");
+            isPrivateInput.checked = isPrivate;
+            showCountryInput.checked = showCountry;
+            showFriendsSectionInput.checked = showFriendsSection;
+            showPlayMapSectionInput.checked = showPlayMapSection;
+            countryInput.value = "";
+            if (showCountry) {
+                void refreshDetectedCountryPreview();
+            }
+            if (bioInput) {
+                bioInput.value = bio;
+            }
+        }
+
+        async function saveOwnerPrivacy() {
+            if (!viewerUid || !viewerProfile) return;
+
+            const nextIsPrivate = Boolean(isPrivateInput.checked);
+            const nextShowCountry = Boolean(showCountryInput.checked);
+            const nextShowFriendsSection = Boolean(showFriendsSectionInput.checked);
+            const nextShowPlayMapSection = Boolean(showPlayMapSectionInput.checked);
+            const nextBio = normalizeBio(bioInput?.value || "");
+            const level = Number(viewerProfile.level || 0);
+
+            if (!nextIsPrivate && level < PUBLIC_UNLOCK_LEVEL) {
+                setPrivacyStatus(t("publicLock"), "warning");
+                isPrivateInput.checked = true;
+                return;
+            }
+
+            let nextCountryName = "";
+            let nextCountryCode = "";
+            if (nextShowCountry) {
+                const detected = await resolveCountryFromConnection();
+                nextCountryName = normalizeCountryName(detected.countryName || "");
+                nextCountryCode = normalizeCountryCode(detected.countryCode || "");
+            }
+
+            const nextPublic = {
+                ...activePublicProfile,
+                uid: viewerUid,
+                shortId: ensureShortId(activePublicProfile?.shortId || viewerProfile.shortId || viewerUid, viewerUid),
+                displayName: normalizeDisplayName(activePublicProfile?.displayName || viewerProfile.displayName || "", currentLanguage === "en" ? "Player" : "لاعب"),
+                level,
+                totalPoints: Number(viewerProfile.totalPoints || 0),
+                totalWords: Number(viewerProfile.totalWords || 0),
+                totalCharacters: Number(viewerProfile.totalCharacters || 0),
+                totalRounds: Number(viewerProfile.totalRounds || 0),
+                monthlyPoints: Number(viewerProfile.monthlyPoints || 0),
+                averageWpm: Number(viewerProfile.averageWpm || 0),
+                bestSecondsPerWord: Number(viewerProfile.bestSecondsPerWord || 0),
+                joinedAt: Number(viewerProfile.joinedAt || 0),
+                topBadge: String(viewerProfile.topBadge || ""),
+                preferredLanguage: viewerProfile.preferredLanguage === "en" ? "en" : "ar",
+                friendsCount: Number(viewerProfile.friendsCount || 0),
+                friendsPreview: Array.isArray(viewerProfile.friendsPreview) ? viewerProfile.friendsPreview.slice(0, 8) : [],
+                followerCount: Number(viewerProfile.followerCount || 0),
+                followersPreview: Array.isArray(viewerProfile.followersPreview) ? viewerProfile.followersPreview.slice(0, 8) : [],
+                modeCounts: {
+                    single: Number(viewerProfile.modeCounts?.single || 0),
+                    triple: Number(viewerProfile.modeCounts?.triple || 0),
+                    sequential: Number(viewerProfile.modeCounts?.sequential || 0),
+                    paragraph: Number(viewerProfile.modeCounts?.paragraph || 0)
+                },
+                isPrivate: nextIsPrivate,
+                showCountry: nextShowCountry,
+                showFriendsSection: nextShowFriendsSection,
+                showPlayMapSection: nextShowPlayMapSection,
+                countryCode: nextCountryCode,
+                countryName: nextShowCountry ? nextCountryName : "",
+                bio: nextBio,
+                updatedAt: Date.now(),
+                ...(activePublicProfile?.photoURL ? { photoURL: String(activePublicProfile.photoURL) } : {})
+            };
+
+            const payload = {
+                [`users/${viewerUid}/profile/privacy/isPrivate`]: nextIsPrivate,
+                [`users/${viewerUid}/profile/privacy/showCountry`]: nextShowCountry,
+                [`users/${viewerUid}/profile/privacy/showFriendsSection`]: nextShowFriendsSection,
+                [`users/${viewerUid}/profile/privacy/showPlayMapSection`]: nextShowPlayMapSection,
+                [`users/${viewerUid}/profile/privacy/countryCode`]: nextCountryCode,
+                [`users/${viewerUid}/profile/privacy/countryName`]: nextShowCountry ? nextCountryName : "",
+                [`users/${viewerUid}/profile/bio`]: nextBio,
+                [`publicProfiles/${viewerUid}`]: nextPublic
+            };
+
+            try {
+                await update(ref(db), payload);
+                activePublicProfile = nextPublic;
+                viewerProfile = {
+                    ...viewerProfile,
+                    preferredLanguage: nextPublic.preferredLanguage,
+                    isPrivate: nextIsPrivate,
+                    showCountry: nextShowCountry,
+                    showFriendsSection: nextShowFriendsSection,
+                    showPlayMapSection: nextShowPlayMapSection,
+                    countryCode: nextCountryCode,
+                    countryName: nextShowCountry ? nextCountryName : "",
+                    bio: nextBio,
+                    followerCount: Number(nextPublic.followerCount || 0)
+                };
+                renderProfileCard({
+                    ...viewerProfile,
+                    totalPoints: Number(viewerStats?.totalPoints || 0)
+                }, true);
+                renderOwnerControls(viewerProfile);
+                setPrivacyStatus(t("saveOk"), "success");
+            } catch (_error) {
+                setPrivacyStatus(t("saveFail"), "warning");
+            }
+        }
+
+        savePrivacyBtn.addEventListener("click", () => {
+            void saveOwnerPrivacy();
+        });
+
+        if (showCountryInput) {
+            showCountryInput.addEventListener("change", () => {
+                void refreshDetectedCountryPreview();
+            });
+        }
+
+        if (friendRequestOpenBtn) {
+            friendRequestOpenBtn.addEventListener("click", () => {
+                if (!activePublicProfileUid || activePublicProfileUid === viewerUid || !activePublicProfile) {
+                    return;
+                }
+                openFriendRequestModal();
+            });
+        }
+
+        friendRequestSendBtn.addEventListener("click", () => {
+            if (!activePublicProfileUid || activePublicProfileUid === viewerUid || !activePublicProfile) {
+                return;
+            }
+            void sendFriendRequestFromProfile(activePublicProfile);
+        });
+
+        if (friendRequestCancelBtn) {
+            friendRequestCancelBtn.addEventListener("click", closeFriendRequestModal);
+        }
+
+        if (friendRequestModal) {
+            friendRequestModal.addEventListener("click", (event) => {
+                if (event.target === friendRequestModal) {
+                    closeFriendRequestModal();
+                }
+            });
+        }
+
+        followToggleBtn.addEventListener("click", () => {
+            if (!activePublicProfileUid || activePublicProfileUid === viewerUid || !activePublicProfile) {
+                return;
+            }
+            void toggleFollowFromProfile(activePublicProfile);
+        });
+
+        if (ownerProfileQuickBtn) {
+            ownerProfileQuickBtn.addEventListener("click", () => {
+                openPrivacyModal();
+                showCountryInput?.focus();
+            });
+        }
+
+        if (privacyModalCloseBtn) {
+            privacyModalCloseBtn.addEventListener("click", closePrivacyModal);
+        }
+
+        if (privacyModal) {
+            privacyModal.addEventListener("click", (event) => {
+                if (event.target === privacyModal) {
+                    closePrivacyModal();
+                }
+            });
+        }
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+                closeFriendRequestModal();
+                closePrivacyModal();
+            }
+        });
+
+        function showProfileLoadFailure() {
+            pageSubtitle.textContent = t("profileLoadFail");
+            setSocialActionsVisible(false);
+            setFriendRequestOpenState("unavailable");
+            publicModulesSection.classList.add("is-hidden");
+            if (socialTilesSection) socialTilesSection.classList.add("is-hidden");
+            setOwnerQuickControlsVisible(false);
+            closeFriendRequestModal();
+            closePrivacyModal();
+            setFriendRequestStatus("");
+            setFollowStatus("");
+            setPrivacyStatus("");
+            setPageLoading(false);
+        }
+
+        applyThemeAndLanguage();
+        applyTexts();
+        pageSubtitle.textContent = t("loadingProfile");
+
+        onAuthStateChanged(auth, async (user) => {
+            try {
+                setPageLoading(true);
+                applyThemeAndLanguage();
+                applyTexts();
+                setPrivacyStatus("");
+                pageSubtitle.textContent = t("loadingProfile");
+
+                if (!user) {
+                    pageSubtitle.textContent = t("needSignIn");
+                    setSocialActionsVisible(false);
+                    setFriendRequestOpenState("unavailable");
+                    publicModulesSection.classList.add("is-hidden");
+                    if (socialTilesSection) socialTilesSection.classList.add("is-hidden");
+                    setOwnerQuickControlsVisible(false);
+                    closeFriendRequestModal();
+                    closePrivacyModal();
+                    viewerProfile = null;
+                    viewerStats = null;
+                    activePublicProfileUid = "";
+                    activePublicProfile = null;
+                    isFollowingActiveProfile = false;
+                    followToggleText.textContent = t("follow");
+                    setFriendRequestStatus("");
+                    setFollowStatus("");
+                    setPageLoading(false);
+                    return;
+                }
+
+                viewerUid = user.uid;
+                const viewerData = await fetchViewerData(user.uid);
+                if (!viewerData) {
+                    pageSubtitle.textContent = t("profileMissing");
+                    setOwnerQuickControlsVisible(false);
+                    setPageLoading(false);
+                    return;
+                }
+
+                viewerStats = viewerData.stats || {};
+                activePublicProfile = viewerData.publicProfile;
+                viewerProfile = {
+                ...viewerData.publicProfile,
+                totalPoints: Number(viewerData.stats?.totalPoints || 0),
+                totalWords: Number(viewerData.stats?.totalWords || 0),
+                totalCharacters: Number(viewerData.stats?.totalCharacters || 0),
+                totalRounds: Number(viewerData.stats?.totalRounds || 0),
+                averageWpm: Number(viewerData.stats?.averageWpm || 0),
+                bestSecondsPerWord: Number(viewerData.stats?.bestSecondsPerWord || 0),
+                preferredLanguage: viewerData.publicProfile?.preferredLanguage === "en" ? "en" : "ar",
+                monthlyPoints: Number(viewerData.stats?.monthlyPoints || 0),
+                joinedAt: Number(viewerData.stats?.joinedAt || 0),
+                topBadge: String(viewerData.stats?.topBadge || ""),
+                friendsCount: Number(viewerData.stats?.friendsCount || 0),
+                friendsPreview: Array.isArray(viewerData.stats?.friendsPreview) ? viewerData.stats.friendsPreview : [],
+                followerCount: Number(viewerData.stats?.followerCount || 0),
+                followersPreview: Array.isArray(viewerData.stats?.followersPreview) ? viewerData.stats.followersPreview : [],
+                bio: normalizeBio(viewerData.stats?.bio || viewerData.publicProfile?.bio || ""),
+                modeCounts: {
+                    single: Number(viewerData.stats?.modeCounts?.single || 0),
+                    triple: Number(viewerData.stats?.modeCounts?.triple || 0),
+                    sequential: Number(viewerData.stats?.modeCounts?.sequential || 0),
+                    paragraph: Number(viewerData.stats?.modeCounts?.paragraph || 0)
+                }
+            };
+
+                const hasExplicitProfileRequest = Boolean(requestedUid || requestedShortId);
+                const requestedProfile = await findRequestedPublicProfile();
+                const fallbackRequestedProfile = hasExplicitProfileRequest ? buildRequestedProfileFallback() : null;
+                let resolvedRequestedProfile = requestedProfile || fallbackRequestedProfile;
+                const normalizedRequestedShortId = normalizeShortId(requestedShortId || "");
+                const viewerShortId = normalizeShortId(viewerProfile?.shortId || "");
+                const requestMatchesViewerByShortId = Boolean(
+                    !requestedUid
+                    && normalizedRequestedShortId
+                    && viewerShortId
+                    && normalizedRequestedShortId === viewerShortId
+                );
+
+                if (requestMatchesViewerByShortId) {
+                    resolvedRequestedProfile = {
+                        ...viewerProfile,
+                        uid: viewerUid,
+                        isPartialPublicProfile: false
+                    };
+                }
+
+                if (hasExplicitProfileRequest && !resolvedRequestedProfile) {
+                    pageSubtitle.textContent = t("profileMissing");
+                    setSocialActionsVisible(false);
+                    setFriendRequestOpenState("unavailable");
+                    publicModulesSection.classList.add("is-hidden");
+                    if (socialTilesSection) socialTilesSection.classList.add("is-hidden");
+                    setOwnerQuickControlsVisible(false);
+                    closeFriendRequestModal();
+                    closePrivacyModal();
+                    activePublicProfileUid = "";
+                    activePublicProfile = null;
+                    isFollowingActiveProfile = false;
+                    followToggleText.textContent = t("follow");
+                    setFriendRequestStatus("");
+                    setFollowStatus("");
+                    setPageLoading(false);
+                    return;
+                }
+
+                const viewingOtherProfile = Boolean(
+                    resolvedRequestedProfile
+                    && resolvedRequestedProfile.uid
+                    && resolvedRequestedProfile.uid !== viewerUid
+                );
+                const viewingShortIdOnlyProfile = Boolean(
+                    hasExplicitProfileRequest
+                    && resolvedRequestedProfile
+                    && !resolvedRequestedProfile.uid
+                );
+
+                if (viewingOtherProfile || viewingShortIdOnlyProfile) {
+                    const requestedForView = Boolean(resolvedRequestedProfile?.isPartialPublicProfile)
+                        ? { ...resolvedRequestedProfile }
+                        : await enrichRequestedPublicProfile(resolvedRequestedProfile);
+                    const hasLimitedData = Boolean(requestedForView?.isPartialPublicProfile);
+
+                    if (hasLimitedData) {
+                        pageSubtitle.textContent = t("profileLimitedData");
+                        renderProfileCard({
+                            ...requestedForView,
+                            isPrivate: true,
+                            showCountry: false,
+                            showFriendsSection: false,
+                            showPlayMapSection: false,
+                            totalPoints: 0,
+                            totalWords: 0,
+                            totalCharacters: 0,
+                            totalRounds: 0,
+                            averageWpm: 0,
+                            bestSecondsPerWord: 0,
+                            monthlyPoints: 0,
+                            topBadge: "",
+                            friendsCount: 0,
+                            friendsPreview: [],
+                            followerCount: Number(requestedForView.followerCount || 0),
+                            followersPreview: [],
+                            bio: "",
+                            modeCounts: { single: 0, triple: 0, sequential: 0, paragraph: 0 }
+                        }, false);
+                        setOwnerQuickControlsVisible(false);
+                        closePrivacyModal();
+                        const canInteractWithLimitedProfile = Boolean(
+                            requestedForView
+                            && requestedForView.uid
+                            && requestedForView.uid !== viewerUid
+                        );
+
+                        setSocialActionsVisible(true);
+                        if (canInteractWithLimitedProfile) {
+                            if (!String(friendRequestMessageInput.value || "").trim()) {
+                                friendRequestMessageInput.value = t("friendRequestDefaultMessage");
+                            }
+                            activePublicProfileUid = String(requestedForView.uid || "");
+                            activePublicProfile = requestedForView;
+                            await refreshFollowState(activePublicProfileUid);
+                            await refreshFriendRequestState(activePublicProfile);
+                            friendRequestSendBtn.disabled = false;
+                            followToggleBtn.disabled = false;
+                        } else {
+                            activePublicProfileUid = "";
+                            activePublicProfile = null;
+                            isFollowingActiveProfile = false;
+                            setFriendRequestOpenState("unavailable");
+                            friendRequestSendBtn.disabled = true;
+                            followToggleText.textContent = t("follow");
+                            followToggleBtn.disabled = true;
+                        }
+
+                        setFriendRequestStatus("");
+                        setFollowStatus("");
+                        setPageLoading(false);
+                        return;
+                    }
+
+                    const otherIsPrivate = Boolean(requestedForView.isPrivate);
+                    if (otherIsPrivate) {
+                        pageSubtitle.textContent = t("viewerPrivate");
+                        renderProfileCard({
+                        ...requestedForView,
+                        totalPoints: 0,
+                        totalWords: 0,
+                        totalCharacters: 0,
+                        totalRounds: 0,
+                        averageWpm: 0,
+                        bestSecondsPerWord: 0,
+                        monthlyPoints: 0,
+                        topBadge: "",
+                        friendsCount: 0,
+                        friendsPreview: [],
+                        followerCount: Number(requestedForView.followerCount || 0),
+                        followersPreview: [],
+                        bio: normalizeBio(requestedForView.bio || ""),
+                        modeCounts: { single: 0, triple: 0, sequential: 0, paragraph: 0 }
+                        }, false);
+                    } else {
+                        renderProfileCard(requestedForView, false);
+                    }
+                    setOwnerQuickControlsVisible(false);
+                    setSocialActionsVisible(true);
+                    closePrivacyModal();
+                    if (!String(friendRequestMessageInput.value || "").trim()) {
+                        friendRequestMessageInput.value = t("friendRequestDefaultMessage");
+                    }
+                    setFriendRequestStatus("");
+                    setFollowStatus("");
+                    activePublicProfileUid = requestedForView.uid;
+                    activePublicProfile = requestedForView;
+                    await refreshFriendRequestState(requestedForView);
+                    friendRequestSendBtn.disabled = false;
+                    await refreshFollowState(requestedForView.uid);
+                    followToggleBtn.disabled = false;
+                    setPageLoading(false);
+                    return;
+                }
+
+                renderProfileCard(viewerProfile, true);
+                renderOwnerControls(viewerProfile);
+                setSocialActionsVisible(false);
+                setFriendRequestOpenState("unavailable");
+                setFriendRequestStatus("");
+                setFollowStatus("");
+                activePublicProfileUid = viewerUid;
+
+                try {
+                    const shouldShowViewerCountry = Boolean(viewerProfile.showCountry);
+                    const viewerCountryCode = shouldShowViewerCountry
+                        ? normalizeCountryCode(viewerProfile.countryCode || "")
+                        : "";
+                    const viewerCountryName = shouldShowViewerCountry
+                        ? normalizeCountryName(viewerProfile.countryName || "")
+                        : "";
+                    const publicPayload = {
+                    ...activePublicProfile,
+                    uid: viewerUid,
+                    shortId: ensureShortId(viewerProfile.shortId || viewerUid, viewerUid),
+                    displayName: normalizeDisplayName(viewerProfile.displayName || "", currentLanguage === "en" ? "Player" : "لاعب"),
+                    level: Number(viewerProfile.level || 0),
+                    totalPoints: Number(viewerProfile.totalPoints || 0),
+                    totalWords: Number(viewerProfile.totalWords || 0),
+                    totalCharacters: Number(viewerProfile.totalCharacters || 0),
+                    totalRounds: Number(viewerProfile.totalRounds || 0),
+                    monthlyPoints: Number(viewerProfile.monthlyPoints || 0),
+                    averageWpm: Number(viewerProfile.averageWpm || 0),
+                    bestSecondsPerWord: Number(viewerProfile.bestSecondsPerWord || 0),
+                    preferredLanguage: viewerProfile.preferredLanguage === "en" ? "en" : "ar",
+                    joinedAt: Number(viewerProfile.joinedAt || 0),
+                    topBadge: String(viewerProfile.topBadge || ""),
+                    friendsCount: Number(viewerProfile.friendsCount || 0),
+                    friendsPreview: Array.isArray(viewerProfile.friendsPreview) ? viewerProfile.friendsPreview.slice(0, 8) : [],
+                    followerCount: Number(viewerProfile.followerCount || 0),
+                    followersPreview: Array.isArray(viewerProfile.followersPreview) ? viewerProfile.followersPreview.slice(0, 8) : [],
+                    bio: normalizeBio(viewerProfile.bio || ""),
+                    modeCounts: {
+                        single: Number(viewerProfile.modeCounts?.single || 0),
+                        triple: Number(viewerProfile.modeCounts?.triple || 0),
+                        sequential: Number(viewerProfile.modeCounts?.sequential || 0),
+                        paragraph: Number(viewerProfile.modeCounts?.paragraph || 0)
+                    },
+                    isPrivate: Boolean(viewerProfile.isPrivate),
+                    showCountry: shouldShowViewerCountry,
+                    showFriendsSection: typeof viewerProfile.showFriendsSection === "boolean" ? viewerProfile.showFriendsSection : true,
+                    showPlayMapSection: typeof viewerProfile.showPlayMapSection === "boolean" ? viewerProfile.showPlayMapSection : true,
+                    countryCode: viewerCountryCode,
+                    countryName: viewerCountryName,
+                    updatedAt: Date.now(),
+                    ...(viewerProfile.photoURL ? { photoURL: String(viewerProfile.photoURL) } : {})
+                };
+                    await update(ref(db), {
+                        [`users/${viewerUid}/profile/preferences/language`]: viewerProfile.preferredLanguage === "en" ? "en" : "ar",
+                        [`users/${viewerUid}/profile/preferences/updatedAt`]: Date.now(),
+                        [`publicProfiles/${viewerUid}`]: publicPayload
+                    });
+                    activePublicProfile = publicPayload;
+                } catch (_error) {
+                    // Keep page usable even if public profile refresh fails.
+                }
+
+                const needsSync = !viewerData.hasPublicProfile;
+                if (needsSync) {
+                    const defaultIsPrivate = Number(viewerProfile.level || 0) < PUBLIC_UNLOCK_LEVEL
+                        ? true
+                        : Boolean(viewerProfile.isPrivate);
+                    const defaultShowCountry = Boolean(viewerProfile.showCountry);
+                    const defaultCountryCode = defaultShowCountry
+                        ? normalizeCountryCode(viewerProfile.countryCode || "")
+                        : "";
+                    const defaultCountryName = defaultShowCountry
+                        ? normalizeCountryName(viewerProfile.countryName || "")
+                        : "";
+                    const defaultShowFriendsSection = typeof viewerProfile.showFriendsSection === "boolean"
+                        ? viewerProfile.showFriendsSection
+                        : true;
+                    const defaultShowPlayMapSection = typeof viewerProfile.showPlayMapSection === "boolean"
+                        ? viewerProfile.showPlayMapSection
+                        : true;
+                    try {
+                        await update(ref(db), {
+                        [`users/${viewerUid}/profile/privacy/isPrivate`]: defaultIsPrivate,
+                        [`users/${viewerUid}/profile/privacy/showCountry`]: defaultShowCountry,
+                        [`users/${viewerUid}/profile/privacy/showFriendsSection`]: defaultShowFriendsSection,
+                        [`users/${viewerUid}/profile/privacy/showPlayMapSection`]: defaultShowPlayMapSection,
+                        [`users/${viewerUid}/profile/privacy/countryCode`]: defaultCountryCode,
+                        [`users/${viewerUid}/profile/privacy/countryName`]: defaultCountryName,
+                        [`publicProfiles/${viewerUid}`]: {
+                            ...viewerData.publicProfile,
+                            isPrivate: defaultIsPrivate,
+                            showCountry: defaultShowCountry,
+                            showFriendsSection: defaultShowFriendsSection,
+                            showPlayMapSection: defaultShowPlayMapSection,
+                            countryCode: defaultCountryCode,
+                            countryName: defaultCountryName,
+                            followerCount: Number(viewerProfile.followerCount || 0),
+                            followersPreview: Array.isArray(viewerProfile.followersPreview) ? viewerProfile.followersPreview.slice(0, 8) : [],
+                            bio: normalizeBio(viewerProfile.bio || ""),
+                            updatedAt: Date.now()
+                        }
+                    });
+                        viewerProfile.isPrivate = defaultIsPrivate;
+                        viewerProfile.showCountry = defaultShowCountry;
+                        viewerProfile.showFriendsSection = defaultShowFriendsSection;
+                        viewerProfile.showPlayMapSection = defaultShowPlayMapSection;
+                        viewerProfile.countryName = defaultShowCountry ? String(viewerProfile.countryName || "") : "";
+                        renderProfileCard(viewerProfile, true);
+                        renderOwnerControls(viewerProfile);
+                    } catch (_error) {
+                        // Keep UI usable even if default sync fails.
+                    }
+                }
+
+                if (await syncDetectedCountryForOwnerProfile()) {
+                    renderProfileCard(viewerProfile, true);
+                    renderOwnerControls(viewerProfile);
+                }
+                setPageLoading(false);
+            } catch (error) {
+                console.error("Profile page runtime error:", error);
+                showProfileLoadFailure();
+            }
+        });
+    </script>
+    <script src="../scripts/pwa-register.js"></script>
+</body>
+</html>

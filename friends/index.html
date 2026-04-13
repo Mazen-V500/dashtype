@@ -1,0 +1,1717 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DashType - الأصدقاء</title>
+    <meta name="description" content="إدارة الأصدقاء في DashType: بحث، إرسال طلب صداقة، قبول/رفض، وإدارة قائمة الأصدقاء.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://dashtype.tech/friends">
+    <link rel="stylesheet" href="../style.css">
+    <link rel="manifest" href="../manifest.webmanifest">
+    <link rel="icon" type="image/png" sizes="32x32" href="../photo/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../photo/favicon-16.png">
+    <link rel="apple-touch-icon" href="../photo/favicon-64.png">
+    <style>
+        .friends-layout {
+            display: grid;
+            gap: 12px;
+        }
+
+        #friendsContent {
+            display: grid;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .search-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .search-input {
+            width: 100%;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--ink);
+            padding: 10px 12px;
+            font-size: 14px;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .request-message-wrap {
+            display: grid;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .request-message-input {
+            width: 100%;
+            min-height: 88px;
+            resize: vertical;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--ink);
+            padding: 10px 12px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .result-wrap {
+            display: grid;
+            gap: 8px;
+        }
+
+        .result-card {
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            background: var(--glass-surface-soft);
+            padding: 10px;
+            display: grid;
+            gap: 8px;
+            -webkit-backdrop-filter: blur(12px) saturate(130%);
+            backdrop-filter: blur(12px) saturate(130%);
+        }
+
+        .result-main {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .result-title {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        .result-meta {
+            margin: 0;
+            opacity: 0.8;
+            font-size: 12px;
+        }
+
+        .list-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .list-head-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .count-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 30px;
+            height: 24px;
+            padding: 0 8px;
+            border-radius: 999px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-surface-soft);
+            font-size: 12px;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .friend-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            gap: 8px;
+        }
+
+        .friend-item {
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            background: var(--glass-surface-soft);
+            padding: 10px;
+            display: grid;
+            gap: 8px;
+            overflow: hidden;
+            -webkit-backdrop-filter: blur(12px) saturate(130%);
+            backdrop-filter: blur(12px) saturate(130%);
+        }
+
+        .friend-item-main {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: start;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .friend-item-name {
+            margin: 0;
+            font-weight: 800;
+            font-size: 15px;
+        }
+
+        .friend-item-sub {
+            margin: 0;
+            font-size: 12px;
+            opacity: 0.78;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .friend-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: flex-end;
+            min-width: 0;
+        }
+
+        .friend-actions .inline-link {
+            display: inline-flex;
+        }
+
+        .friend-actions .btn-icon {
+            min-width: 126px;
+            min-height: 40px;
+            padding: 8px 12px;
+        }
+
+        .friend-item-main > div:first-child {
+            min-width: 0;
+        }
+
+        .friend-name-wrap {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .friend-private-lock {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            background: var(--glass-surface-soft);
+            color: var(--text-strong);
+        }
+
+        .friend-private-lock .icon {
+            width: 11px;
+            height: 11px;
+        }
+
+        .request-open-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        #openRequestModalBtn {
+            min-width: 220px;
+        }
+
+        .friends-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            background: rgba(6, 8, 14, 0.56);
+        }
+
+        .friends-modal.is-active {
+            display: flex;
+        }
+
+        .friends-modal-card {
+            width: min(640px, 100%);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--glass-border);
+            background: var(--glass-surface);
+            padding: 14px;
+            display: grid;
+            gap: 10px;
+            box-shadow: 0 18px 44px rgba(0, 0, 0, 0.34);
+            -webkit-backdrop-filter: blur(14px) saturate(135%);
+            backdrop-filter: blur(14px) saturate(135%);
+        }
+
+        .friends-modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .friends-modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .is-hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 680px) {
+            .search-row {
+                grid-template-columns: 1fr;
+            }
+
+            .friend-item-main {
+                grid-template-columns: 1fr;
+            }
+
+            .friend-actions .btn-icon {
+                width: 100%;
+                min-width: 0;
+            }
+
+            #openRequestModalBtn {
+                width: 100%;
+                min-width: 0;
+            }
+        }
+    </style>
+</head>
+<body class="mode-page">
+    <a href="#friendsMain" class="skip-link">تخطي إلى المحتوى</a>
+
+    <header class="top-controls logo-only">
+        <div class="logo-container">
+            <a href="../index.html" class="logo-badge" id="logoHomeLink">
+                <img id="logoImg" src="../photo/dashtype%20White%20Wordmark%20ar.png" alt="DashType" class="app-logo">
+                <span class="logo-beta" id="betaLabel">بيتا</span>
+            </a>
+        </div>
+    </header>
+
+    <main id="friendsMain" class="game-shell history-container">
+        <section class="game-card friends-layout">
+            <div class="hero-head">
+                <div>
+                    <h1 id="pageTitle">الأصدقاء</h1>
+                    <p id="pageSubtitle" class="subtitle">ابحث عن اللاعبين، أرسل طلبات صداقة، وادِر علاقاتك.</p>
+                </div>
+                <a href="../" class="inline-link">
+                    <button class="btn-icon" type="button"><span class="icon icon-back" aria-hidden="true"></span><span id="backBtnText">العودة للرئيسية</span></button>
+                </a>
+            </div>
+
+            <section id="gateSection" class="status-card is-hidden">
+                <h2 id="gateTitle" class="progress">الحساب خاص</h2>
+                <p id="gateText" class="subtitle">صفحة الأصدقاء تظهر فقط عندما يكون الحساب عامًا.</p>
+                <a href="../profile/" class="inline-link">
+                    <button class="btn-icon" type="button"><span class="icon icon-settings" aria-hidden="true"></span><span id="goProfileText">الذهاب للملف الشخصي</span></button>
+                </a>
+            </section>
+
+            <section id="friendsContent" class="is-hidden">
+                <div class="status-card">
+                    <div class="list-head">
+                        <h2 id="searchTitle" class="progress">إرسال طلب صداقة</h2>
+                    </div>
+                    <div class="request-open-wrap">
+                        <button id="openRequestModalBtn" class="btn-icon" type="button"><span class="icon icon-next" aria-hidden="true"></span><span id="openRequestModalText">فتح نافذة طلب الصداقة</span></button>
+                    </div>
+                </div>
+
+                <div class="status-card">
+                    <div class="list-head">
+                        <div class="list-head-title">
+                            <h2 id="incomingTitle" class="progress">الطلبات الواردة</h2>
+                            <span id="incomingCount" class="count-chip">0</span>
+                        </div>
+                    </div>
+                    <ul id="incomingList" class="friend-list"></ul>
+                    <div id="incomingEmpty" class="subtitle">لا توجد طلبات واردة.</div>
+                </div>
+
+                <div class="status-card">
+                    <div class="list-head">
+                        <div class="list-head-title">
+                            <h2 id="outgoingTitle" class="progress">الطلبات المرسلة</h2>
+                            <span id="outgoingCount" class="count-chip">0</span>
+                        </div>
+                    </div>
+                    <ul id="outgoingList" class="friend-list"></ul>
+                    <div id="outgoingEmpty" class="subtitle">لا توجد طلبات مرسلة.</div>
+                </div>
+
+                <div class="status-card">
+                    <div class="list-head">
+                        <div class="list-head-title">
+                            <h2 id="friendsTitle" class="progress">قائمة الأصدقاء</h2>
+                            <span id="friendsCount" class="count-chip">0</span>
+                        </div>
+                    </div>
+                    <ul id="friendsList" class="friend-list"></ul>
+                    <div id="friendsEmpty" class="subtitle">لا يوجد أصدقاء حتى الآن.</div>
+                </div>
+
+                <div class="status-card">
+                    <div class="list-head">
+                        <div class="list-head-title">
+                            <h2 id="followingTitle" class="progress">تتابعهم</h2>
+                            <span id="followingCount" class="count-chip">0</span>
+                        </div>
+                    </div>
+                    <ul id="followingList" class="friend-list"></ul>
+                    <div id="followingEmpty" class="subtitle">لا تتابع أي لاعب حاليًا.</div>
+                </div>
+
+                <div class="status-card">
+                    <div class="list-head">
+                        <div class="list-head-title">
+                            <h2 id="followersTitle" class="progress">المتابَعون</h2>
+                            <span id="followersCount" class="count-chip">0</span>
+                        </div>
+                    </div>
+                    <ul id="followersList" class="friend-list"></ul>
+                    <div id="followersEmpty" class="subtitle">لا يوجد متابعون حاليًا.</div>
+                </div>
+            </section>
+
+            <section id="friendRequestModal" class="friends-modal" aria-hidden="true">
+                <div class="friends-modal-card" role="dialog" aria-modal="true" aria-labelledby="friendRequestModalTitle">
+                    <div class="friends-modal-head">
+                        <h3 id="friendRequestModalTitle" class="progress">إرسال طلب صداقة</h3>
+                        <button id="closeRequestModalBtn" class="btn-icon" type="button"><span class="icon icon-cancel" aria-hidden="true"></span><span id="closeRequestModalText">إغلاق</span></button>
+                    </div>
+                    <div class="search-row">
+                        <input id="shortIdInput" class="search-input" type="text" maxlength="4" placeholder="أدخل معرف اللاعب (shortId)">
+                        <button id="searchBtn" class="btn-icon" type="button"><span class="icon icon-next" aria-hidden="true"></span><span id="searchBtnText">بحث</span></button>
+                    </div>
+                    <div class="request-message-wrap">
+                        <label id="requestMessageLabel" for="requestMessageInput">رسالة الطلب</label>
+                        <textarea id="requestMessageInput" class="request-message-input" maxlength="220" placeholder="اكتب رسالة الطلب..."></textarea>
+                    </div>
+                    <div id="searchStatus" class="result"></div>
+                    <div id="searchResult" class="result-wrap"></div>
+                    <div class="friends-modal-actions">
+                        <button id="sendFromModalBtn" class="btn-icon" type="button"><span class="icon icon-save" aria-hidden="true"></span><span id="sendFromModalText">إرسال الطلب</span></button>
+                    </div>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <footer class="page-footer">
+		<div class="footer-controls">
+			<div class="control-group">
+				<label id="themeLabel">المظهر</label>
+				<div class="theme-switch" role="group" aria-label="theme selector">
+					<button id="themeOceanBtn" class="theme-dot" type="button" data-theme="ocean" title="Blue Orange"></button>
+					<button id="themeSunsetBtn" class="theme-dot" type="button" data-theme="sunset" title="Sunset"></button>
+					<button id="themeForestBtn" class="theme-dot" type="button" data-theme="forest" title="Forest"></button>
+					<button id="themeBerryBtn" class="theme-dot" type="button" data-theme="berry" title="Berry"></button>
+					<button id="themeNeonBtn" class="theme-dot" type="button" data-theme="neon" title="Green & Yellow"></button>
+					<button id="themeVioletBtn" class="theme-dot" type="button" data-theme="violet" title="Purple & Pink"></button>
+					<button id="themeBrownBtn" class="theme-dot" type="button" data-theme="brown" title="Brown"></button>
+				</div>
+			</div>
+
+			<div class="control-group">
+				<label id="colorModeLabel">الوضع</label>
+				<div class="color-mode-switch" role="group" aria-label="color mode selector">
+					<button id="colorModeDarkBtn" class="mode-dot mode-dark" type="button" data-color-mode="dark" title="Dark"></button>
+					<button id="colorModeBlurBtn" class="mode-dot mode-blur" type="button" data-color-mode="blur" title="Blur"></button>
+					<button id="colorModeLightBtn" class="mode-dot mode-light" type="button" data-color-mode="light" title="Light"></button>
+				</div>
+			</div>
+
+			<div class="control-group lang-control">
+				<label id="langLabel">اللغة</label>
+				<div class="lang-switch" role="group" aria-label="language selector">
+					<button id="langArBtn" class="lang-btn" type="button">العربية</button>
+					<button id="langEnBtn" class="lang-btn" type="button">English</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="footer-credits">
+			<div class="footer-person">
+				<div id="mazenNameTxt" class="footer-person-name">مازن</div>
+				<div class="footer-links">
+					<a href="https://x.com/mazen_v500" class="footer-link" target="_blank" rel="noopener noreferrer" title="X/Twitter" aria-label="X/Twitter"><span class="icon icon-x" aria-hidden="true"></span></a>
+					<a href="https://github.com/mazen-v500" class="footer-link" target="_blank" rel="noopener noreferrer" title="GitHub" aria-label="GitHub"><span class="icon icon-github" aria-hidden="true"></span></a>
+					<a href="https://t.me/mazen_v500" class="footer-link" target="_blank" rel="noopener noreferrer" title="Telegram" aria-label="Telegram"><span class="icon icon-telegram" aria-hidden="true"></span></a>
+				</div>
+			</div>
+			<div class="footer-person">
+				<div id="ahmedNameTxt" class="footer-person-name">أحمد</div>
+				<div class="footer-links">
+					<a href="https://x.com/ko_wll" class="footer-link" target="_blank" rel="noopener noreferrer" title="X/Twitter" aria-label="X/Twitter"><span class="icon icon-x" aria-hidden="true"></span></a>
+					<a href="https://instagram.com/zs_us" class="footer-link" target="_blank" rel="noopener noreferrer" title="Instagram" aria-label="Instagram"><span class="icon icon-instagram" aria-hidden="true"></span></a>
+				</div>
+			</div>
+		</div>
+
+		<p class="footer-meta">
+			<span class="footer-meta-item">&copy; 2026 DashType. All rights reserved.</span>
+			<span class="footer-meta-item"><span id="contactLabel" class="footer-contact-label">للتواصل معنا</span> <a class="footer-contact" href="mailto:contact@dashtype.tech">contact@dashtype.tech</a></span>
+            <span class="footer-meta-item"><span id="versionLabel" class="footer-contact-label">الإصدار</span> <span class="footer-version">0.8.000</span></span>
+		</p>
+	</footer>
+
+    <script type="module">
+        import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getDatabase, ref, get, update, remove, push, onValue, query, orderByChild, equalTo, limitToFirst } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { readTypingGameState } from "../scripts/app-state.js";
+        import { resolveWordmarkSrc } from "../scripts/ui-utils.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyABT9cJ3H2e1YaljPhmFb8dgXfaV7cZEQs",
+            authDomain: "dashtype-9855c.firebaseapp.com",
+            projectId: "dashtype-9855c",
+            storageBucket: "dashtype-9855c.firebasestorage.app",
+            messagingSenderId: "758504188835",
+            appId: "1:758504188835:web:a75d6f9452f09a067f0816",
+            databaseURL: "https://dashtype-9855c-default-rtdb.firebaseio.com"
+        };
+
+        const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        const textMap = {
+            ar: {
+                pageTitle: "الأصدقاء",
+                pageSubtitle: "ابحث عن اللاعبين، أرسل طلبات صداقة، وادِر علاقاتك.",
+                backBtn: "العودة للرئيسية",
+                gateTitle: "الحساب خاص",
+                gateText: "صفحة الأصدقاء تظهر فقط عندما يكون الحساب عامًا.",
+                needSignInTitle: "تسجيل الدخول مطلوب",
+                goProfile: "الذهاب للملف الشخصي",
+                searchTitle: "إرسال طلب صداقة",
+                openRequestModal: "فتح نافذة طلب الصداقة",
+                closeRequestModal: "إغلاق",
+                searchBtn: "بحث",
+                sendFromModal: "إرسال الطلب",
+                searchPlaceholder: "أدخل معرف اللاعب (shortId)",
+                requestMessageLabel: "رسالة الطلب",
+                requestMessagePlaceholder: "اكتب رسالة الطلب...",
+                requestMessageDefault: "مرحبًا، أرسل لك طلب صداقة في DashType.",
+                incomingTitle: "الطلبات الواردة",
+                outgoingTitle: "الطلبات المرسلة",
+                friendsTitle: "قائمة الأصدقاء",
+                followingTitle: "تتابعهم",
+                followersTitle: "المتابَعون",
+                incomingEmpty: "لا توجد طلبات واردة.",
+                outgoingEmpty: "لا توجد طلبات مرسلة.",
+                friendsEmpty: "لا يوجد أصدقاء حتى الآن.",
+                followingEmpty: "لا تتابع أي لاعب حاليًا.",
+                followersEmpty: "لا يوجد متابعون حاليًا.",
+                btnSend: "إرسال طلب",
+                btnAccept: "قبول",
+                btnReject: "رفض",
+                btnCancel: "إلغاء الطلب",
+                btnRemove: "إزالة الصديق",
+                btnUnfollow: "إلغاء المتابعة",
+                btnRemoveFollower: "إزالة المتابع",
+                btnProfile: "فتح الملف",
+                privateBadge: "حساب خاص",
+                privateProfileLocked: "الملف الشخصي غير متاح للحسابات الخاصة.",
+                searchSelf: "لا يمكنك إرسال طلب لنفسك.",
+                searchNoUser: "لم يتم العثور على لاعب بهذا المعرّف.",
+                searchPrivateHidden: "هذا الحساب خاص ولا يظهر في البحث.",
+                sentOk: "تم إرسال طلب الصداقة بنجاح.",
+                sentFail: "تعذر إرسال الطلب حالياً.",
+                alreadyFriend: "هذا اللاعب موجود بالفعل في قائمة أصدقائك.",
+                alreadyPending: "لديك طلب صداقة معلّق مع هذا اللاعب.",
+                actionOk: "تم تحديث الطلب بنجاح.",
+                actionFail: "تعذر تنفيذ العملية حالياً.",
+                needSignIn: "سجّل الدخول أولاً لفتح صفحة الأصدقاء.",
+                friendRequestMessageAr: "طلب صداقة جديد من {name}",
+                friendAcceptMessageAr: "{name} قبل طلب صداقتك",
+                friendRequestMessageEn: "New friend request from {name}",
+                friendAcceptMessageEn: "{name} accepted your friend request",
+                versionLabel: "الإصدار",
+                betaLabel: "بيتا"
+            },
+            en: {
+                pageTitle: "Friends",
+                pageSubtitle: "Find players, send requests, and manage your friendships.",
+                backBtn: "Back Home",
+                gateTitle: "Private Account",
+                gateText: "Friends page is available only when your account is public.",
+                needSignInTitle: "Sign-in Required",
+                goProfile: "Open Profile",
+                searchTitle: "Send Friend Request",
+                openRequestModal: "Open Friend Request Window",
+                closeRequestModal: "Close",
+                searchBtn: "Search",
+                sendFromModal: "Send Request",
+                searchPlaceholder: "Enter player shortId",
+                requestMessageLabel: "Request message",
+                requestMessagePlaceholder: "Write your request message...",
+                requestMessageDefault: "Hi, I am sending you a friend request on DashType.",
+                incomingTitle: "Incoming Requests",
+                outgoingTitle: "Outgoing Requests",
+                friendsTitle: "Friends List",
+                followingTitle: "Following",
+                followersTitle: "Followers",
+                incomingEmpty: "No incoming requests.",
+                outgoingEmpty: "No outgoing requests.",
+                friendsEmpty: "No friends yet.",
+                followingEmpty: "You are not following anyone yet.",
+                followersEmpty: "No followers yet.",
+                btnSend: "Send Request",
+                btnAccept: "Accept",
+                btnReject: "Reject",
+                btnCancel: "Cancel Request",
+                btnRemove: "Remove Friend",
+                btnUnfollow: "Unfollow",
+                btnRemoveFollower: "Remove Follower",
+                btnProfile: "Open Profile",
+                privateBadge: "Private",
+                privateProfileLocked: "Profile is unavailable for private accounts.",
+                searchSelf: "You cannot send a request to yourself.",
+                searchNoUser: "No player found with this shortId.",
+                searchPrivateHidden: "Private accounts are hidden from search.",
+                sentOk: "Friend request sent successfully.",
+                sentFail: "Failed to send request.",
+                alreadyFriend: "This player is already in your friends list.",
+                alreadyPending: "You already have a pending request with this player.",
+                actionOk: "Request updated successfully.",
+                actionFail: "Could not complete this action.",
+                needSignIn: "Please sign in first.",
+                friendRequestMessageAr: "طلب صداقة جديد من {name}",
+                friendAcceptMessageAr: "{name} قبل طلب صداقتك",
+                friendRequestMessageEn: "New friend request from {name}",
+                friendAcceptMessageEn: "{name} accepted your friend request",
+                versionLabel: "Version",
+                betaLabel: "Beta"
+            }
+        };
+
+        let currentLanguage = "ar";
+        let viewerUid = "";
+        let viewerPublic = null;
+        let incomingUnsubscribe = null;
+        let outgoingUnsubscribe = null;
+        let friendsUnsubscribe = null;
+        let followingUnsubscribe = null;
+        let followersUnsubscribe = null;
+        let incomingCache = {};
+        let outgoingCache = {};
+        let friendsCache = {};
+        let followingCache = {};
+        let followersCache = {};
+        let userPrivacyCache = {};
+        let privacyRefreshTimer = null;
+        let lastSearchResult = null;
+        const SHORT_ID_LENGTH = 4;
+
+        const pageTitle = document.getElementById("pageTitle");
+        const pageSubtitle = document.getElementById("pageSubtitle");
+        const backBtnText = document.getElementById("backBtnText");
+        const gateSection = document.getElementById("gateSection");
+        const gateTitle = document.getElementById("gateTitle");
+        const gateText = document.getElementById("gateText");
+        const goProfileText = document.getElementById("goProfileText");
+        const friendsContent = document.getElementById("friendsContent");
+        const searchTitle = document.getElementById("searchTitle");
+        const openRequestModalBtn = document.getElementById("openRequestModalBtn");
+        const openRequestModalText = document.getElementById("openRequestModalText");
+        const friendRequestModal = document.getElementById("friendRequestModal");
+        const friendRequestModalTitle = document.getElementById("friendRequestModalTitle");
+        const closeRequestModalBtn = document.getElementById("closeRequestModalBtn");
+        const closeRequestModalText = document.getElementById("closeRequestModalText");
+        const sendFromModalBtn = document.getElementById("sendFromModalBtn");
+        const sendFromModalText = document.getElementById("sendFromModalText");
+        const searchBtnText = document.getElementById("searchBtnText");
+        const shortIdInput = document.getElementById("shortIdInput");
+        const incomingTitle = document.getElementById("incomingTitle");
+        const outgoingTitle = document.getElementById("outgoingTitle");
+        const friendsTitle = document.getElementById("friendsTitle");
+        const followingTitle = document.getElementById("followingTitle");
+        const followersTitle = document.getElementById("followersTitle");
+        const requestMessageLabel = document.getElementById("requestMessageLabel");
+        const requestMessageInput = document.getElementById("requestMessageInput");
+        const incomingList = document.getElementById("incomingList");
+        const outgoingList = document.getElementById("outgoingList");
+        const friendsList = document.getElementById("friendsList");
+        const followingList = document.getElementById("followingList");
+        const followersList = document.getElementById("followersList");
+        const incomingEmpty = document.getElementById("incomingEmpty");
+        const outgoingEmpty = document.getElementById("outgoingEmpty");
+        const friendsEmpty = document.getElementById("friendsEmpty");
+        const followingEmpty = document.getElementById("followingEmpty");
+        const followersEmpty = document.getElementById("followersEmpty");
+        const incomingCount = document.getElementById("incomingCount");
+        const outgoingCount = document.getElementById("outgoingCount");
+        const friendsCount = document.getElementById("friendsCount");
+        const followingCount = document.getElementById("followingCount");
+        const followersCount = document.getElementById("followersCount");
+        const searchBtn = document.getElementById("searchBtn");
+        const searchStatus = document.getElementById("searchStatus");
+        const searchResult = document.getElementById("searchResult");
+        const versionLabel = document.getElementById("versionLabel");
+        const betaLabel = document.getElementById("betaLabel");
+
+        function t(key) {
+            return (textMap[currentLanguage] && textMap[currentLanguage][key]) || key;
+        }
+
+        function format(template, values = {}) {
+            return String(template || "").replace(/\{(\w+)\}/g, (_m, key) => {
+                return Object.prototype.hasOwnProperty.call(values, key) ? String(values[key]) : "";
+            });
+        }
+
+        function normalizeShortId(value, fallback = "") {
+            const cleaned = String(value || "").trim().replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+            const fallbackCleaned = String(fallback || "").trim().replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+            const preferred = (cleaned || fallbackCleaned).slice(0, SHORT_ID_LENGTH);
+            if (!preferred) {
+                return "";
+            }
+            return preferred.padEnd(SHORT_ID_LENGTH, "0").slice(0, SHORT_ID_LENGTH);
+        }
+
+        function normalizeName(value, fallback = "لاعب") {
+            const compact = String(value || "").trim().replace(/\s+/g, " ");
+            return compact || fallback;
+        }
+
+        function normalizeCountryCode(value) {
+            return String(value || "").trim().toUpperCase().replace(/[^A-Z]/g, "").slice(0, 2);
+        }
+
+        function normalizeCountryName(value) {
+            return String(value || "").replace(/[<>]/g, "").trim().slice(0, 60);
+        }
+
+        function sanitizeRequestMessage(value, fallbackText) {
+            const cleaned = String(value || "").replace(/[<>]/g, "").trim().slice(0, 220);
+            if (cleaned) {
+                return cleaned;
+            }
+            return String(fallbackText || "").replace(/[<>]/g, "").trim().slice(0, 220);
+        }
+
+        function stopListeners() {
+            if (typeof incomingUnsubscribe === "function") incomingUnsubscribe();
+            if (typeof outgoingUnsubscribe === "function") outgoingUnsubscribe();
+            if (typeof friendsUnsubscribe === "function") friendsUnsubscribe();
+            if (typeof followingUnsubscribe === "function") followingUnsubscribe();
+            if (typeof followersUnsubscribe === "function") followersUnsubscribe();
+            if (privacyRefreshTimer) {
+                clearInterval(privacyRefreshTimer);
+                privacyRefreshTimer = null;
+            }
+            incomingUnsubscribe = null;
+            outgoingUnsubscribe = null;
+            friendsUnsubscribe = null;
+            followingUnsubscribe = null;
+            followersUnsubscribe = null;
+        }
+
+        function clearRenderedSocialState() {
+            incomingCache = {};
+            outgoingCache = {};
+            friendsCache = {};
+            followingCache = {};
+            followersCache = {};
+            userPrivacyCache = {};
+            lastSearchResult = null;
+            searchResult.textContent = "";
+            setSearchStatus("");
+            closeRequestModal();
+            renderIncoming();
+            renderOutgoing();
+            renderFriends();
+            renderFollowing();
+            renderFollowers();
+        }
+
+        function applyThemeLanguage() {
+            const saved = readTypingGameState();
+            const nextTheme = String(saved.currentTheme || "ocean");
+            const nextColorMode = String(saved.currentColorMode || "blur");
+            currentLanguage = saved.currentLanguage === "en" ? "en" : "ar";
+            document.documentElement.lang = currentLanguage;
+            document.documentElement.dir = "rtl";
+            document.documentElement.setAttribute("data-theme", nextTheme);
+            document.documentElement.setAttribute("data-color-mode", nextColorMode);
+            const logoImg = document.getElementById("logoImg");
+            if (logoImg) logoImg.src = resolveWordmarkSrc(nextColorMode, currentLanguage);
+        }
+
+        function applyTexts() {
+            pageTitle.textContent = t("pageTitle");
+            pageSubtitle.textContent = t("pageSubtitle");
+            backBtnText.textContent = t("backBtn");
+            gateTitle.textContent = t("gateTitle");
+            gateText.textContent = t("gateText");
+            goProfileText.textContent = t("goProfile");
+            searchTitle.textContent = t("searchTitle");
+            friendRequestModalTitle.textContent = t("searchTitle");
+            openRequestModalText.textContent = t("openRequestModal");
+            closeRequestModalText.textContent = t("closeRequestModal");
+            searchBtnText.textContent = t("searchBtn");
+            sendFromModalText.textContent = t("sendFromModal");
+            shortIdInput.placeholder = t("searchPlaceholder");
+            requestMessageLabel.textContent = t("requestMessageLabel");
+            requestMessageInput.placeholder = t("requestMessagePlaceholder");
+            if (!String(requestMessageInput.value || "").trim()) {
+                requestMessageInput.value = t("requestMessageDefault");
+            }
+            incomingTitle.textContent = t("incomingTitle");
+            outgoingTitle.textContent = t("outgoingTitle");
+            friendsTitle.textContent = t("friendsTitle");
+            followingTitle.textContent = t("followingTitle");
+            followersTitle.textContent = t("followersTitle");
+            incomingEmpty.textContent = t("incomingEmpty");
+            outgoingEmpty.textContent = t("outgoingEmpty");
+            friendsEmpty.textContent = t("friendsEmpty");
+            followingEmpty.textContent = t("followingEmpty");
+            followersEmpty.textContent = t("followersEmpty");
+            versionLabel.textContent = t("versionLabel");
+            betaLabel.textContent = t("betaLabel");
+        }
+
+        function setCounter(element, value) {
+            if (!element) return;
+            const safe = Number.isFinite(Number(value)) ? Number(value) : 0;
+            element.textContent = String(Math.max(0, safe));
+        }
+
+        function setSearchStatus(message, type = "") {
+            searchStatus.textContent = message;
+            searchStatus.className = type ? `result ${type}` : "result";
+        }
+
+        function openRequestModal() {
+            if (!friendRequestModal) return;
+            friendRequestModal.classList.add("is-active");
+            friendRequestModal.setAttribute("aria-hidden", "false");
+            setTimeout(() => shortIdInput?.focus(), 0);
+        }
+
+        function closeRequestModal() {
+            if (!friendRequestModal) return;
+            friendRequestModal.classList.remove("is-active");
+            friendRequestModal.setAttribute("aria-hidden", "true");
+        }
+
+        function isPrivateAccount(uid) {
+            if (!uid || !userPrivacyCache[uid]) {
+                return false;
+            }
+            return Boolean(userPrivacyCache[uid].isPrivate);
+        }
+
+        function createFriendNameNode(nameValue, isPrivate = false) {
+            const wrap = document.createElement("span");
+            wrap.className = "friend-name-wrap";
+
+            const textNode = document.createElement("span");
+            textNode.textContent = normalizeName(nameValue, currentLanguage === "en" ? "Player" : "لاعب");
+            wrap.appendChild(textNode);
+
+            if (isPrivate) {
+                const lock = document.createElement("span");
+                lock.className = "friend-private-lock";
+                lock.title = currentLanguage === "en" ? "Private account" : "حساب خاص";
+                lock.setAttribute("aria-label", currentLanguage === "en" ? "Private account" : "حساب خاص");
+                const icon = document.createElement("span");
+                icon.className = "icon icon-lock";
+                icon.setAttribute("aria-hidden", "true");
+                lock.appendChild(icon);
+                wrap.appendChild(lock);
+            }
+
+            return wrap;
+        }
+
+        function collectRelationshipUids() {
+            const ids = new Set();
+            Object.keys(incomingCache || {}).forEach((uid) => ids.add(uid));
+            Object.keys(outgoingCache || {}).forEach((uid) => ids.add(uid));
+            Object.keys(friendsCache || {}).forEach((uid) => ids.add(uid));
+            Object.keys(followingCache || {}).forEach((uid) => ids.add(uid));
+            Object.keys(followersCache || {}).forEach((uid) => ids.add(uid));
+            if (lastSearchResult?.uid) ids.add(String(lastSearchResult.uid));
+            return Array.from(ids).filter(Boolean);
+        }
+
+        async function refreshUserPrivacyCache(uids) {
+            const uniqueIds = Array.from(new Set((uids || []).map((uid) => String(uid || "")).filter(Boolean)));
+            if (!uniqueIds.length) {
+                return;
+            }
+
+            const lookups = await Promise.all(uniqueIds.map(async (uid) => {
+                try {
+                    const snapshot = await get(ref(db, `publicProfiles/${uid}`));
+                    if (!snapshot.exists()) {
+                        return [uid, { isPrivate: false }];
+                    }
+                    const value = snapshot.val() || {};
+                    return [uid, { isPrivate: Boolean(value.isPrivate) }];
+                } catch (_error) {
+                    return [uid, { isPrivate: false }];
+                }
+            }));
+
+            lookups.forEach(([uid, state]) => {
+                userPrivacyCache[uid] = {
+                    ...(userPrivacyCache[uid] || {}),
+                    ...state,
+                    updatedAt: Date.now()
+                };
+            });
+        }
+
+        async function syncPrivacyCacheAndRender() {
+            await refreshUserPrivacyCache(collectRelationshipUids());
+            await enrichOutgoingPrivacyFlags();
+            renderIncoming();
+            renderOutgoing();
+            renderFriends();
+            renderFollowing();
+            renderFollowers();
+            if (lastSearchResult) {
+                renderSearchResult(lastSearchResult);
+            }
+        }
+
+        async function readViewerPublicProfile(uid) {
+            const [publicSnapshot, userSnapshot] = await Promise.all([
+                get(ref(db, `publicProfiles/${uid}`)),
+                get(ref(db, `users/${uid}`))
+            ]);
+
+            const userNode = userSnapshot.exists() ? (userSnapshot.val() || {}) : {};
+            const profile = userNode.profile || {};
+            const stats = profile.stats || {};
+
+            const fallbackName = normalizeName(profile.nickname || profile.displayName || userNode.nickname || userNode.displayName, currentLanguage === "en" ? "Player" : "لاعب");
+            const fallbackShortId = normalizeShortId(profile.shortId || userNode.shortId || uid.slice(0, SHORT_ID_LENGTH), uid.slice(0, SHORT_ID_LENGTH));
+            const fallbackLevel = Number(stats.level || 0);
+
+            const currentPublic = publicSnapshot.exists() ? (publicSnapshot.val() || {}) : {};
+            const ensured = {
+                uid,
+                shortId: normalizeShortId(currentPublic.shortId || fallbackShortId, fallbackShortId),
+                displayName: normalizeName(currentPublic.displayName || fallbackName, fallbackName),
+                level: Number(currentPublic.level || fallbackLevel || 0),
+                isPrivate: typeof currentPublic.isPrivate === "boolean" ? currentPublic.isPrivate : true,
+                showCountry: typeof currentPublic.showCountry === "boolean" ? currentPublic.showCountry : false,
+                countryCode: normalizeCountryCode(currentPublic.countryCode || ""),
+                countryName: normalizeCountryName(currentPublic.countryName || ""),
+                updatedAt: Date.now(),
+                ...(currentPublic.photoURL ? { photoURL: String(currentPublic.photoURL) } : {})
+            };
+
+            const needsSync = !publicSnapshot.exists();
+            if (needsSync) {
+                try {
+                    await update(ref(db), {
+                        [`users/${uid}/profile/privacy/isPrivate`]: true,
+                        [`users/${uid}/profile/privacy/showCountry`]: false,
+                        [`users/${uid}/profile/privacy/countryCode`]: "",
+                        [`users/${uid}/profile/privacy/countryName`]: "",
+                        [`publicProfiles/${uid}`]: {
+                            ...ensured,
+                            isPrivate: true,
+                            showCountry: false,
+                            countryCode: "",
+                            countryName: "",
+                            updatedAt: Date.now()
+                        }
+                    });
+                    ensured.isPrivate = true;
+                    ensured.showCountry = false;
+                    ensured.countryCode = "";
+                    ensured.countryName = "";
+                } catch (_error) {
+                    // Ignore sync failure and continue with fallback.
+                }
+            }
+
+            return ensured;
+        }
+
+        function renderSearchResult(profile) {
+            searchResult.textContent = "";
+            if (!profile) {
+                return;
+            }
+
+            const card = document.createElement("div");
+            card.className = "result-card";
+
+            const main = document.createElement("div");
+            main.className = "result-main";
+
+            const textWrap = document.createElement("div");
+            const title = document.createElement("p");
+            title.className = "result-title";
+            title.textContent = normalizeName(profile.displayName, currentLanguage === "en" ? "Player" : "لاعب");
+            const meta = document.createElement("p");
+            meta.className = "result-meta";
+            const suffix = profile.isPrivate ? ` • ${t("privateBadge")}` : "";
+            meta.textContent = `#${normalizeShortId(profile.shortId, "----")}${suffix}`;
+            textWrap.appendChild(title);
+            textWrap.appendChild(meta);
+
+            if (profile.isPrivate) {
+                const lockedNote = document.createElement("p");
+                lockedNote.className = "result-meta";
+                lockedNote.textContent = t("privateProfileLocked");
+                textWrap.appendChild(lockedNote);
+            }
+
+            const actions = document.createElement("div");
+            actions.className = "friend-actions";
+
+            const sendBtn = document.createElement("button");
+            sendBtn.className = "btn-icon";
+            sendBtn.type = "button";
+            sendBtn.dataset.action = "send";
+            sendBtn.textContent = t("btnSend");
+
+            actions.appendChild(sendBtn);
+            if (!profile.isPrivate) {
+                const openProfileLink = document.createElement("a");
+                openProfileLink.className = "inline-link";
+                openProfileLink.href = `../profile/?uid=${encodeURIComponent(profile.uid)}`;
+                const openProfileBtn = document.createElement("button");
+                openProfileBtn.className = "btn-icon";
+                openProfileBtn.type = "button";
+                openProfileBtn.textContent = t("btnProfile");
+                openProfileLink.appendChild(openProfileBtn);
+                actions.appendChild(openProfileLink);
+            }
+            main.appendChild(textWrap);
+            main.appendChild(actions);
+            card.appendChild(main);
+            searchResult.appendChild(card);
+        }
+
+        function renderIncoming() {
+            incomingList.textContent = "";
+            const rows = Object.keys(incomingCache || {}).map((uid) => ({ uid, ...(incomingCache[uid] || {}) }))
+                .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+
+            const visibleRows = rows.filter((row) => !isPrivateAccount(row.uid));
+
+            incomingEmpty.classList.toggle("is-hidden", visibleRows.length > 0);
+            setCounter(incomingCount, visibleRows.length);
+
+            visibleRows.forEach((row) => {
+                const li = document.createElement("li");
+                li.className = "friend-item";
+                li.dataset.uid = row.uid;
+
+                const main = document.createElement("div");
+                main.className = "friend-item-main";
+
+                const text = document.createElement("div");
+                const name = document.createElement("p");
+                name.className = "friend-item-name";
+                name.appendChild(createFriendNameNode(row.fromName, false));
+                const sub = document.createElement("p");
+                sub.className = "friend-item-sub";
+                sub.textContent = `#${normalizeShortId(row.fromShortId, "----")}`;
+                text.append(name, sub);
+
+                if (row.requestMessage) {
+                    const msg = document.createElement("p");
+                    msg.className = "result-meta";
+                    msg.textContent = String(row.requestMessage || "");
+                    text.appendChild(msg);
+                }
+
+                const actions = document.createElement("div");
+                actions.className = "friend-actions";
+
+                const acceptBtn = document.createElement("button");
+                acceptBtn.className = "btn-icon";
+                acceptBtn.type = "button";
+                acceptBtn.dataset.action = "accept";
+                acceptBtn.dataset.uid = row.uid;
+                acceptBtn.textContent = t("btnAccept");
+
+                const rejectBtn = document.createElement("button");
+                rejectBtn.className = "btn-icon";
+                rejectBtn.type = "button";
+                rejectBtn.dataset.action = "reject";
+                rejectBtn.dataset.uid = row.uid;
+                rejectBtn.textContent = t("btnReject");
+
+                actions.append(acceptBtn, rejectBtn);
+                main.append(text, actions);
+                li.appendChild(main);
+                incomingList.appendChild(li);
+            });
+        }
+
+        function renderOutgoing() {
+            outgoingList.textContent = "";
+            const rows = Object.keys(outgoingCache || {}).map((uid) => ({ uid, ...(outgoingCache[uid] || {}) }))
+                .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+
+            const visibleRows = rows.filter((row) => !(row.toIsPrivate === true || isPrivateAccount(row.uid)));
+
+            outgoingEmpty.classList.toggle("is-hidden", visibleRows.length > 0);
+            setCounter(outgoingCount, visibleRows.length);
+
+            visibleRows.forEach((row) => {
+                const li = document.createElement("li");
+                li.className = "friend-item";
+
+                const main = document.createElement("div");
+                main.className = "friend-item-main";
+
+                const text = document.createElement("div");
+                const name = document.createElement("p");
+                name.className = "friend-item-name";
+                name.appendChild(createFriendNameNode(row.toName, false));
+                const sub = document.createElement("p");
+                sub.className = "friend-item-sub";
+                const isPrivateFollow = row.toIsPrivate === true || isPrivateAccount(row.uid);
+                const suffix = isPrivateFollow ? ` • ${t("privateBadge")}` : "";
+                sub.textContent = `#${normalizeShortId(row.toShortId, "----")}${suffix}`;
+                text.append(name, sub);
+
+                if (isPrivateFollow) {
+                    const lockedNote = document.createElement("p");
+                    lockedNote.className = "result-meta";
+                    lockedNote.textContent = t("privateProfileLocked");
+                    text.appendChild(lockedNote);
+                }
+
+                const actions = document.createElement("div");
+                actions.className = "friend-actions";
+
+                const cancelBtn = document.createElement("button");
+                cancelBtn.className = "btn-icon";
+                cancelBtn.type = "button";
+                cancelBtn.dataset.action = "cancel";
+                cancelBtn.dataset.uid = row.uid;
+                cancelBtn.textContent = t("btnCancel");
+
+                actions.append(cancelBtn);
+                if (!isPrivateFollow) {
+                    const profileLink = document.createElement("a");
+                    profileLink.className = "inline-link";
+                    profileLink.href = `../profile/?uid=${encodeURIComponent(row.uid)}`;
+                    const profileBtn = document.createElement("button");
+                    profileBtn.className = "btn-icon";
+                    profileBtn.type = "button";
+                    profileBtn.textContent = t("btnProfile");
+                    profileLink.appendChild(profileBtn);
+                    actions.appendChild(profileLink);
+                }
+                main.append(text, actions);
+                li.appendChild(main);
+                outgoingList.appendChild(li);
+            });
+        }
+
+        async function enrichOutgoingPrivacyFlags() {
+            const targetUids = Object.keys(outgoingCache || {}).filter((uid) => {
+                const row = outgoingCache[uid];
+                return row && typeof row === "object" && typeof row.toIsPrivate !== "boolean";
+            });
+            if (!targetUids.length) {
+                return;
+            }
+
+            const lookups = await Promise.all(targetUids.map(async (uid) => {
+                try {
+                    const snapshot = await get(ref(db, `publicProfiles/${uid}/isPrivate`));
+                    return [uid, snapshot.exists() ? Boolean(snapshot.val()) : false];
+                } catch (_error) {
+                    return [uid, false];
+                }
+            }));
+
+            lookups.forEach(([uid, isPrivate]) => {
+                const row = outgoingCache[uid];
+                if (!row || typeof row !== "object") {
+                    return;
+                }
+                outgoingCache[uid] = {
+                    ...row,
+                    toIsPrivate: Boolean(isPrivate)
+                };
+            });
+        }
+
+        function renderFriends() {
+            friendsList.textContent = "";
+            const rows = Object.keys(friendsCache || {}).map((uid) => ({ uid, ...(friendsCache[uid] || {}) }))
+                .sort((a, b) => String(a.name || "").localeCompare(String(b.name || ""), currentLanguage === "en" ? "en" : "ar"));
+
+            const visibleRows = rows.filter((row) => !isPrivateAccount(row.uid));
+
+            friendsEmpty.classList.toggle("is-hidden", visibleRows.length > 0);
+            setCounter(friendsCount, visibleRows.length);
+
+            visibleRows.forEach((row) => {
+                const li = document.createElement("li");
+                li.className = "friend-item";
+
+                const main = document.createElement("div");
+                main.className = "friend-item-main";
+
+                const text = document.createElement("div");
+                const name = document.createElement("p");
+                name.className = "friend-item-name";
+                name.appendChild(createFriendNameNode(row.name, false));
+                const sub = document.createElement("p");
+                sub.className = "friend-item-sub";
+                sub.textContent = `#${normalizeShortId(row.shortId, "----")}`;
+                text.append(name, sub);
+
+                const actions = document.createElement("div");
+                actions.className = "friend-actions";
+
+                const removeBtn = document.createElement("button");
+                removeBtn.className = "btn-icon";
+                removeBtn.type = "button";
+                removeBtn.dataset.action = "remove";
+                removeBtn.dataset.uid = row.uid;
+                removeBtn.textContent = t("btnRemove");
+
+                const profileLink = document.createElement("a");
+                profileLink.className = "inline-link";
+                profileLink.href = `../profile/?uid=${encodeURIComponent(row.uid)}`;
+                const profileBtn = document.createElement("button");
+                profileBtn.className = "btn-icon";
+                profileBtn.type = "button";
+                profileBtn.textContent = t("btnProfile");
+                profileLink.appendChild(profileBtn);
+
+                actions.append(removeBtn, profileLink);
+                main.append(text, actions);
+                li.appendChild(main);
+                friendsList.appendChild(li);
+            });
+        }
+
+        function renderFollowing() {
+            followingList.textContent = "";
+            const rows = Object.keys(followingCache || {}).map((uid) => ({ uid, ...(followingCache[uid] || {}) }))
+                .sort((a, b) => String(a.name || "").localeCompare(String(b.name || ""), currentLanguage === "en" ? "en" : "ar"));
+
+            followingEmpty.classList.toggle("is-hidden", rows.length > 0);
+            setCounter(followingCount, rows.length);
+
+            rows.forEach((row) => {
+                const li = document.createElement("li");
+                li.className = "friend-item";
+
+                const main = document.createElement("div");
+                main.className = "friend-item-main";
+
+                const text = document.createElement("div");
+                const name = document.createElement("p");
+                name.className = "friend-item-name";
+                const isPrivateFollow = isPrivateAccount(row.uid);
+                name.appendChild(createFriendNameNode(row.name, isPrivateFollow));
+                const sub = document.createElement("p");
+                sub.className = "friend-item-sub";
+                sub.textContent = `#${normalizeShortId(row.shortId, "----")}${isPrivateFollow ? ` • ${t("privateBadge")}` : ""}`;
+                text.append(name, sub);
+
+                const actions = document.createElement("div");
+                actions.className = "friend-actions";
+
+                const unfollowBtn = document.createElement("button");
+                unfollowBtn.className = "btn-icon";
+                unfollowBtn.type = "button";
+                unfollowBtn.dataset.action = "unfollow";
+                unfollowBtn.dataset.uid = row.uid;
+                unfollowBtn.textContent = t("btnUnfollow");
+
+                const profileLink = document.createElement("a");
+                profileLink.className = "inline-link";
+                profileLink.href = `../profile/?uid=${encodeURIComponent(row.uid)}`;
+                const profileBtn = document.createElement("button");
+                profileBtn.className = "btn-icon";
+                profileBtn.type = "button";
+                profileBtn.textContent = t("btnProfile");
+                profileLink.appendChild(profileBtn);
+
+                actions.append(unfollowBtn, profileLink);
+                main.append(text, actions);
+                li.appendChild(main);
+                followingList.appendChild(li);
+            });
+        }
+
+        function renderFollowers() {
+            followersList.textContent = "";
+            const rows = Object.keys(followersCache || {}).map((uid) => ({ uid, ...(followersCache[uid] || {}) }))
+                .sort((a, b) => String(a.name || "").localeCompare(String(b.name || ""), currentLanguage === "en" ? "en" : "ar"));
+
+            followersEmpty.classList.toggle("is-hidden", rows.length > 0);
+            setCounter(followersCount, rows.length);
+
+            rows.forEach((row) => {
+                const li = document.createElement("li");
+                li.className = "friend-item";
+
+                const main = document.createElement("div");
+                main.className = "friend-item-main";
+
+                const text = document.createElement("div");
+                const name = document.createElement("p");
+                name.className = "friend-item-name";
+                const isPrivateFollower = isPrivateAccount(row.uid);
+                name.appendChild(createFriendNameNode(row.name, isPrivateFollower));
+                const sub = document.createElement("p");
+                sub.className = "friend-item-sub";
+                sub.textContent = `#${normalizeShortId(row.shortId, "----")}${isPrivateFollower ? ` • ${t("privateBadge")}` : ""}`;
+                text.append(name, sub);
+
+                const actions = document.createElement("div");
+                actions.className = "friend-actions";
+
+                const removeFollowerBtn = document.createElement("button");
+                removeFollowerBtn.className = "btn-icon";
+                removeFollowerBtn.type = "button";
+                removeFollowerBtn.dataset.action = "remove-follower";
+                removeFollowerBtn.dataset.uid = row.uid;
+                removeFollowerBtn.textContent = t("btnRemoveFollower");
+
+                const profileLink = document.createElement("a");
+                profileLink.className = "inline-link";
+                profileLink.href = `../profile/?uid=${encodeURIComponent(row.uid)}`;
+                const profileBtn = document.createElement("button");
+                profileBtn.className = "btn-icon";
+                profileBtn.type = "button";
+                profileBtn.textContent = t("btnProfile");
+                profileLink.appendChild(profileBtn);
+
+                actions.append(removeFollowerBtn, profileLink);
+                main.append(text, actions);
+                li.appendChild(main);
+                followersList.appendChild(li);
+            });
+        }
+
+        function watchSocialNodes(uid) {
+            stopListeners();
+            incomingUnsubscribe = onValue(ref(db, `users/${uid}/friendRequests/incoming`), (snapshot) => {
+                incomingCache = snapshot.exists() ? (snapshot.val() || {}) : {};
+                void syncPrivacyCacheAndRender();
+            });
+
+            outgoingUnsubscribe = onValue(ref(db, `users/${uid}/friendRequests/outgoing`), async (snapshot) => {
+                outgoingCache = snapshot.exists() ? (snapshot.val() || {}) : {};
+                await syncPrivacyCacheAndRender();
+            });
+
+            friendsUnsubscribe = onValue(ref(db, `users/${uid}/friends`), (snapshot) => {
+                friendsCache = snapshot.exists() ? (snapshot.val() || {}) : {};
+                void syncPrivacyCacheAndRender();
+            });
+
+            followingUnsubscribe = onValue(ref(db, `users/${uid}/following`), (snapshot) => {
+                followingCache = snapshot.exists() ? (snapshot.val() || {}) : {};
+                void syncPrivacyCacheAndRender();
+            });
+
+            followersUnsubscribe = onValue(ref(db, `users/${uid}/followers`), (snapshot) => {
+                followersCache = snapshot.exists() ? (snapshot.val() || {}) : {};
+                void syncPrivacyCacheAndRender();
+            });
+
+            privacyRefreshTimer = setInterval(() => {
+                void syncPrivacyCacheAndRender();
+            }, 12000);
+        }
+
+        async function findProfileByShortId(shortId) {
+            const normalized = normalizeShortId(shortId);
+            if (!normalized) {
+                return null;
+            }
+
+            const profileQuery = query(
+                ref(db, "publicProfiles"),
+                orderByChild("shortId"),
+                equalTo(normalized),
+                limitToFirst(1)
+            );
+            const snapshot = await get(profileQuery);
+            if (!snapshot.exists()) {
+                return null;
+            }
+
+            const rows = snapshot.val() || {};
+            const uid = Object.keys(rows)[0] || "";
+            if (!uid) {
+                return null;
+            }
+            return { uid, ...(rows[uid] || {}) };
+        }
+
+        async function sendFriendRequest(profile) {
+            if (!viewerUid || !viewerPublic || !profile || !profile.uid) {
+                return;
+            }
+
+            const targetUid = String(profile.uid);
+            if (targetUid === viewerUid) {
+                setSearchStatus(t("searchSelf"), "warning");
+                return;
+            }
+
+            if (friendsCache[targetUid]) {
+                setSearchStatus(t("alreadyFriend"), "warning");
+                return;
+            }
+
+            if (outgoingCache[targetUid] || incomingCache[targetUid]) {
+                setSearchStatus(t("alreadyPending"), "warning");
+                return;
+            }
+
+            const now = Date.now();
+            const fromName = normalizeName(viewerPublic.displayName, currentLanguage === "en" ? "Player" : "لاعب");
+            const fromShortId = normalizeShortId(viewerPublic.shortId, viewerUid.slice(0, SHORT_ID_LENGTH));
+            const toName = normalizeName(profile.displayName, currentLanguage === "en" ? "Player" : "لاعب");
+            const toShortId = normalizeShortId(profile.shortId, targetUid.slice(0, SHORT_ID_LENGTH));
+            const requestMessage = sanitizeRequestMessage(requestMessageInput?.value, t("requestMessageDefault"));
+            const notificationId = push(ref(db, `users/${targetUid}/notifications`)).key;
+
+            const payload = {
+                [`users/${targetUid}/friendRequests/incoming/${viewerUid}`]: {
+                    fromUid: viewerUid,
+                    toUid: targetUid,
+                    fromShortId,
+                    fromName,
+                    requestMessage,
+                    createdAt: now
+                },
+                [`users/${viewerUid}/friendRequests/outgoing/${targetUid}`]: {
+                    fromUid: viewerUid,
+                    toUid: targetUid,
+                    toShortId,
+                    toName,
+                    toIsPrivate: profile.isPrivate === true,
+                    requestMessage,
+                    createdAt: now
+                }
+            };
+
+            if (notificationId) {
+                payload[`users/${targetUid}/notifications/${notificationId}`] = {
+                    type: "friend_request",
+                    message: requestMessage,
+                    messageAr: requestMessage,
+                    messageEn: requestMessage,
+                    fromUid: viewerUid,
+                    toUid: targetUid,
+                    fromName,
+                    fromShortId,
+                    requestMessage,
+                    createdAt: now
+                };
+            }
+
+            try {
+                await update(ref(db), payload);
+                setSearchStatus(t("sentOk"), "success");
+            } catch (_error) {
+                setSearchStatus(t("sentFail"), "warning");
+            }
+        }
+
+        async function acceptRequest(fromUid) {
+            if (!viewerUid || !viewerPublic || !fromUid || !incomingCache[fromUid]) {
+                return;
+            }
+
+            const requestData = incomingCache[fromUid] || {};
+            const now = Date.now();
+            const myName = normalizeName(viewerPublic.displayName, currentLanguage === "en" ? "Player" : "لاعب");
+            const myShortId = normalizeShortId(viewerPublic.shortId, viewerUid.slice(0, SHORT_ID_LENGTH));
+            const fromName = normalizeName(requestData.fromName, currentLanguage === "en" ? "Player" : "لاعب");
+            const fromShortId = normalizeShortId(requestData.fromShortId, fromUid.slice(0, SHORT_ID_LENGTH));
+            const notificationId = push(ref(db, `users/${fromUid}/notifications`)).key;
+
+            const payload = {
+                [`users/${viewerUid}/friends/${fromUid}`]: {
+                    uid: fromUid,
+                    shortId: fromShortId,
+                    name: fromName,
+                    since: now
+                },
+                [`users/${fromUid}/friends/${viewerUid}`]: {
+                    uid: viewerUid,
+                    shortId: myShortId,
+                    name: myName,
+                    since: now
+                },
+                [`users/${viewerUid}/friendRequests/incoming/${fromUid}`]: null,
+                [`users/${fromUid}/friendRequests/outgoing/${viewerUid}`]: null
+            };
+
+            if (notificationId) {
+                payload[`users/${fromUid}/notifications/${notificationId}`] = {
+                    type: "friend_accept",
+                    message: format(t("friendAcceptMessageAr"), { name: myName }),
+                    messageAr: format(t("friendAcceptMessageAr"), { name: myName }),
+                    messageEn: format(t("friendAcceptMessageEn"), { name: myName }),
+                    fromUid: viewerUid,
+                    toUid: fromUid,
+                    fromName: myName,
+                    fromShortId: myShortId,
+                    createdAt: now
+                };
+            }
+
+            try {
+                await update(ref(db), payload);
+                setSearchStatus(t("actionOk"), "success");
+            } catch (_error) {
+                setSearchStatus(t("actionFail"), "warning");
+            }
+        }
+
+        async function rejectRequest(fromUid) {
+            if (!viewerUid || !fromUid) return;
+            try {
+                await update(ref(db), {
+                    [`users/${viewerUid}/friendRequests/incoming/${fromUid}`]: null,
+                    [`users/${fromUid}/friendRequests/outgoing/${viewerUid}`]: null
+                });
+                setSearchStatus(t("actionOk"), "success");
+            } catch (_error) {
+                setSearchStatus(t("actionFail"), "warning");
+            }
+        }
+
+        async function cancelRequest(toUid) {
+            if (!viewerUid || !toUid) return;
+            try {
+                await update(ref(db), {
+                    [`users/${viewerUid}/friendRequests/outgoing/${toUid}`]: null,
+                    [`users/${toUid}/friendRequests/incoming/${viewerUid}`]: null
+                });
+                setSearchStatus(t("actionOk"), "success");
+            } catch (_error) {
+                setSearchStatus(t("actionFail"), "warning");
+            }
+        }
+
+        async function removeFriend(friendUid) {
+            if (!viewerUid || !friendUid) return;
+            try {
+                await update(ref(db), {
+                    [`users/${viewerUid}/friends/${friendUid}`]: null,
+                    [`users/${friendUid}/friends/${viewerUid}`]: null
+                });
+                setSearchStatus(t("actionOk"), "success");
+            } catch (_error) {
+                setSearchStatus(t("actionFail"), "warning");
+            }
+        }
+
+        async function unfollowUser(targetUid) {
+            if (!viewerUid || !targetUid) return;
+            try {
+                await update(ref(db), {
+                    [`users/${viewerUid}/following/${targetUid}`]: null,
+                    [`users/${targetUid}/followers/${viewerUid}`]: null
+                });
+                setSearchStatus(t("actionOk"), "success");
+            } catch (_error) {
+                setSearchStatus(t("actionFail"), "warning");
+            }
+        }
+
+        async function removeFollower(targetUid) {
+            if (!viewerUid || !targetUid) return;
+            try {
+                await update(ref(db), {
+                    [`users/${viewerUid}/followers/${targetUid}`]: null,
+                    [`users/${targetUid}/following/${viewerUid}`]: null
+                });
+                setSearchStatus(t("actionOk"), "success");
+            } catch (_error) {
+                setSearchStatus(t("actionFail"), "warning");
+            }
+        }
+
+        async function runSearch() {
+            const shortId = normalizeShortId(shortIdInput.value);
+            setSearchStatus("");
+            searchResult.textContent = "";
+            lastSearchResult = null;
+
+            if (!shortId) {
+                setSearchStatus(t("searchNoUser"), "warning");
+                return;
+            }
+
+            try {
+                const profile = await findProfileByShortId(shortId);
+                if (!profile) {
+                    setSearchStatus(t("searchNoUser"), "warning");
+                    return;
+                }
+
+                if (profile.isPrivate === true) {
+                    setSearchStatus(t("searchPrivateHidden"), "warning");
+                    return;
+                }
+
+                if (profile.uid === viewerUid) {
+                    setSearchStatus(t("searchSelf"), "warning");
+                    return;
+                }
+
+                lastSearchResult = profile;
+                renderSearchResult(profile);
+            } catch (_error) {
+                setSearchStatus(t("sentFail"), "warning");
+            }
+        }
+
+        openRequestModalBtn.addEventListener("click", () => {
+            openRequestModal();
+        });
+
+        closeRequestModalBtn.addEventListener("click", () => {
+            closeRequestModal();
+        });
+
+        friendRequestModal.addEventListener("click", (event) => {
+            if (event.target === friendRequestModal) {
+                closeRequestModal();
+            }
+        });
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape" && friendRequestModal.classList.contains("is-active")) {
+                closeRequestModal();
+            }
+        });
+
+        searchBtn.addEventListener("click", () => {
+            void runSearch();
+        });
+
+        shortIdInput.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                void runSearch();
+            }
+        });
+
+        searchResult.addEventListener("click", (event) => {
+            const button = event.target.closest("button[data-action='send']");
+            if (!button) return;
+            if (!lastSearchResult) return;
+            void sendFriendRequest(lastSearchResult);
+        });
+
+        sendFromModalBtn.addEventListener("click", () => {
+            if (!lastSearchResult) {
+                setSearchStatus(t("searchNoUser"), "warning");
+                return;
+            }
+            void sendFriendRequest(lastSearchResult);
+        });
+
+        incomingList.addEventListener("click", (event) => {
+            const button = event.target.closest("button[data-action]");
+            if (!button) return;
+            const action = String(button.dataset.action || "");
+            const uid = String(button.dataset.uid || "");
+            if (!uid) return;
+            if (action === "accept") void acceptRequest(uid);
+            if (action === "reject") void rejectRequest(uid);
+        });
+
+        outgoingList.addEventListener("click", (event) => {
+            const button = event.target.closest("button[data-action='cancel']");
+            if (!button) return;
+            const uid = String(button.dataset.uid || "");
+            if (!uid) return;
+            void cancelRequest(uid);
+        });
+
+        friendsList.addEventListener("click", (event) => {
+            const button = event.target.closest("button[data-action='remove']");
+            if (!button) return;
+            const uid = String(button.dataset.uid || "");
+            if (!uid) return;
+            void removeFriend(uid);
+        });
+
+        followingList.addEventListener("click", (event) => {
+            const button = event.target.closest("button[data-action='unfollow']");
+            if (!button) return;
+            const uid = String(button.dataset.uid || "");
+            if (!uid) return;
+            void unfollowUser(uid);
+        });
+
+        followersList.addEventListener("click", (event) => {
+            const button = event.target.closest("button[data-action='remove-follower']");
+            if (!button) return;
+            const uid = String(button.dataset.uid || "");
+            if (!uid) return;
+            void removeFollower(uid);
+        });
+
+        onAuthStateChanged(auth, async (user) => {
+            applyThemeLanguage();
+            applyTexts();
+            setSearchStatus("");
+
+            if (!user) {
+                stopListeners();
+                clearRenderedSocialState();
+                viewerUid = "";
+                viewerPublic = null;
+                gateSection.classList.remove("is-hidden");
+                friendsContent.classList.add("is-hidden");
+                gateTitle.textContent = t("needSignInTitle");
+                gateText.textContent = t("needSignIn");
+                return;
+            }
+
+            viewerUid = user.uid;
+            viewerPublic = await readViewerPublicProfile(user.uid);
+
+            gateSection.classList.add("is-hidden");
+            friendsContent.classList.remove("is-hidden");
+            watchSocialNodes(user.uid);
+        });
+    </script>
+    <script src="../scripts/pwa-register.js"></script>
+</body>
+</html>

@@ -1,13 +1,9 @@
-const CACHE_VERSION = "dash-type-v0.7.000";
+const CACHE_VERSION = "dash-type-v0.8.000";
 const CORE_ASSETS = [
   "./",
   "./index.html",
   "./style.css",
   "./word-bank.js",
-  "./history.html",
-  "./global-leaderboard.html",
-  "./admin.html",
-  "./user-guide.html",
   "./single/index.html",
   "./triple/index.html",
   "./sequential/index.html",
@@ -15,6 +11,8 @@ const CORE_ASSETS = [
   "./history/index.html",
   "./leaderboard/index.html",
   "./guide/index.html",
+  "./profile/index.html",
+  "./friends/index.html",
   "./admin/index.html",
   "./scripts/firebase-save.js",
   "./scripts/g1.js",

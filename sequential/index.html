@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 	<meta charset="UTF-8">
@@ -13,11 +13,11 @@
 	<link rel="icon" type="image/png" sizes="16x16" href="../photo/favicon-16.png">
 	<link rel="apple-touch-icon" href="../photo/favicon-64.png">
 </head>
-<body>
+<body class="play-mode-page">
 	<a href="#gameScreen" class="skip-link">تخطي إلى المحتوى</a>
 	<header class="top-controls logo-only">
 		<div class="logo-container">
-			<a href="../index.html" class="logo-badge">
+			<a href="../index.html" class="logo-badge" id="logoHomeLink">
 				<img id="logoImg" src="../photo/dashtype%20White%20Wordmark%20ar.png" alt="DashType" class="app-logo">
 				<span class="logo-beta" id="betaLabel">بيتا</span>
 			</a>
@@ -26,7 +26,7 @@
 	<main class="game-card" id="gameScreen">
 		<section class="game-top">
 			<div class="game-title-group">
-				<h1 id="gameTitle">DashType - النمط المتتابع</h1>
+				<h1 id="gameTitle" class="mode-page-title" data-mode-icon="sequential">DashType - النمط المتتابع</h1>
 				<p class="subtitle" id="playerGreeting">المتتابع: أنهِ 7 كلمات بالتسلسل مع مؤقت واحد.</p>
 			</div>
 		</section>
@@ -52,28 +52,25 @@
 						spellcheck="false"
 					>
 
-					<div class="result" id="resultText">ابدأ الجولة الآن</div>
-				</div>
-
-				<aside class="status-panel">
-					<div class="status-card">
-						<div class="progress" id="progressText">الكلمة 1 من 7</div>
-					</div>
-					<div class="status-card">
-						<div class="timer-wrap">
+					<div class="actions round-actions">
+						<div class="timer-wrap timer-wrap-inline">
 							<span id="timerLabel">الوقت:</span>
 							<span id="timeValue">0.000</span>
 							<span id="timerUnit">ث</span>
 						</div>
+						<button id="startBtn" class="btn-icon" type="button"><span class="icon icon-play" aria-hidden="true"></span><span id="startBtnText">بدء جولة</span></button>
+						<button id="nextBtn" class="btn-icon" type="button"><span class="icon icon-next" aria-hidden="true"></span><span id="nextBtnText">كلمة جديدة</span></button>
 					</div>
-					<div class="status-card">
-						<div class="actions side-actions">
-							<button id="startBtn" class="btn-icon" type="button"><span class="icon icon-play" aria-hidden="true"></span><span id="startBtnText">بدء جولة</span></button>
-							<button id="nextBtn" class="btn-icon" type="button"><span class="icon icon-next" aria-hidden="true"></span><span id="nextBtnText">كلمة جديدة</span></button>
-							<button id="homeBtn" class="btn-icon" type="button"><span class="icon icon-home" aria-hidden="true"></span><span id="homeBtnText">الصفحة الرئيسية</span></button>
-						</div>
-					</div>
-				</aside>
+
+					<div class="round-progress-label" id="progressText">الكلمة 1 من 7</div>
+
+					<div class="result" id="resultText">ابدأ الجولة الآن</div>
+				</div>
+
+				<div class="play-home-wrap">
+					
+					<button id="homeBtn" class="btn-icon home-bottom-btn" type="button"><span class="icon icon-home" aria-hidden="true"></span><span id="homeBtnText">الصفحة الرئيسية</span></button>
+				</div>
 			</section>
 		</section>
 	</main>
@@ -90,6 +87,7 @@
 					<button id="themeNeonBtn" class="theme-dot" type="button" data-theme="neon" title="Green & Yellow"></button>
 					<button id="themeVioletBtn" class="theme-dot" type="button" data-theme="violet" title="Purple & Pink"></button>
 					<button id="themeBrownBtn" class="theme-dot" type="button" data-theme="brown" title="Brown"></button>
+					<button id="themeMaroonBtn" class="theme-dot" type="button" data-theme="maroon" title="Burgundy & Dark Red"></button>
 				</div>
 			</div>
 
@@ -132,7 +130,7 @@
 		<p class="footer-meta">
 			<span class="footer-meta-item">&copy; 2026 DashType. All rights reserved.</span>
 			<span class="footer-meta-item"><span id="contactLabel" class="footer-contact-label">للتواصل معنا</span> <a class="footer-contact" href="mailto:contact@dashtype.tech">contact@dashtype.tech</a></span>
-			<span class="footer-meta-item"><span id="versionLabel" class="footer-contact-label">الإصدار</span> <span class="footer-version">0.7.000</span></span>
+			<span class="footer-meta-item"><span id="versionLabel" class="footer-contact-label">الإصدار</span> <span class="footer-version">0.8.000</span></span>
 		</p>
 	</footer>
 

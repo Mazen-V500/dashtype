@@ -1,6 +1,6 @@
 ﻿import { loadUserPreferences, saveUserPreferences } from "./firebase-save.js";
 import { readTypingGameState, writeTypingGameState } from "./app-state.js";
-import { createUiToneShiftRunner, normalizeTypingInput, resolveWordmarkSrc } from "./ui-utils.js";
+import { createUiToneShiftRunner, normalizeTypingInput, resolveWordmarkSrc, setupConnectivityBanner } from "./ui-utils.js";
 
 window.TypingGame = (() => {
     const wordsByLanguage = window.DashTypeWordBank || {
@@ -14,18 +14,25 @@ window.TypingGame = (() => {
             gameTitle: "DashType - النمط الفردي",
             greeting: "الفردي: اكتب كلمة واحدة كما تظهر، وركّز على الدقة قبل السرعة.",
             startRound: "بدء جولة",
+            stopRound: "إيقاف الجولة",
             startGate: "بدء الجولة",
             newWord: "كلمة جديدة",
             home: "الصفحة الرئيسية",
+            historyQuick: "السجل الشخصي",
+            modeIdentityTitle: "النمط الفردي",
+            modeIdentityHint: "تركيز عال على كلمة واحدة",
             typingPlaceholder: "اكتب هنا...",
             timerLabel: "الوقت:",
             timerUnit: "ث",
-            progressSingle: "النمط الحالي: الفردي",
-            progressTriple: "النمط الحالي: الثلاثي (مجموع 14 حرفاً)",
+            progressSingle: "الفردي",
+            progressTriple: "الثلاثي (مجموع 14 حرفاً)",
             progressTripleSeq: "المتتابع: الكلمة {index} من 3",
             readyWordBox: "جاهز؟ اضغط بدء",
             endedWordBox: "انتهت الجولة",
             resultStart: "اضغط بدء الجولة لتظهر الكلمة الأولى",
+            gainPoints: "+{points} نقطة",
+            gainLevelUp: "⭐ المستوى {level}",
+            gainLevelUpResult: "⭐ مستوى جديد: {level} - أداء رائع! استمر",
             resultStartTyping: "بدأ الوقت!",
             resultGoodContinue: "ممتاز، استمر",
             resultWrong: "يوجد خطأ، حاول التصحيح",
@@ -48,9 +55,10 @@ window.TypingGame = (() => {
             themeBerry: "بنفسجي ووردي",
             themeNeon: "أخضر وأصفر",
             themeViolet: "بنفسجي ووردي",
-               themeBrown: "بني",
-            modeLight: "فاتح",
-            modeDark: "داكن",
+                themeBrown: "بني",
+                themeMaroon: "عنابي وأحمر داكن",
+            lightMode: "فاتح",
+            darkMode: "داكن",
             blurMode: "ضبابي",
             langArabic: "العربية",
             langEnglish: "English",
@@ -65,18 +73,25 @@ window.TypingGame = (() => {
             gameTitle: "DashType - Single Mode",
             greeting: "Single mode: type one shown word exactly, then improve your time.",
             startRound: "Start Round",
+            stopRound: "Stop Round",
             startGate: "Start Round",
             newWord: "New Word",
             home: "Home",
+            historyQuick: "Personal history",
+            modeIdentityTitle: "Single Mode",
+            modeIdentityHint: "Pure one-word focus",
             typingPlaceholder: "Type here...",
             timerLabel: "Time:",
             timerUnit: "s",
-            progressSingle: "Current Mode: Single",
-            progressTriple: "Current Mode: Triple (Total 14 letters)",
+            progressSingle: "Single",
+            progressTriple: "Triple (Total 14 letters)",
             progressTripleSeq: "Sequential: Word {index} of 3",
             readyWordBox: "Ready? Press Start",
             endedWordBox: "Round Ended",
             resultStart: "Press Start Round to show the first word",
+            gainPoints: "+{points} pts",
+            gainLevelUp: "⭐ Level {level}",
+            gainLevelUpResult: "⭐ New level: {level} - Great pace, keep it up",
             resultStartTyping: "Timer started!",
             resultGoodContinue: "Great, keep going",
             resultWrong: "There is a mistake, correct it",
@@ -99,9 +114,10 @@ window.TypingGame = (() => {
             themeBerry: "Purple & Pink",
             themeNeon: "Green & Yellow",
             themeViolet: "Purple & Pink",
-               themeBrown: "Brown",
-            modeLight: "Light",
-            modeDark: "Dark",
+                themeBrown: "Brown",
+                themeMaroon: "Burgundy & Dark Red",
+            lightMode: "Light",
+            darkMode: "Dark",
             blurMode: "Blurred",
             langArabic: "Arabic",
             langEnglish: "English",
@@ -123,12 +139,15 @@ window.TypingGame = (() => {
         const timeValue = document.getElementById("timeValue");
         const resultText = document.getElementById("resultText");
         const startBtn = document.getElementById("startBtn");
+        const startBtnText = document.getElementById("startBtnText");
         const gateStartBtn = document.getElementById("gateStartBtn");
         const startGate = document.getElementById("startGate");
         const nextBtn = document.getElementById("nextBtn");
         const homeBtn = document.getElementById("homeBtn");
+        const logoHomeLink = document.getElementById("logoHomeLink");
         const progressText = document.getElementById("progressText");
         const playerGreeting = document.getElementById("playerGreeting");
+        const roundGainNote = document.getElementById("roundGainNote");
         const gameTitle = document.getElementById("gameTitle");
         const timerLabel = document.getElementById("timerLabel");
         const timerUnit = document.getElementById("timerUnit");
@@ -144,6 +163,7 @@ window.TypingGame = (() => {
         const themeNeonBtn = document.getElementById("themeNeonBtn");
         const themeVioletBtn = document.getElementById("themeVioletBtn");
         const themeBrownBtn = document.getElementById("themeBrownBtn");
+        const themeMaroonBtn = document.getElementById("themeMaroonBtn");
         const colorModeDarkBtn = document.getElementById("colorModeDarkBtn");
         const colorModeBlurBtn = document.getElementById("colorModeBlurBtn");
         const colorModeLightBtn = document.getElementById("colorModeLightBtn");
@@ -155,7 +175,8 @@ window.TypingGame = (() => {
             themeBerryBtn,
             themeNeonBtn,
             themeVioletBtn,
-            themeBrownBtn
+            themeBrownBtn,
+            themeMaroonBtn
         ];
         const colorModeButtons = [colorModeDarkBtn, colorModeBlurBtn, colorModeLightBtn];
 
@@ -169,8 +190,22 @@ window.TypingGame = (() => {
         let sequentialWords = [];
         let sequentialIndex = 0;
         let lastMistakeAt = 0;
+        let roundRejected = false;
+        let rejectionReason = "";
+        let lastInputTimestamp = 0;
+        let previousTypedValue = "";
+        let keystrokeIntervals = [];
         let isApplyingRemotePreferences = false;
+        setupConnectivityBanner({ resolveLanguage: () => currentLanguage });
+        const MAX_ALLOWED_WPM = 250;
+        const MIN_INTERVAL_MS = 80;
+        const MIN_INTERVAL_SAMPLE_SIZE = 8;
+        const FAST_INTERVAL_RATIO_LIMIT = 0.72;
         const runUiToneShift = createUiToneShiftRunner({ durationMs: 460 });
+
+        if (roundGainNote) {
+            roundGainNote.classList.add("round-gain-corner-toast");
+        }
 
         function t(key) {
             return textMap[currentLanguage][key];
@@ -195,10 +230,14 @@ window.TypingGame = (() => {
             writeTypingGameState(state);
 
             if (!isApplyingRemotePreferences) {
+                const typingSettings = window.DashTypeTypingSettings && typeof window.DashTypeTypingSettings.get === "function"
+                    ? window.DashTypeTypingSettings.get()
+                    : null;
                 void saveUserPreferences({
                     theme: state.currentTheme,
                     colorMode: state.currentColorMode,
-                    language: state.currentLanguage
+                    language: state.currentLanguage,
+                    ...(typingSettings ? { typingSettings } : {})
                 });
             }
         }
@@ -270,6 +309,10 @@ window.TypingGame = (() => {
                 }
 
                 setLanguage(currentLanguage);
+
+                if (remote.typingSettings && window.DashTypeTypingSettings && typeof window.DashTypeTypingSettings.apply === "function") {
+                    window.DashTypeTypingSettings.apply(remote.typingSettings, { skipRemoteSave: true });
+                }
             } catch (error) {
                 console.warn("Remote preferences sync failed:", error);
             } finally {
@@ -341,6 +384,152 @@ window.TypingGame = (() => {
             finalTime = parseFloat(timeValue.textContent);
         }
 
+        function pulseClass(element, className) {
+            if (!element) return;
+            element.classList.remove(className);
+            void element.offsetWidth;
+            element.classList.add(className);
+            setTimeout(() => element.classList.remove(className), 280);
+        }
+
+        function playSuccessFeedback() {
+            pulseClass(wordBox, "word-animate-success");
+            pulseClass(resultText, "result-animate-success");
+        }
+
+        function playFailFeedback() {
+            pulseClass(resultText, "result-animate-warning");
+        }
+
+        function playRejectFeedback() {
+            pulseClass(wordBox, "word-reject");
+            pulseClass(resultText, "result-reject");
+            pulseClass(typingInput, "typing-reject");
+        }
+
+        function getRejectMessage(reason) {
+            if (currentLanguage === "en") {
+                if (reason === "paste") {
+                    return "Round rejected: paste/drop is not allowed";
+                }
+                if (reason === "automation") {
+                    return "Round rejected: non-human input detected";
+                }
+                return reason === "cadence"
+                    ? "Round rejected: sustained keystrokes were too fast"
+                    : "Round rejected: speed exceeded allowed threshold";
+            }
+            if (reason === "paste") {
+                return "تم رفض الجولة: اللصق أو السحب غير مسموح";
+            }
+            if (reason === "automation") {
+                return "تم رفض الجولة: تم اكتشاف إدخال غير بشري";
+            }
+            return reason === "cadence"
+                ? "تم رفض الجولة: تسارع مستمر أقل من الحد المسموح"
+                : "تم رفض الجولة: السرعة تجاوزت الحد المسموح";
+        }
+
+        function handleBlockedDirectInsert() {
+            resultText.textContent = currentLanguage === "en"
+                ? "Paste and drop are blocked during typing"
+                : "تم حظر اللصق والسحب أثناء الكتابة";
+            resultText.className = "result warning";
+            playRejectFeedback();
+
+            if (timerStarted && !roundRejected) {
+                rejectRound("paste");
+            }
+        }
+
+        function computeWpmFromChars(charCount, secondsElapsed) {
+            const safeChars = Math.max(1, Number(charCount) || 1);
+            const safeSeconds = Math.max(0.001, Number(secondsElapsed) || 0.001);
+            return ((safeChars / 5) / safeSeconds) * 60;
+        }
+
+        function getActiveRoundCharCount() {
+            return normalizeInput(currentWord).replace(/\s+/g, " ").length;
+        }
+
+        function validateRoundIntegrity() {
+            const totalChars = getActiveRoundCharCount();
+            const roundWpm = computeWpmFromChars(totalChars, finalTime);
+            if (totalChars >= 6 && roundWpm > MAX_ALLOWED_WPM) {
+                return { valid: false, reason: "wpm" };
+            }
+
+            if (keystrokeIntervals.length >= MIN_INTERVAL_SAMPLE_SIZE) {
+                const fastCount = keystrokeIntervals.filter((interval) => interval < MIN_INTERVAL_MS).length;
+                const fastRatio = fastCount / keystrokeIntervals.length;
+                if (fastRatio >= FAST_INTERVAL_RATIO_LIMIT) {
+                    return { valid: false, reason: "cadence" };
+                }
+            }
+
+            return { valid: true, reason: "" };
+        }
+
+        function rejectRound(reason) {
+            if (roundRejected) {
+                return;
+            }
+
+            roundRejected = true;
+            rejectionReason = reason;
+            stopTimer();
+            resultText.textContent = getRejectMessage(reason);
+            resultText.className = "result warning";
+            playFailFeedback();
+            playRejectFeedback();
+            typingInput.value = "";
+            typingInput.blur();
+            wordBox.textContent = t("endedWordBox");
+            showStartGate();
+            setStartButtonPlaying(false);
+        }
+
+        function monitorTypingIntegrity(typedValue) {
+            if (!timerStarted || roundRejected) {
+                previousTypedValue = typedValue;
+                return;
+            }
+
+            const insertedChars = Math.max(0, typedValue.length - previousTypedValue.length);
+            previousTypedValue = typedValue;
+            if (insertedChars <= 0) {
+                return;
+            }
+
+            const now = performance.now();
+            if (lastInputTimestamp > 0) {
+                const interval = now - lastInputTimestamp;
+                if (interval > 0 && interval < 2000) {
+                    keystrokeIntervals.push(interval);
+                    if (keystrokeIntervals.length > 40) {
+                        keystrokeIntervals.shift();
+                    }
+                }
+            }
+            lastInputTimestamp = now;
+
+            const elapsedSeconds = Math.max(0.001, (now - startTime) / 1000);
+            const activeChars = typedValue.replace(/\s+/g, " ").length;
+            const currentWpm = computeWpmFromChars(activeChars, elapsedSeconds);
+            if (activeChars >= 12 && currentWpm > MAX_ALLOWED_WPM) {
+                rejectRound("wpm");
+                return;
+            }
+
+            if (keystrokeIntervals.length >= MIN_INTERVAL_SAMPLE_SIZE) {
+                const fastCount = keystrokeIntervals.filter((interval) => interval < MIN_INTERVAL_MS).length;
+                const fastRatio = fastCount / keystrokeIntervals.length;
+                if (fastRatio >= FAST_INTERVAL_RATIO_LIMIT) {
+                    rejectRound("cadence");
+                }
+            }
+        }
+
         function renderProgress() {
             if (mode === "triple") {
                 progressText.textContent = t("progressTriple");
@@ -353,16 +542,32 @@ window.TypingGame = (() => {
             progressText.textContent = t("progressSingle");
         }
 
+        function setStartButtonPlaying(isPlaying) {
+            if (startBtnText) {
+                startBtnText.textContent = isPlaying ? t("stopRound") : t("startRound");
+            }
+        }
+
         function resetRoundState() {
             resultText.textContent = t("resultStart");
             resultText.className = "result";
+            if (roundGainNote) {
+                roundGainNote.textContent = "";
+                roundGainNote.classList.remove("is-visible", "is-level-up");
+            }
             wordBox.textContent = t("readyWordBox");
             typingInput.value = "";
             timeValue.textContent = "0.000";
             stopTimer();
             sequentialWords = [];
             sequentialIndex = 0;
+            roundRejected = false;
+            rejectionReason = "";
+            lastInputTimestamp = 0;
+            previousTypedValue = "";
+            keystrokeIntervals = [];
             renderProgress();
+            setStartButtonPlaying(false);
         }
 
         function showStartGate() {
@@ -391,9 +596,30 @@ window.TypingGame = (() => {
             resultText.className = "result";
             timerStarted = true;
             startTime = performance.now();
+            roundRejected = false;
+            rejectionReason = "";
+            lastInputTimestamp = 0;
+            previousTypedValue = "";
+            keystrokeIntervals = [];
             updateTimer();
             renderProgress();
+            setStartButtonPlaying(true);
             typingInput.focus();
+        }
+
+        function stopRoundManually() {
+            if (!timerStarted) {
+                return;
+            }
+
+            stopTimer();
+            resultText.textContent = currentLanguage === "en" ? "Round stopped" : "تم إيقاف الجولة";
+            resultText.className = "result warning";
+            typingInput.value = "";
+            typingInput.blur();
+            wordBox.textContent = t("endedWordBox");
+            showStartGate();
+            setStartButtonPlaying(false);
         }
 
         function goToNextWordOrFinish() {
@@ -402,6 +628,7 @@ window.TypingGame = (() => {
                 currentWord = sequentialWords[sequentialIndex];
                 wordBox.textContent = currentWord;
                 typingInput.value = "";
+                previousTypedValue = "";
                 resultText.textContent = t("resultNextWord");
                 resultText.className = "result";
                 renderProgress();
@@ -409,6 +636,12 @@ window.TypingGame = (() => {
             }
 
             stopTimer();
+            const integrity = validateRoundIntegrity();
+            if (!integrity.valid) {
+                rejectRound(integrity.reason);
+                return;
+            }
+
             if (mode === "triple") {
                 resultText.textContent = format(t("resultDoneTriple"), { time: finalTime.toFixed(3) });
             } else if (mode === "triple-seq") {
@@ -417,9 +650,11 @@ window.TypingGame = (() => {
                 resultText.textContent = format(t("resultDoneSingle"), { time: finalTime.toFixed(3) });
             }
             resultText.className = "result success";
+            playSuccessFeedback();
             wordBox.textContent = t("endedWordBox");
             typingInput.value = "";
             typingInput.blur();
+            setStartButtonPlaying(false);
             
             // Save round data to Firebase if user is logged in
             callSaveRound();
@@ -428,6 +663,9 @@ window.TypingGame = (() => {
         }
 
         function callSaveRound() {
+            if (roundRejected || rejectionReason) {
+                return;
+            }
             if (window.saveRoundDataToFirebase) {
                 window.saveRoundDataToFirebase(currentWord, finalTime, "single", currentLanguage);
             }
@@ -441,6 +679,10 @@ window.TypingGame = (() => {
             document.getElementById("gateStartText").textContent = t("startGate");
             document.getElementById("nextBtnText").textContent = t("newWord");
             document.getElementById("homeBtnText").textContent = t("home");
+            const modeIdentityTitle = document.getElementById("modeIdentityTitle");
+            const modeIdentityHint = document.getElementById("modeIdentityHint");
+            if (modeIdentityTitle) modeIdentityTitle.textContent = t("modeIdentityTitle");
+            if (modeIdentityHint) modeIdentityHint.textContent = t("modeIdentityHint");
             typingInput.placeholder = t("typingPlaceholder");
             timerLabel.textContent = t("timerLabel");
             timerUnit.textContent = t("timerUnit");
@@ -453,14 +695,16 @@ window.TypingGame = (() => {
             themeBerryBtn.title = t("themeBerry");
             themeNeonBtn.title = t("themeNeon");
             themeVioletBtn.title = t("themeViolet");
-               themeBrownBtn.title = t("themeBrown");
+                themeBrownBtn.title = t("themeBrown");
+                themeMaroonBtn.title = t("themeMaroon");
             themeOceanBtn.setAttribute("aria-label", t("themeOcean"));
             themeSunsetBtn.setAttribute("aria-label", t("themeSunset"));
             themeForestBtn.setAttribute("aria-label", t("themeForest"));
             themeBerryBtn.setAttribute("aria-label", t("themeBerry"));
             themeNeonBtn.setAttribute("aria-label", t("themeNeon"));
             themeVioletBtn.setAttribute("aria-label", t("themeViolet"));
-               themeBrownBtn.setAttribute("aria-label", t("themeBrown"));
+                themeBrownBtn.setAttribute("aria-label", t("themeBrown"));
+                themeMaroonBtn.setAttribute("aria-label", t("themeMaroon"));
             colorModeDarkBtn.title = t("darkMode");
             colorModeBlurBtn.title = t("blurMode");
             colorModeLightBtn.title = t("lightMode");
@@ -482,6 +726,7 @@ window.TypingGame = (() => {
             if (betaLabel) betaLabel.textContent = t("betaLabel");
 
             renderProgress();
+            setStartButtonPlaying(timerStarted);
             if (
                 !timerStarted
                 && (!currentWord || wordBox.textContent === t("readyWordBox") || wordBox.textContent === t("endedWordBox"))
@@ -504,7 +749,7 @@ window.TypingGame = (() => {
         }
 
         function getHomeUrl() {
-            return new URL("../index.html", import.meta.url).href;
+            return new URL("../", import.meta.url).href;
         }
 
         function goHome() {
@@ -512,13 +757,64 @@ window.TypingGame = (() => {
             window.location.href = getHomeUrl();
         }
 
+        function showRoundGain(points) {
+            if (!roundGainNote || !Number.isFinite(points) || points <= 0) {
+                return;
+            }
+            roundGainNote.textContent = `+${Math.round(points)}`;
+            roundGainNote.classList.remove("is-visible", "is-level-up");
+            void roundGainNote.offsetWidth;
+            roundGainNote.classList.add("is-visible");
+            setTimeout(() => {
+                roundGainNote.classList.remove("is-visible", "is-level-up");
+            }, 2200);
+        }
+
+        function showLevelUpResult(levelAfter = 0) {
+            const nextLevel = Number(levelAfter || 0);
+            if (!Number.isFinite(nextLevel) || nextLevel <= 0) {
+                return;
+            }
+            resultText.textContent = format(t("gainLevelUpResult"), { level: nextLevel });
+            resultText.className = "result success";
+            playSuccessFeedback();
+        }
+
         function normalizeInput(value) {
             return normalizeTypingInput(value, currentLanguage);
         }
 
-        typingInput.addEventListener("input", () => {
+        typingInput.addEventListener("beforeinput", (event) => {
+            const inputType = String(event.inputType || "");
+            if (inputType === "insertFromPaste" || inputType === "insertFromDrop") {
+                event.preventDefault();
+                handleBlockedDirectInsert();
+            }
+        });
+
+        typingInput.addEventListener("paste", (event) => {
+            event.preventDefault();
+            handleBlockedDirectInsert();
+        });
+
+        typingInput.addEventListener("drop", (event) => {
+            event.preventDefault();
+            handleBlockedDirectInsert();
+        });
+
+        typingInput.addEventListener("input", (event) => {
+            if (timerStarted && event.isTrusted === false) {
+                rejectRound("automation");
+                return;
+            }
+
             const typedValue = normalizeInput(typingInput.value);
             const targetValue = normalizeInput(currentWord);
+            monitorTypingIntegrity(typedValue);
+
+            if (roundRejected) {
+                return;
+            }
 
             if (typedValue === targetValue) {
                 goToNextWordOrFinish();
@@ -528,6 +824,7 @@ window.TypingGame = (() => {
             if (!targetValue.startsWith(typedValue)) {
                 resultText.textContent = t("resultWrong");
                 resultText.className = "result warning";
+                playRejectFeedback();
                 const now = Date.now();
                 if (now - lastMistakeAt > 900) {
                     lastMistakeAt = now;
@@ -541,6 +838,10 @@ window.TypingGame = (() => {
         });
 
         startBtn.addEventListener("click", () => {
+            if (timerStarted) {
+                stopRoundManually();
+                return;
+            }
             hideStartGate();
             startRound();
         });
@@ -568,6 +869,27 @@ window.TypingGame = (() => {
         });
 
         homeBtn.addEventListener("click", goHome);
+        if (logoHomeLink) {
+            logoHomeLink.href = getHomeUrl();
+            logoHomeLink.addEventListener("click", (event) => {
+                event.preventDefault();
+                goHome();
+            });
+        }
+
+        window.addEventListener("dashType:round-save", (event) => {
+            const detail = event.detail || {};
+            if (!detail.success || detail.cached || detail.rejected) {
+                return;
+            }
+            const levelBefore = Number(detail.levelBefore || 0);
+            const levelAfter = Number(detail.levelAfter || detail.level || 0);
+            const leveledUp = Boolean(detail.leveledUp) || (levelAfter > levelBefore);
+            showRoundGain(Number(detail.points || 0));
+            if (leveledUp) {
+                showLevelUpResult(levelAfter);
+            }
+        });
 
         langArBtn.addEventListener("click", () => setLanguage("ar"));
         langEnBtn.addEventListener("click", () => setLanguage("en"));
@@ -580,8 +902,21 @@ window.TypingGame = (() => {
             btn.addEventListener("click", () => setColorMode(btn.dataset.colorMode));
         });
 
+        window.addEventListener("dashType:typing-settings-changed", (event) => {
+            if (isApplyingRemotePreferences) {
+                return;
+            }
+            const nextSettings = event.detail && typeof event.detail === "object" ? event.detail : null;
+            if (!nextSettings) {
+                return;
+            }
+            void saveUserPreferences({ typingSettings: nextSettings });
+        });
+
+        isApplyingRemotePreferences = true;
         loadState();
         setLanguage(currentLanguage);
+        isApplyingRemotePreferences = false;
         showStartGate();
         void applyRemotePreferences();
     }

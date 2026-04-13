@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 	<meta charset="UTF-8">
@@ -19,6 +19,18 @@
 		.history-container {
 			display: grid;
 			gap: 16px;
+		}
+
+		#historyScreen,
+		#historyContent,
+		#tableContainer {
+			width: 100%;
+			min-width: 0;
+		}
+
+		#historyContent {
+			display: grid;
+			gap: 14px;
 		}
 
 		.stats-grid {
@@ -115,14 +127,53 @@
 		}
 
 		.stat-card {
-			background: var(--glass-surface);
+			background:
+				radial-gradient(circle at top right, rgba(255, 255, 255, 0.14), transparent 58%),
+				var(--glass-surface);
 			border: 1px solid var(--glass-border);
 			border-radius: var(--radius-xl);
-			padding: 16px;
+			padding: 14px;
 			text-align: center;
+			position: relative;
+			overflow: hidden;
+			display: grid;
+			gap: 6px;
 			-webkit-backdrop-filter: blur(16px) saturate(140%);
 			backdrop-filter: blur(16px) saturate(140%);
+			box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 10px 24px rgba(0, 0, 0, 0.16);
 		}
+
+		.stat-card::before {
+			content: "";
+			position: absolute;
+			inset-inline-end: 10px;
+			top: 10px;
+			width: 30px;
+			height: 30px;
+			border-radius: 10px;
+			border: 1px solid var(--glass-border);
+			background-color: var(--accent-b);
+			-webkit-mask-image: var(--history-card-icon, none);
+			mask-image: var(--history-card-icon, none);
+			-webkit-mask-position: center;
+			mask-position: center;
+			-webkit-mask-size: 16px 16px;
+			mask-size: 16px 16px;
+			-webkit-mask-repeat: no-repeat;
+			mask-repeat: no-repeat;
+			opacity: 0.9;
+		}
+
+		.stats-grid .stat-card:nth-child(1) { --history-card-icon: url("../photo/icons/history.svg"); }
+		.stats-grid .stat-card:nth-child(2) { --history-card-icon: url("../photo/icons/play.svg"); }
+		.stats-grid .stat-card:nth-child(3) { --history-card-icon: url("../photo/icons/save.svg"); }
+		.stats-grid .stat-card:nth-child(4) { --history-card-icon: url("../photo/icons/settings.svg"); }
+		#profileStatsPanel .profile-history-grid .stat-card:nth-child(1) { --history-card-icon: url("../photo/icons/level.svg"); }
+		#profileStatsPanel .profile-history-grid .stat-card:nth-child(2) { --history-card-icon: url("../photo/icons/points.svg"); }
+		#profileStatsPanel .profile-history-grid .stat-card:nth-child(3) { --history-card-icon: url("../photo/icons/week.svg"); }
+		#profileStatsPanel .profile-history-grid .stat-card:nth-child(4) { --history-card-icon: url("../photo/icons/month.svg"); }
+		#profileStatsPanel .profile-history-grid .stat-card:nth-child(5) { --history-card-icon: url("../photo/icons/badge.svg"); }
+		#profileStatsPanel .profile-history-grid .stat-card:nth-child(6) { --history-card-icon: url("../photo/icons/timer.svg"); }
 
 		.stat-value {
 			font-size: 24px;
@@ -148,11 +199,172 @@
 			margin-top: 10px;
 			border: 1px solid var(--glass-border);
 			border-radius: var(--radius-xl);
+			max-width: 100%;
 			overflow-x: auto;
+		}
+
+		.typing-settings-cell {
+			white-space: normal !important;
+			min-width: 170px;
+		}
+
+		.typing-settings-list {
+			display: flex;
+			align-items: center;
+			flex-wrap: wrap;
+			gap: 6px;
+		}
+
+		.typing-settings-list .typing-settings-chip {
+			white-space: normal;
+		}
+
+		.device-cell {
+			min-width: 100px;
+		}
+
+		.device-chip {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 11px;
+			font-weight: 700;
+			border: 1px solid var(--glass-border);
+			border-radius: var(--radius-pill);
+			background: var(--glass-surface-soft);
+			padding: 3px 8px;
+			white-space: nowrap;
 		}
 
 		#profileStatsPanel {
 			margin-bottom: 14px;
+			border: 1px solid var(--glass-border);
+			box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 12px 28px rgba(0, 0, 0, 0.16);
+		}
+
+		#profileStatsPanel .progress {
+			margin-bottom: 6px;
+		}
+
+		#profileStatsPanel .level-hype-wrap {
+			padding: 10px;
+			border: 1px solid var(--glass-border);
+			border-radius: var(--radius-lg);
+			background: color-mix(in srgb, var(--glass-surface-soft) 86%, transparent);
+			margin-bottom: 12px;
+		}
+
+		#profileStatsPanel .level-hype-head {
+			font-size: 12px;
+			gap: 8px;
+		}
+
+		#profileStatsPanel .level-hype-value {
+			min-width: 62px;
+			text-align: end;
+			font-size: 13px;
+		}
+
+		#profileStatsPanel .level-hype-bar {
+			height: 14px;
+		}
+
+		#profileStatsPanel .level-hype-fill {
+			border-radius: 999px;
+		}
+
+		.feature-roadmap-wrap {
+			display: grid;
+			gap: 8px;
+			padding: 10px;
+			border: 1px dashed var(--glass-border);
+			border-radius: var(--radius-lg);
+			background: color-mix(in srgb, var(--glass-surface-soft) 84%, transparent);
+			margin-bottom: 12px;
+		}
+
+		.feature-roadmap-wrap.is-hidden {
+			display: none !important;
+		}
+
+		.feature-roadmap-head {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 8px;
+			font-size: 12px;
+			font-weight: 700;
+		}
+
+		.feature-roadmap-value {
+			color: var(--accent-b);
+			font-size: 13px;
+			font-weight: 800;
+		}
+
+		.feature-roadmap-bar {
+			position: relative;
+			width: 100%;
+			height: 10px;
+			border-radius: 999px;
+			overflow: hidden;
+			border: 1px solid var(--glass-border);
+			background: linear-gradient(120deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
+		}
+
+		.feature-roadmap-fill {
+			display: block;
+			width: 0;
+			height: 100%;
+			border-radius: inherit;
+			background: linear-gradient(90deg, var(--accent-a), var(--accent-b));
+			transition: width 0.45s ease;
+		}
+
+		html[dir="rtl"] .feature-roadmap-fill {
+			margin-inline-start: auto;
+			margin-inline-end: 0;
+		}
+
+		html[dir="ltr"] .feature-roadmap-fill {
+			margin-inline-start: 0;
+			margin-inline-end: auto;
+		}
+
+		.feature-roadmap-legend {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+			gap: 6px;
+		}
+
+		.feature-roadmap-item {
+			display: grid;
+			gap: 2px;
+			padding: 6px 8px;
+			border: 1px solid var(--glass-border);
+			border-radius: var(--radius-md);
+			background: var(--glass-surface-soft);
+		}
+
+		.feature-roadmap-item.is-unlocked {
+			border-color: rgba(255, 255, 255, 0.38);
+			background: color-mix(in srgb, var(--accent-b) 16%, var(--glass-surface-soft));
+		}
+
+		.feature-roadmap-item.is-next {
+			border-color: rgba(255, 203, 122, 0.72);
+			box-shadow: 0 0 0 1px rgba(255, 203, 122, 0.34) inset;
+		}
+
+		.feature-roadmap-item-level {
+			font-size: 11px;
+			opacity: 0.74;
+		}
+
+		.feature-roadmap-item-feature {
+			font-size: 12px;
+			font-weight: 700;
+			line-height: 1.45;
 		}
 
 		#profileStatsPanel .profile-history-grid {
@@ -170,7 +382,9 @@
 		}
 
 		.mode-badge {
-			display: inline-block;
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
 			padding: 4px 8px;
 			border-radius: var(--radius-md);
 			font-size: 12px;
@@ -179,10 +393,66 @@
 			border: 1px solid var(--accent-a);
 		}
 
+		.mode-badge::before,
+		.mode-filter-btn::before,
+		.word-history-mode-chip::before {
+			content: "";
+			width: 13px;
+			height: 13px;
+			flex: 0 0 13px;
+			background-color: currentColor;
+			-webkit-mask-image: var(--mode-icon, none);
+			mask-image: var(--mode-icon, none);
+			-webkit-mask-repeat: no-repeat;
+			mask-repeat: no-repeat;
+			-webkit-mask-position: center;
+			mask-position: center;
+			-webkit-mask-size: contain;
+			mask-size: contain;
+		}
+
+		.mode-filter-btn {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+		}
+
+		.mode-filter-btn[data-mode-key="single"],
+		.mode-badge[data-mode="single"],
+		.word-history-mode-chip[data-mode="single"] {
+			--mode-icon: url("../photo/icons/mode-single.svg");
+		}
+
+		.mode-filter-btn[data-mode-key="triple"],
+		.mode-badge[data-mode="triple"],
+		.word-history-mode-chip[data-mode="triple"] {
+			--mode-icon: url("../photo/icons/mode-triple.svg");
+		}
+
+		.mode-filter-btn[data-mode-key="sequential"],
+		.mode-badge[data-mode="sequential"],
+		.word-history-mode-chip[data-mode="sequential"] {
+			--mode-icon: url("../photo/icons/mode-sequential.svg");
+		}
+
+		.mode-filter-btn[data-mode-key="paragraph"],
+		.mode-badge[data-mode="paragraph"],
+		.word-history-mode-chip[data-mode="paragraph"] {
+			--mode-icon: url("../photo/icons/mode-paragraph.svg");
+		}
+
+		.word-history-mode-chip {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+		}
+
 		.activity-chart-panel {
 			display: grid;
 			gap: 12px;
 			margin-bottom: 16px;
+			border: 1px solid var(--glass-border);
+			box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 12px 28px rgba(0, 0, 0, 0.16);
 		}
 
 		.activity-chart-head {
@@ -270,6 +540,10 @@
 		@media (max-width: 768px) {
 			#profileStatsPanel .profile-history-grid {
 				grid-template-columns: repeat(2, minmax(0, 1fr));
+			}
+
+			.feature-roadmap-legend {
+				grid-template-columns: 1fr;
 			}
 
 			.activity-chart-head {
@@ -374,22 +648,38 @@
 	<a href="#historyScreen" class="skip-link">تخطي إلى المحتوى</a>
 	<header class="top-controls logo-only">
 		<div class="logo-container">
-			<a href="../index.html" class="logo-badge">
+			<a href="../" class="logo-badge">
 				<img id="logoImg" src="../photo/dashtype%20White%20Wordmark%20ar.png" alt="DashType" class="app-logo">
 				<span class="logo-beta" id="betaLabel">بيتا</span>
 			</a>
 		</div>
 	</header>
 
-	<main class="game-card" id="historyScreen">
+	<div id="pageLoader" class="page-loading-overlay is-active" aria-live="polite" aria-busy="true">
+		<div class="page-loading-card" role="status">
+			<div class="page-loading-head">
+				<span class="page-loading-spinner" aria-hidden="true"></span>
+				<div id="pageLoaderTitle" class="page-loading-title">جاري تحميل السجل الشخصي</div>
+			</div>
+			<div id="pageLoaderSubtitle" class="page-loading-subtitle">نجهز الجولات والإحصائيات الآن...</div>
+			<div class="page-loading-skeleton" aria-hidden="true">
+				<span class="page-loading-line w-90"></span>
+				<span class="page-loading-line w-70"></span>
+				<span class="page-loading-line w-55"></span>
+			</div>
+		</div>
+	</div>
+
+	<main class="game-shell history-container" id="historyScreen">
+		<section class="game-card">
 		<section class="game-top">
 			<div class="game-title-group">
 				<h1 id="pageTitle" class="history-title">سجل الجولات</h1>
 				<p class="subtitle" id="pageSubtitle">راجع تقدمك بدقة في الفردي والثلاثي والمتتابع والفقرة</p>
 			</div>
 			<div class="history-back-wrap">
-				<a href="../index.html" class="inline-link">
-					<button class="filter-btn active btn-icon history-back-btn" id="historyBackBtn"><span class="icon icon-back" aria-hidden="true"></span><span id="historyBackText">العودة للرئيسية</span></button>
+				<a href="../" class="inline-link">
+					<button class="btn-icon history-back-btn" id="historyBackBtn"><span class="icon icon-back" aria-hidden="true"></span><span id="historyBackText">العودة للرئيسية</span></button>
 				</a>
 			</div>
 		</section>
@@ -399,7 +689,7 @@
 		<div id="authRequiredMsg" class="auth-required is-hidden">
 			<p id="authMsg">يرجى تسجيل الدخول عبر جوجل في الصفحة الرئيسية لعرض سجلك</p>
 			<div class="auth-actions">
-				<a href="../index.html" class="inline-link">
+				<a href="../" class="inline-link">
 					<button id="backBtn" class="btn-icon" type="button"><span class="icon icon-back" aria-hidden="true"></span><span id="backBtnText">العودة للرئيسية</span></button>
 				</a>
 				<button id="signInLocalBtn" class="btn-icon signin-local-btn" type="button"><span class="icon icon-login" aria-hidden="true"></span><span id="signInLocalText">تسجيل الدخول هنا</span></button>
@@ -442,6 +732,7 @@
 
 			<div id="profileStatsPanel" class="status-card is-hidden">
 				<div class="progress" id="profileStatsTitle">تقدم الحساب</div>
+				<div class="progress" id="featureUnlockHint"></div>
 				<div class="level-hype-wrap" aria-live="polite">
 					<div class="level-hype-head">
 						<span id="levelTrackLabel">مؤشر رفع المستوى</span>
@@ -451,11 +742,19 @@
 						<span id="levelTrackFill" class="level-hype-fill"></span>
 					</div>
 				</div>
+				<div id="featureRoadmapWrap" class="feature-roadmap-wrap is-hidden" aria-live="polite">
+					<div class="feature-roadmap-head">
+						<span id="featureRoadmapLabel">مسار المزايا حتى المستوى 5</span>
+						<strong id="featureRoadmapValue" class="feature-roadmap-value">0/5</strong>
+					</div>
+					<div id="featureRoadmapBar" class="feature-roadmap-bar" role="progressbar" aria-label="تقدم المزايا" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+						<span id="featureRoadmapFill" class="feature-roadmap-fill"></span>
+					</div>
+					<div id="featureRoadmapLegend" class="feature-roadmap-legend"></div>
+				</div>
 				<div class="profile-history-grid">
 					<div class="stat-card"><div class="stat-value" id="profileLevel">1</div><div class="stat-label" id="profileLevelLabel">المستوى</div></div>
 					<div class="stat-card"><div class="stat-value" id="profilePoints">0</div><div class="stat-label" id="profilePointsLabel">النقاط</div></div>
-					<div class="stat-card"><div class="stat-value" id="profileLevelProgress">0%</div><div class="stat-label" id="profileLevelProgressLabel">نسبة التقدم للمستوى القادم</div></div>
-					<div class="stat-card"><div class="stat-value" id="profileRemainingPoints">100</div><div class="stat-label" id="profileRemainingPointsLabel">المتبقي للمستوى القادم</div></div>
 					<div class="stat-card"><div class="stat-value" id="profileWeekPoints">0</div><div class="stat-label" id="profileWeekPointsLabel">نقاط هذا الأسبوع</div></div>
 					<div class="stat-card"><div class="stat-value" id="profileMonthPoints">0</div><div class="stat-label" id="profileMonthPointsLabel">نقاط هذا الشهر</div></div>
 					<div class="stat-card"><div class="stat-value" id="profileBadge">Starter</div><div class="stat-label" id="profileBadgeLabel">الشارة</div></div>
@@ -465,10 +764,10 @@
 
 			<div class="filter-bar" id="filterBar">
 				<button class="filter-btn active" data-filter="all" id="filterAll">الكل</button>
-				<button class="filter-btn" data-filter="single" id="filterSingle">الفردي</button>
-				<button class="filter-btn" data-filter="triple" id="filterTriple">الثلاثي</button>
-				<button class="filter-btn" data-filter="seq" id="filterSeq">المتتابع</button>
-				<button class="filter-btn" data-filter="paragraph" id="filterParagraph">الفقرة</button>
+				<button class="filter-btn mode-filter-btn" data-filter="single" data-mode-key="single" id="filterSingle">الفردي</button>
+				<button class="filter-btn mode-filter-btn" data-filter="triple" data-mode-key="triple" id="filterTriple">الثلاثي</button>
+				<button class="filter-btn mode-filter-btn" data-filter="seq" data-mode-key="sequential" id="filterSeq">المتتابع</button>
+				<button class="filter-btn mode-filter-btn" data-filter="paragraph" data-mode-key="paragraph" id="filterParagraph">الفقرة</button>
 			</div>
 
 			<div id="tableContainer">
@@ -480,6 +779,8 @@
 							<th id="thTime">الوقت (ثانية)</th>
 							<th id="thMode">النمط</th>
 							<th id="thLanguage">اللغة</th>
+							<th id="thDevice">الجهاز</th>
+							<th id="thTypingSettings">إعدادات الكتابة</th>
 						</tr>
 					</thead>
 					<tbody id="historyBody">
@@ -525,6 +826,7 @@
 				</div>
 			</div>
 		</div>
+		</section>
 	</main>
 
 	<footer class="page-footer">
@@ -539,6 +841,7 @@
 					<button id="themeNeonBtn" class="theme-dot" type="button" data-theme="neon" title="Green & Yellow"></button>
 					<button id="themeVioletBtn" class="theme-dot" type="button" data-theme="violet" title="Purple & Pink"></button>
 					<button id="themeBrownBtn" class="theme-dot" type="button" data-theme="brown" title="Brown"></button>
+					<button id="themeMaroonBtn" class="theme-dot" type="button" data-theme="maroon" title="Burgundy & Dark Red"></button>
 				</div>
 			</div>
 
@@ -580,7 +883,7 @@
 		<p class="footer-meta">
 			<span class="footer-meta-item">&copy; 2026 DashType. All rights reserved.</span>
 			<span class="footer-meta-item"><span id="contactLabel" class="footer-contact-label">للتواصل معنا</span> <a class="footer-contact" href="mailto:contact@dashtype.tech">contact@dashtype.tech</a></span>
-			<span class="footer-meta-item"><span id="versionLabel" class="footer-contact-label">الإصدار</span> <span class="footer-version">0.7.000</span></span>
+			<span class="footer-meta-item"><span id="versionLabel" class="footer-contact-label">الإصدار</span> <span class="footer-version">0.8.000</span></span>
 		</p>
 	</footer>
 
@@ -589,7 +892,7 @@
 		import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 		import { getDatabase, ref, get, set, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 		import { readTypingGameState, writeTypingGameState } from "../scripts/app-state.js";
-		import { createUiToneShiftRunner, normalizeTypingInput, resolveWordmarkSrc } from "../scripts/ui-utils.js";
+		import { createUiToneShiftRunner, normalizeTypingInput, resolveWordmarkSrc, setupConnectivityBanner } from "../scripts/ui-utils.js";
 		import { hasAdminRoleFromUserNode } from "../scripts/role-utils.js";
 
 		const firebaseConfig = {
@@ -606,12 +909,27 @@
 		const app = initializeApp(firebaseConfig);
 		const auth = getAuth(app);
 		const database = getDatabase(app);
+		const FIRST_LEVEL_POINTS = 40;
+		const LEVEL_STEP_POINTS = 100;
+		const PERSONAL_HISTORY_REQUIRED_LEVEL = 1;
+		const WORD_HISTORY_REQUIRED_LEVEL = 2;
+		const PUBLIC_PROFILE_REQUIRED_LEVEL = 3;
+		const PARAGRAPH_MODE_REQUIRED_LEVEL = 4;
+		const GLOBAL_LEADERBOARD_REQUIRED_LEVEL = 5;
+		const SHORT_ID_LENGTH = 4;
 
 		let currentUser = null;
 		let allRounds = [];
 		let filteredRounds = allRounds;
 		let currentLanguage = "ar";
+		let viewerUserLevel = 0;
 		let currentActivityRange = "day";
+		let publicIdentityLoaded = false;
+		let publicNameByShortId = new Map();
+		setupConnectivityBanner({ resolveLanguage: () => currentLanguage });
+		const pageLoader = document.getElementById("pageLoader");
+		const pageLoaderTitle = document.getElementById("pageLoaderTitle");
+		const pageLoaderSubtitle = document.getElementById("pageLoaderSubtitle");
 		const WORD_HISTORY_FETCH_LIMIT = 2000;
 		const sharedUiToneShift = createUiToneShiftRunner({ durationMs: 460 });
 		const historyQuery = new URLSearchParams(window.location.search);
@@ -647,17 +965,42 @@
 				levelTrackLabel: "مؤشر رفع المستوى",
 				profileLevelLabel: "المستوى",
 				profilePointsLabel: "النقاط",
-				profileLevelProgressLabel: "نسبة التقدم للمستوى القادم",
-				profileRemainingPointsLabel: "المتبقي للمستوى القادم",
 				profileWeekPointsLabel: "نقاط هذا الأسبوع",
 				profileMonthPointsLabel: "نقاط هذا الشهر",
 				profileBadgeLabel: "الشارة",
 				profileBestSpwLabel: "أفضل ثانية/كلمة",
+				historyLockedMsg: "السجل الشخصي يفتح بعد المستوى {required}. مستواك الحالي {current}. المتبقي {remaining} مستوى.",
+				wordHistoryLockedMsg: "سجل الكلمات يفتح بعد المستوى {required}. مستواك الحالي {current}. المتبقي {remaining} مستوى.",
+				globalUnlockHintLocked: "الميزة القادمة: السجل العالمي يفتح بعد المستوى {required}. المتبقي {remaining} مستوى.",
+				globalUnlockHintOpen: "تم فتح ميزة السجل العالمي.",
+				featureRoadmapLabel: "مسار المزايا حتى المستوى 5",
+				featureRoadmapValueFormat: "{current}/{max}",
+				featureRoadmapNextHint: "الميزة القادمة عند المستوى {level}: {feature}",
+				featureRoadmapDone: "حصلت على كل المزايا المتاحة.",
+				featureRoadmapLevel1: "فتح السجل الشخصي",
+				featureRoadmapLevel2: "فتح سجل الكلمات",
+				featureRoadmapLevel3: "فتح الحساب العام",
+				featureRoadmapLevel4: "فتح نمط الفقرة",
+				featureRoadmapLevel5: "فتح السجل العالمي",
 				date: "التاريخ",
 				words: "الكلمات",
 				time: "الوقت (ثانية)",
 				mode: "النمط",
 				language: "اللغة",
+				device: "الجهاز",
+				deviceComputer: "حاسوب",
+				devicePhone: "هاتف",
+				deviceTablet: "لوحي",
+				deviceOther: "أخرى",
+				typingSettings: "إعدادات الكتابة",
+				typingAssistOn: "المساعد: تشغيل",
+				typingAssistOff: "المساعد: إيقاف",
+				typingTraceChip: "تتبع داخل البار",
+				typingHideTextChip: "إخفاء النص",
+				typingTypeAuto: "تلقائي",
+				typingTypeEnglish: "إنجليزي",
+				typingTypeArabic: "عربي",
+				typingTypeMixed: "مختلط",
 				singleMode: "الفردي",
 				tripleMode: "الثلاثي",
 				seqMode: "المتتابع",
@@ -670,6 +1013,8 @@
 				wordHistoryMode: "النمط",
 				wordHistoryTime: "الوقت",
 				wordHistoryLoading: "جاري التحميل...",
+				pageLoaderTitle: "جاري تحميل السجل الشخصي",
+				pageLoaderSubtitle: "نجهز الجولات والإحصائيات الآن...",
 				wordHistoryEmpty: "لا توجد نتائج لهذه الكلمة بعد",
 				close: "إغلاق",
 				emptyMsg: "لا توجد جولات حتى الآن. ابدأ باللعب!",
@@ -682,6 +1027,8 @@
 				themeBerry: "بنفسجي ووردي",
 				themeNeon: "أخضر وأصفر",
 				themeViolet: "بنفسجي ووردي",
+				themeBrown: "بني",
+				themeMaroon: "عنابي وأحمر داكن",
 				darkMode: "داكن",
 				blurMode: "ضبابي",
 				lightMode: "فاتح",
@@ -716,17 +1063,42 @@
 				levelTrackLabel: "Level Raise Meter",
 				profileLevelLabel: "Level",
 				profilePointsLabel: "Points",
-				profileLevelProgressLabel: "Progress to next level",
-				profileRemainingPointsLabel: "Remaining to next level",
 				profileWeekPointsLabel: "This Week Points",
 				profileMonthPointsLabel: "This Month Points",
 				profileBadgeLabel: "Badge",
 				profileBestSpwLabel: "Best sec/word",
+				historyLockedMsg: "Personal history unlocks after level {required}. Your current level is {current}. Remaining levels: {remaining}.",
+				wordHistoryLockedMsg: "Word history unlocks after level {required}. Your current level is {current}. Remaining levels: {remaining}.",
+				globalUnlockHintLocked: "Next feature: Global leaderboard unlocks after level {required}. Remaining levels: {remaining}.",
+				globalUnlockHintOpen: "Global leaderboard feature is unlocked.",
+				featureRoadmapLabel: "Feature roadmap to level 5",
+				featureRoadmapValueFormat: "{current}/{max}",
+				featureRoadmapNextHint: "Next feature at level {level}: {feature}",
+				featureRoadmapDone: "All available features are unlocked.",
+				featureRoadmapLevel1: "Personal history unlocked",
+				featureRoadmapLevel2: "Word history unlocked",
+				featureRoadmapLevel3: "Public profile unlocked",
+				featureRoadmapLevel4: "Paragraph mode unlocked",
+				featureRoadmapLevel5: "Global leaderboard unlocked",
 				date: "Date",
 				words: "Words",
 				time: "Time (seconds)",
 				mode: "Mode",
 				language: "Language",
+				device: "Device",
+				deviceComputer: "Computer",
+				devicePhone: "Phone",
+				deviceTablet: "Tablet",
+				deviceOther: "Other",
+				typingSettings: "Typing Settings",
+				typingAssistOn: "Assist: On",
+				typingAssistOff: "Assist: Off",
+				typingTraceChip: "Inline Trace",
+				typingHideTextChip: "Hide Text",
+				typingTypeAuto: "Auto",
+				typingTypeEnglish: "English",
+				typingTypeArabic: "Arabic",
+				typingTypeMixed: "Mixed",
 				singleMode: "Single",
 				tripleMode: "Triple",
 				seqMode: "Sequential",
@@ -739,6 +1111,8 @@
 				wordHistoryMode: "Mode",
 				wordHistoryTime: "Time",
 				wordHistoryLoading: "Loading...",
+				pageLoaderTitle: "Loading personal history",
+				pageLoaderSubtitle: "Preparing rounds and stats...",
 				wordHistoryEmpty: "No results for this word yet",
 				close: "Close",
 				emptyMsg: "No rounds yet. Start playing!",
@@ -751,6 +1125,8 @@
 				themeBerry: "Purple & Pink",
 				themeNeon: "Green & Yellow",
 				themeViolet: "Purple & Pink",
+				themeBrown: "Brown",
+				themeMaroon: "Burgundy & Dark Red",
 				darkMode: "Dark",
 				blurMode: "Blurred",
 				lightMode: "Light",
@@ -767,6 +1143,170 @@
 
 		function t(key) {
 			return textMap[currentLanguage][key];
+		}
+
+		function setPageLoading(isLoading) {
+			if (!pageLoader) {
+				return;
+			}
+			pageLoader.classList.toggle("is-active", Boolean(isLoading));
+			pageLoader.setAttribute("aria-busy", isLoading ? "true" : "false");
+		}
+
+		function format(template, values = {}) {
+			return String(template || "").replace(/\{(\w+)\}/g, (_match, key) => {
+				return Object.prototype.hasOwnProperty.call(values, key) ? String(values[key]) : "";
+			});
+		}
+
+		function computeLevelFromPoints(totalPoints) {
+			const points = Math.max(0, Number(totalPoints || 0));
+			if (points < FIRST_LEVEL_POINTS) {
+				return 0;
+			}
+			return 1 + Math.floor((points - FIRST_LEVEL_POINTS) / LEVEL_STEP_POINTS);
+		}
+
+		function getLevelProgressMeta(totalPoints) {
+			const points = Math.max(0, Number(totalPoints || 0));
+			const level = computeLevelFromPoints(points);
+
+			if (level === 0) {
+				const progressPct = FIRST_LEVEL_POINTS > 0 ? (points / FIRST_LEVEL_POINTS) * 100 : 100;
+				return {
+					level,
+					progressPct: Math.max(0, Math.min(100, progressPct)),
+					remainingPoints: Math.max(0, FIRST_LEVEL_POINTS - points)
+				};
+			}
+
+			const levelFloor = FIRST_LEVEL_POINTS + ((level - 1) * LEVEL_STEP_POINTS);
+			const inLevelPoints = Math.max(0, points - levelFloor);
+			const progressPct = Math.max(0, Math.min(100, (inLevelPoints / LEVEL_STEP_POINTS) * 100));
+			const remainingPoints = inLevelPoints === 0 ? LEVEL_STEP_POINTS : Math.max(0, LEVEL_STEP_POINTS - inLevelPoints);
+			return {
+				level,
+				progressPct,
+				remainingPoints
+			};
+		}
+
+		function getFeatureRoadmapItems() {
+			return [
+				{ level: PERSONAL_HISTORY_REQUIRED_LEVEL, label: t("featureRoadmapLevel1") },
+				{ level: WORD_HISTORY_REQUIRED_LEVEL, label: t("featureRoadmapLevel2") },
+				{ level: PUBLIC_PROFILE_REQUIRED_LEVEL, label: t("featureRoadmapLevel3") },
+				{ level: PARAGRAPH_MODE_REQUIRED_LEVEL, label: t("featureRoadmapLevel4") },
+				{ level: GLOBAL_LEADERBOARD_REQUIRED_LEVEL, label: t("featureRoadmapLevel5") }
+			].sort((a, b) => Number(a.level || 0) - Number(b.level || 0));
+		}
+
+		function renderFeatureRoadmap(level, levelProgress) {
+			const roadmapWrap = document.getElementById("featureRoadmapWrap");
+			const roadmapLabel = document.getElementById("featureRoadmapLabel");
+			const roadmapValue = document.getElementById("featureRoadmapValue");
+			const roadmapBar = document.getElementById("featureRoadmapBar");
+			const roadmapFill = document.getElementById("featureRoadmapFill");
+			const roadmapLegend = document.getElementById("featureRoadmapLegend");
+			const maxLevel = GLOBAL_LEADERBOARD_REQUIRED_LEVEL;
+
+			if (!roadmapWrap || !roadmapValue || !roadmapBar || !roadmapFill || !roadmapLegend) {
+				return { nextFeature: null, completed: Number(level || 0) >= maxLevel };
+			}
+
+			if (roadmapLabel) {
+				roadmapLabel.textContent = t("featureRoadmapLabel");
+			}
+
+			const safeLevel = Math.max(0, Number(level || 0));
+			const safeLevelProgress = Math.max(0, Math.min(100, Number(levelProgress || 0)));
+			const completed = safeLevel >= maxLevel;
+
+			if (completed) {
+				roadmapWrap.classList.add("is-hidden");
+				roadmapWrap.style.display = "none";
+				roadmapFill.style.width = "100%";
+				roadmapBar.setAttribute("aria-valuenow", "100");
+				roadmapValue.textContent = format(t("featureRoadmapValueFormat"), {
+					current: formatCount(maxLevel),
+					max: formatCount(maxLevel)
+				});
+				roadmapLegend.replaceChildren();
+				return { nextFeature: null, completed: true };
+			}
+
+			roadmapWrap.classList.remove("is-hidden");
+			roadmapWrap.style.display = "grid";
+			const roadmapItems = getFeatureRoadmapItems();
+			const levelBase = Math.max(0, Math.min(maxLevel - 1, safeLevel));
+			const roadmapProgressPct = Math.max(0, Math.min(100, ((levelBase + (safeLevelProgress / 100)) / maxLevel) * 100));
+
+			roadmapFill.style.width = `${roadmapProgressPct}%`;
+			roadmapBar.setAttribute("aria-valuenow", String(Math.round(roadmapProgressPct)));
+			roadmapValue.textContent = format(t("featureRoadmapValueFormat"), {
+				current: formatCount(Math.min(safeLevel, maxLevel)),
+				max: formatCount(maxLevel)
+			});
+
+			const nextFeature = roadmapItems.find((item) => safeLevel < Number(item.level || 0)) || null;
+			roadmapLegend.replaceChildren();
+			roadmapItems.forEach((item) => {
+				const itemLevel = Number(item.level || 0);
+				const entry = document.createElement("div");
+				entry.className = "feature-roadmap-item";
+				if (safeLevel >= itemLevel) {
+					entry.classList.add("is-unlocked");
+				}
+				if (nextFeature && itemLevel === Number(nextFeature.level || 0)) {
+					entry.classList.add("is-next");
+				}
+
+				const levelText = document.createElement("span");
+				levelText.className = "feature-roadmap-item-level";
+				levelText.textContent = currentLanguage === "en"
+					? `Lv ${formatCount(itemLevel)}`
+					: `م${formatCount(itemLevel)}`;
+
+				const featureText = document.createElement("span");
+				featureText.className = "feature-roadmap-item-feature";
+				featureText.textContent = String(item.label || "");
+
+				entry.appendChild(levelText);
+				entry.appendChild(featureText);
+				roadmapLegend.appendChild(entry);
+			});
+
+			return { nextFeature, completed: false };
+		}
+
+		async function loadUserLevel(uid) {
+			if (!uid) return 0;
+			try {
+				const statsSnapshot = await get(ref(database, `users/${uid}/profile/stats`));
+				if (!statsSnapshot.exists()) {
+					return 0;
+				}
+				const stats = statsSnapshot.val() || {};
+				const levelFromPoints = computeLevelFromPoints(Number(stats.totalPoints || 0));
+				const storedLevelRaw = Number(stats.level || 0);
+				const storedLevel = Number.isFinite(storedLevelRaw) ? Math.max(0, storedLevelRaw) : 0;
+				return Math.max(levelFromPoints, storedLevel);
+			} catch (_error) {
+				return 0;
+			}
+		}
+
+		function showGateMessage(message, allowSignIn) {
+			const authRequiredMsg = document.getElementById("authRequiredMsg");
+			const authMsg = document.getElementById("authMsg");
+			const signInBtn = document.getElementById("signInLocalBtn");
+			authMsg.textContent = message;
+			authRequiredMsg.style.display = "block";
+			document.getElementById("historyContent").style.display = "none";
+			document.getElementById("profileStatsPanel").classList.add("is-hidden");
+			if (signInBtn) {
+				signInBtn.style.display = allowSignIn ? "inline-flex" : "none";
+			}
 		}
 
 		function runUiToneShift() {
@@ -867,11 +1407,11 @@
 			document.getElementById("bestTimeLabel").textContent = t("bestTime");
 			document.getElementById("worstTimeLabel").textContent = t("worstTime");
 			document.getElementById("profileStatsTitle").textContent = t("profileStatsTitle");
+			const featureRoadmapLabel = document.getElementById("featureRoadmapLabel");
+			if (featureRoadmapLabel) featureRoadmapLabel.textContent = t("featureRoadmapLabel");
 			document.getElementById("levelTrackLabel").textContent = t("levelTrackLabel");
 			document.getElementById("profileLevelLabel").textContent = t("profileLevelLabel");
 			document.getElementById("profilePointsLabel").textContent = t("profilePointsLabel");
-			document.getElementById("profileLevelProgressLabel").textContent = t("profileLevelProgressLabel");
-			document.getElementById("profileRemainingPointsLabel").textContent = t("profileRemainingPointsLabel");
 			document.getElementById("profileWeekPointsLabel").textContent = t("profileWeekPointsLabel");
 			document.getElementById("profileMonthPointsLabel").textContent = t("profileMonthPointsLabel");
 			document.getElementById("profileBadgeLabel").textContent = t("profileBadgeLabel");
@@ -881,6 +1421,8 @@
 			document.getElementById("thTime").textContent = t("time");
 			document.getElementById("thMode").textContent = t("mode");
 			document.getElementById("thLanguage").textContent = t("language");
+			document.getElementById("thDevice").textContent = t("device");
+			document.getElementById("thTypingSettings").textContent = t("typingSettings");
 			document.getElementById("emptyMsg").textContent = t("emptyMsg");
 			document.getElementById("filterAll").textContent = currentLanguage === "ar" ? "الكل" : "All";
 			document.getElementById("filterSingle").textContent = currentLanguage === "ar" ? "الفردي" : "Single";
@@ -902,6 +1444,8 @@
 			if (versionLabel) versionLabel.textContent = t("versionLabel");
 			const betaLabel = document.getElementById("betaLabel");
 			if (betaLabel) betaLabel.textContent = t("betaLabel");
+			if (pageLoaderTitle) pageLoaderTitle.textContent = t("pageLoaderTitle");
+			if (pageLoaderSubtitle) pageLoaderSubtitle.textContent = t("pageLoaderSubtitle");
 			const wordHistoryTitle = document.getElementById("wordHistoryTitle");
 			if (wordHistoryTitle) wordHistoryTitle.textContent = t("wordHistoryTitle");
 			const wordHistoryMeta = document.getElementById("wordHistoryMeta");
@@ -929,6 +1473,23 @@
 			document.getElementById("langArBtn").textContent = t("langArabic");
 			document.getElementById("langEnBtn").textContent = t("langEnglish");
 
+			const themeButtons = [
+				["themeOceanBtn", "themeOcean"],
+				["themeSunsetBtn", "themeSunset"],
+				["themeForestBtn", "themeForest"],
+				["themeBerryBtn", "themeBerry"],
+				["themeNeonBtn", "themeNeon"],
+				["themeVioletBtn", "themeViolet"],
+				["themeBrownBtn", "themeBrown"],
+				["themeMaroonBtn", "themeMaroon"]
+			];
+			themeButtons.forEach(([id, key]) => {
+				const btn = document.getElementById(id);
+				if (!btn) return;
+				btn.title = t(key);
+				btn.setAttribute("aria-label", t(key));
+			});
+
 			renderAdminViewBanner();
 			renderActivityChart();
 		}
@@ -942,14 +1503,124 @@
 			return mode;
 		}
 
+		function normalizeModeIconKey(mode) {
+			if (mode === "single") return "single";
+			if (mode === "triple") return "triple";
+			if (mode === "seq" || mode === "sequential") return "sequential";
+			if (mode === "paragraph") return "paragraph";
+			return "";
+		}
+
+		function getTypingTypeLabel(type) {
+			if (type === "english") return t("typingTypeEnglish");
+			if (type === "arabic") return t("typingTypeArabic");
+			if (type === "mixed") return t("typingTypeMixed");
+			return t("typingTypeAuto");
+		}
+
+		function normalizeDeviceType(value) {
+			const source = String(value || "").toLowerCase().trim();
+			if (source === "computer" || source === "desktop") return "computer";
+			if (source === "phone" || source === "mobile") return "phone";
+			if (source === "tablet") return "tablet";
+			return "other";
+		}
+
+		function getDeviceLabel(value) {
+			const type = normalizeDeviceType(value);
+			if (type === "computer") return t("deviceComputer");
+			if (type === "phone") return t("devicePhone");
+			if (type === "tablet") return t("deviceTablet");
+			return t("deviceOther");
+		}
+
+		function buildTypingSettingsChips(settings) {
+			const source = settings && typeof settings === "object" ? settings : {};
+			const enabled = Boolean(source.enabled);
+			const type = String(source.type || "auto");
+			const inlineTrace = Boolean(source.inlineTrace);
+			let hideTypedText = Boolean(source.hideTypedText);
+
+			if (inlineTrace && hideTypedText) {
+				hideTypedText = false;
+			}
+
+			const chips = [];
+			chips.push(enabled ? t("typingAssistOn") : t("typingAssistOff"));
+			if (enabled) {
+				chips.push(getTypingTypeLabel(type));
+			}
+			if (inlineTrace) {
+				chips.push(t("typingTraceChip"));
+			}
+			if (hideTypedText) {
+				chips.push(t("typingHideTextChip"));
+			}
+
+			const list = document.createElement("div");
+			list.className = "typing-settings-list";
+			chips.forEach((label) => {
+				const chip = document.createElement("span");
+				chip.className = "typing-settings-chip";
+				chip.textContent = label;
+				list.appendChild(chip);
+			});
+			return list;
+		}
+
 		// Format date
 		function formatDate(timestamp) {
-			const date = new Date(timestamp);
-			return date.toLocaleString(currentLanguage === "ar" ? "ar-SA" : "en-US");
+			const safeTimestamp = Number(timestamp || 0) || Date.UTC(2026, 2, 1, 0, 0, 0);
+			const date = new Date(safeTimestamp);
+			return date.toLocaleString(currentLanguage === "ar" ? "ar-SA-u-nu-latn" : "en-US");
 		}
 
 		function normalizeWordLookup(value) {
 			return normalizeTypingInput(value, currentLanguage);
+		}
+
+		function normalizeDisplayName(value) {
+			const cleaned = String(value || "").trim().replace(/\s+/g, " ");
+			return cleaned || t("unknownPlayer");
+		}
+
+		function normalizeShortId(value) {
+			return String(value || "").trim().replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, SHORT_ID_LENGTH);
+		}
+
+		async function ensurePublicIdentityMap() {
+			if (publicIdentityLoaded) {
+				return;
+			}
+
+			publicIdentityLoaded = true;
+			publicNameByShortId = new Map();
+			try {
+				const usersSnapshot = await get(ref(database, "users"));
+				if (!usersSnapshot.exists()) {
+					return;
+				}
+
+				const usersData = usersSnapshot.val() || {};
+				Object.keys(usersData).forEach((uid) => {
+					const userNode = usersData[uid] || {};
+					const profile = userNode.profile || {};
+					const shortId = normalizeShortId(profile.shortId || userNode.shortId || String(uid).slice(0, SHORT_ID_LENGTH));
+					if (!shortId) {
+						return;
+					}
+					const displayName = normalizeDisplayName(
+						profile.nickname
+						|| userNode.nickname
+						|| profile.displayName
+						|| userNode.displayName
+						|| t("unknownPlayer")
+					);
+					publicNameByShortId.set(shortId, displayName);
+				});
+			} catch (_error) {
+				publicNameByShortId = new Map();
+			}
 		}
 
 		function getWeekKey(timestamp) {
@@ -968,7 +1639,7 @@
 		}
 
 		function formatCount(value) {
-			return new Intl.NumberFormat(currentLanguage === "en" ? "en-US" : "ar-SA", { maximumFractionDigits: 0 }).format(Number(value || 0));
+			return new Intl.NumberFormat(currentLanguage === "en" ? "en-US" : "ar-SA-u-nu-latn", { maximumFractionDigits: 0 }).format(Number(value || 0));
 		}
 
 		function mapBadgeLabel(value) {
@@ -1005,7 +1676,7 @@
 			}
 
 			const displayName = adminViewContext.targetName || t("unknownPlayer");
-			banner.textContent = `${t("adminViewBannerPrefix")}: ${displayName} (#${adminViewContext.targetUid.slice(0, 6)})`;
+			banner.textContent = `${t("adminViewBannerPrefix")}: ${displayName} (#${normalizeShortId(adminViewContext.targetUid)})`;
 			banner.classList.remove("is-hidden");
 		}
 
@@ -1014,7 +1685,7 @@
 		}
 
 		function buildActivityBuckets(range) {
-			const locale = currentLanguage === "en" ? "en-US" : "ar-SA";
+			const locale = currentLanguage === "en" ? "en-US" : "ar-SA-u-nu-latn";
 			const now = new Date();
 			const buckets = [];
 
@@ -1148,7 +1819,11 @@
 
 				const stats = snapshot.val() || {};
 				const totalPoints = Number(stats.totalPoints || 0);
-				const level = Number(stats.level || 1);
+				const levelMeta = getLevelProgressMeta(totalPoints);
+				const pointsLevel = Number(levelMeta.level || 0);
+				const storedLevelRaw = Number(stats.level || 0);
+				const storedLevel = Number.isFinite(storedLevelRaw) ? Math.max(0, storedLevelRaw) : 0;
+				const level = Math.max(pointsLevel, storedLevel);
 				const weekKey = getWeekKey(Date.now());
 				const monthKey = getMonthKey(Date.now());
 				const weekPoints = Number(stats.weeklyPoints?.[weekKey] || 0);
@@ -1156,18 +1831,37 @@
 				const badges = Array.isArray(stats.badges) ? stats.badges : [];
 				const topBadge = badges.length ? badges[badges.length - 1] : "none";
 				const bestSpw = Number(stats.bestSecondsPerWord || 0);
-				const levelProgress = Math.max(0, Math.min(100, totalPoints % 100));
-				const remainingPoints = levelProgress === 0 ? 100 : (100 - levelProgress);
+				const levelProgress = Math.max(0, Math.min(100, Number(levelMeta.progressPct || 0)));
 
 				document.getElementById("profileLevel").textContent = formatCount(level);
 				document.getElementById("profilePoints").textContent = formatCount(totalPoints);
-				document.getElementById("profileLevelProgress").textContent = `${formatCount(levelProgress)}%`;
 				document.getElementById("levelTrackValue").textContent = `${formatCount(levelProgress)}%`;
-				document.getElementById("profileRemainingPoints").textContent = formatCount(remainingPoints);
 				document.getElementById("profileWeekPoints").textContent = formatCount(weekPoints);
 				document.getElementById("profileMonthPoints").textContent = formatCount(monthPoints);
 				document.getElementById("profileBadge").textContent = mapBadgeLabel(topBadge);
 				document.getElementById("profileBestSpw").textContent = bestSpw > 0 ? bestSpw.toFixed(3) : "0.000";
+
+				const roadmapState = renderFeatureRoadmap(level, levelProgress);
+
+				const featureUnlockHint = document.getElementById("featureUnlockHint");
+				if (featureUnlockHint) {
+					if (roadmapState.completed) {
+						featureUnlockHint.textContent = "";
+						featureUnlockHint.classList.add("is-hidden");
+						featureUnlockHint.style.display = "none";
+					} else if (roadmapState.nextFeature) {
+						featureUnlockHint.classList.remove("is-hidden");
+						featureUnlockHint.style.display = "";
+						featureUnlockHint.textContent = format(t("featureRoadmapNextHint"), {
+							level: formatCount(roadmapState.nextFeature.level),
+							feature: roadmapState.nextFeature.label
+						});
+					} else {
+						featureUnlockHint.classList.remove("is-hidden");
+						featureUnlockHint.style.display = "";
+						featureUnlockHint.textContent = t("globalUnlockHintOpen");
+					}
+				}
 
 				const levelTrackFill = document.getElementById("levelTrackFill");
 				const levelTrackBar = document.getElementById("levelTrackBar");
@@ -1237,7 +1931,11 @@
 				shortIdCell.textContent = row.shortId ? `#${row.shortId}` : "-";
 
 				const modeCell = document.createElement("td");
-				modeCell.textContent = getModeLabel(row.mode);
+				const modeChip = document.createElement("span");
+				modeChip.className = "word-history-mode-chip";
+				modeChip.dataset.mode = normalizeModeIconKey(row.mode);
+				modeChip.textContent = getModeLabel(row.mode);
+				modeCell.appendChild(modeChip);
 
 				const timeCell = document.createElement("td");
 				timeCell.textContent = (row.timeTaken || 0).toFixed(3);
@@ -1254,6 +1952,16 @@
 		}
 
 		function openWordHistory(word) {
+			if (!adminViewContext.enabled && Number(viewerUserLevel || 0) < WORD_HISTORY_REQUIRED_LEVEL) {
+				const current = Number(viewerUserLevel || 0);
+				alert(format(t("wordHistoryLockedMsg"), {
+					required: WORD_HISTORY_REQUIRED_LEVEL,
+					current,
+					remaining: WORD_HISTORY_REQUIRED_LEVEL - current
+				}));
+				return;
+			}
+
 			const modal = document.getElementById("wordHistoryModal");
 			const title = document.getElementById("wordHistoryTitle");
 			title.textContent = `${t("wordHistoryTitle")} - ${word}`;
@@ -1268,6 +1976,8 @@
 
 		async function loadWordHistory(word) {
 			try {
+				await ensurePublicIdentityMap();
+
 				const roundsQuery = query(
 					ref(database, "publicRounds"),
 					orderByChild("timestamp"),
@@ -1297,9 +2007,15 @@
 						return;
 					}
 
+					const shortId = normalizeShortId(round.shortId);
+					const fallbackName = normalizeDisplayName(round.playerName);
+					const resolvedName = shortId
+						? (publicNameByShortId.get(shortId) || fallbackName)
+						: fallbackName;
+
 					results.push({
-						playerName: round.playerName || t("unknownPlayer") || "Player",
-						shortId: round.shortId || "",
+						playerName: resolvedName,
+						shortId,
 						mode: round.mode,
 						timeTaken: parseFloat(round.timeTaken)
 					});
@@ -1362,6 +2078,7 @@
 				modeCell.setAttribute("data-label", t("mode"));
 				const modeBadge = document.createElement("span");
 				modeBadge.className = "mode-badge";
+				modeBadge.dataset.mode = normalizeModeIconKey(round.mode);
 				modeBadge.textContent = getModeLabel(round.mode);
 				modeCell.appendChild(modeBadge);
 
@@ -1369,11 +2086,27 @@
 				langCell.setAttribute("data-label", t("language"));
 				langCell.textContent = round.language === "ar" ? "العربية" : "English";
 
+				const deviceCell = document.createElement("td");
+				deviceCell.className = "device-cell";
+				deviceCell.setAttribute("data-label", t("device"));
+				const deviceChip = document.createElement("span");
+				deviceChip.className = "device-chip";
+				const fallbackDevice = round.clientTelemetry?.device?.deviceType;
+				deviceChip.textContent = getDeviceLabel(round.deviceType || fallbackDevice);
+				deviceCell.appendChild(deviceChip);
+
+				const typingSettingsCell = document.createElement("td");
+				typingSettingsCell.className = "typing-settings-cell";
+				typingSettingsCell.setAttribute("data-label", t("typingSettings"));
+				typingSettingsCell.appendChild(buildTypingSettingsChips(round.typingSettings));
+
 				row.appendChild(dateCell);
 				row.appendChild(wordCell);
 				row.appendChild(timeCell);
 				row.appendChild(modeCell);
 				row.appendChild(langCell);
+				row.appendChild(deviceCell);
+				row.appendChild(typingSettingsCell);
 				tbody.appendChild(row);
 			});
 
@@ -1439,13 +2172,14 @@
 		onAuthStateChanged(auth, async (user) => {
 			loadLanguage();
 			updateTexts();
+			setPageLoading(true);
 
 			if (!user) {
-				document.getElementById("authRequiredMsg").style.display = "block";
-				document.getElementById("historyContent").style.display = "none";
-				document.getElementById("profileStatsPanel").classList.add("is-hidden");
+					viewerUserLevel = 0;
+				showGateMessage(t("authMsg"), true);
 				adminViewContext.enabled = false;
 				renderAdminViewBanner();
+				setPageLoading(false);
 				return;
 			}
 
@@ -1472,15 +2206,29 @@
 			}
 
 			renderAdminViewBanner();
+
+			viewerUserLevel = await loadUserLevel(user.uid);
+			if (!adminViewContext.enabled && viewerUserLevel < PERSONAL_HISTORY_REQUIRED_LEVEL) {
+				showGateMessage(format(t("historyLockedMsg"), {
+					required: PERSONAL_HISTORY_REQUIRED_LEVEL,
+					current: viewerUserLevel,
+					remaining: PERSONAL_HISTORY_REQUIRED_LEVEL - viewerUserLevel
+				}), false);
+				setPageLoading(false);
+				return;
+			}
+
 			document.getElementById("authRequiredMsg").style.display = "none";
 			document.getElementById("historyContent").style.display = "block";
+			document.getElementById("signInLocalBtn").style.display = "inline-flex";
 			await loadHistory(targetUid);
 			await loadProfileProgress(targetUid);
+			setPageLoading(false);
 		});
 
 		// Sign-in button handler
 		document.getElementById("signInLocalBtn").addEventListener("click", () => {
-			window.location.href = "../index.html";
+			window.location.href = "../";
 		});
 
 		// Load initial texts
