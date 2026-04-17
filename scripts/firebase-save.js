@@ -190,6 +190,37 @@ function buildRoundWritePayload(uid, roundId, roundData, includePublicRound, pub
     return payload;
 }
 
+function normalizeModeKey(value) {
+    const mode = String(value || "").toLowerCase();
+    if (mode === "g1" || mode === "single" || mode.includes("single")) return "single";
+    if (mode === "g2" || mode === "triple" || mode.includes("triple")) return "triple";
+    if (mode === "g3" || mode === "seq" || mode === "sequential" || mode.includes("sequential")) return "sequential";
+    if (mode === "g4" || mode === "paragraph" || mode.includes("paragraph")) return "paragraph";
+    return "single";
+}
+
+function isPublicRoundModeAllowed(value) {
+    const mode = String(value || "").toLowerCase();
+    return mode === "single" || mode === "triple" || mode === "seq" || mode === "paragraph";
+}
+
+function isPublicRoundEligible(roundData) {
+    const source = (roundData && typeof roundData === "object") ? roundData : {};
+    const timeTaken = Number(source.timeTaken || 0);
+    const playerName = normalizeNonEmptyString(source.playerName);
+    const shortId = normalizeShortId(source.shortId || "");
+    const mode = String(source.mode || "").toLowerCase();
+
+    return Boolean(
+        playerName
+        && shortId
+        && isPublicRoundModeAllowed(mode)
+        && Number.isFinite(timeTaken)
+        && timeTaken > 0
+        && timeTaken <= 300
+    );
+}
+
 function normalizePreferencePayload(input) {
     const source = input && typeof input === "object" ? input : {};
     const normalized = {};
@@ -515,6 +546,7 @@ async function updateUserStats(uid, roundMeta) {
     const now = roundMeta.timestamp || Date.now();
     const weekKey = getWeekKey(now);
     const monthKey = getMonthKey(now);
+    const modeKey = normalizeModeKey(roundMeta.mode || roundMeta.modeId || "single");
     let previousLevel = 0;
     let levelAfter = 0;
 
@@ -533,6 +565,25 @@ async function updateUserStats(uid, roundMeta) {
         const speedBest = Number(safe.bestSecondsPerWord || 9999);
         const nextBest = Math.min(speedBest, Number(roundMeta.secondsPerWord || 9999));
 
+        const modeCountsSource = (safe.modeCounts && typeof safe.modeCounts === "object") ? safe.modeCounts : {};
+        const modeCounts = {
+            single: Math.max(0, Number(modeCountsSource.single || 0)),
+            triple: Math.max(0, Number(modeCountsSource.triple || 0)),
+            sequential: Math.max(0, Number(modeCountsSource.sequential || 0)),
+            paragraph: Math.max(0, Number(modeCountsSource.paragraph || 0))
+        };
+        modeCounts[modeKey] = Math.max(0, Number(modeCounts[modeKey] || 0)) + 1;
+
+        const incomingWpm = Number(roundMeta.wpm || 0);
+        const baseWpmSamples = Math.max(0, Number(safe.wpmSamples || 0));
+        const inferredTotalWpm = Number(safe.averageWpm || 0) * baseWpmSamples;
+        const baseTotalWpmRaw = Number(safe.totalWpm || inferredTotalWpm || 0);
+        const baseTotalWpm = Number.isFinite(baseTotalWpmRaw) ? baseTotalWpmRaw : 0;
+        const hasIncomingWpm = incomingWpm > 0 && Number.isFinite(incomingWpm);
+        const wpmSamples = baseWpmSamples + (hasIncomingWpm ? 1 : 0);
+        const totalWpm = baseTotalWpm + (hasIncomingWpm ? incomingWpm : 0);
+        const averageWpm = wpmSamples > 0 ? Number((totalWpm / wpmSamples).toFixed(2)) : 0;
+
         const weekly = (safe.weeklyPoints && typeof safe.weeklyPoints === "object") ? { ...safe.weeklyPoints } : {};
         const monthly = (safe.monthlyPoints && typeof safe.monthlyPoints === "object") ? { ...safe.monthlyPoints } : {};
 
@@ -546,6 +597,10 @@ async function updateUserStats(uid, roundMeta) {
             totalPoints,
             level,
             bestSecondsPerWord: Number(nextBest.toFixed(4)),
+            modeCounts,
+            averageWpm,
+            totalWpm: Number(totalWpm.toFixed(2)),
+            wpmSamples,
             weeklyPoints: weekly,
             monthlyPoints: monthly,
             badges: computeBadges(totalPoints),
@@ -816,7 +871,8 @@ async function retryFailedRoundSaves(maxItems = 5) {
             continue;
         }
 
-        const includePublicRound = item.includePublicRound !== false && Boolean(item.publicRoundData);
+        const requestedPublicMirror = item.includePublicRound !== false && Boolean(item.publicRoundData);
+        const includePublicRound = requestedPublicMirror && isPublicRoundEligible(item.publicRoundData || item.roundData);
         const roundId = normalizeNonEmptyString(item.roundId) || push(ref(db, `users/${activeUid}/rounds`)).key;
         if (!roundId) {
             remaining.push(item);
@@ -838,11 +894,14 @@ async function retryFailedRoundSaves(maxItems = 5) {
             const wordCount = Number(item.roundData.wordCount || countWords(item.roundData.word));
             const charCount = Number(item.roundData.charCount || countCharsForWpm(item.roundData.word));
             const secondsPerWord = Number(item.roundData.secondsPerWord || ((Number(item.roundData.timeTaken || 0) || 0) / Math.max(1, wordCount)));
+            const wpm = Number(item.roundData.wpm || computeWpmFromText(item.roundData.word, item.roundData.timeTaken));
             await updateUserStats(activeUid, {
                 wordCount,
                 charCount,
                 totalPoints: points,
                 secondsPerWord,
+                mode: item.roundData.mode,
+                wpm,
                 timestamp: Number(item.roundData.timestamp || Date.now())
             });
 
@@ -904,7 +963,8 @@ window.saveRoundDataToFirebase = async function(word, timeTaken, mode, language,
 
         const textCharCount = countCharsForWpm(word);
         const computedWpm = computeWpmFromText(word, timeTaken);
-        if (textCharCount >= 6 && computedWpm > 250) {
+        const roundWpm = Number(computedWpm.toFixed(2));
+        if (textCharCount >= 6 && roundWpm > 250) {
             notifyRoundSaveStatus({ success: false, rejected: true, reason: "wpm" });
             return { success: false, rejected: true, reason: "wpm" };
         }
@@ -935,6 +995,7 @@ window.saveRoundDataToFirebase = async function(word, timeTaken, mode, language,
                 speedTier: score.speedTier,
                 speedMultiplier: score.speedMultiplier,
                 deviceType,
+                wpm: roundWpm,
                 ...persistedExtra
             };
 
@@ -954,7 +1015,7 @@ window.saveRoundDataToFirebase = async function(word, timeTaken, mode, language,
         const identity = await resolvePublicRoundIdentity(uid, storedUser, authUser);
         const playerName = identity.playerName;
         const shortId = identity.shortId;
-        const includePublicRound = identity.canWritePublicRound;
+        const canWritePublicRound = identity.canWritePublicRound;
 
         const clientTelemetry = await getClientTelemetry();
         const deviceType = String(clientTelemetry?.device?.deviceType || "other");
@@ -979,6 +1040,7 @@ window.saveRoundDataToFirebase = async function(word, timeTaken, mode, language,
             speedTier: score.speedTier,
             speedMultiplier: score.speedMultiplier,
             deviceType,
+            wpm: roundWpm,
             typingSettings,
             ...persistedExtra,
             clientTelemetry
@@ -993,6 +1055,7 @@ window.saveRoundDataToFirebase = async function(word, timeTaken, mode, language,
         const publicRoundData = {
             ...publicSafeRoundData
         };
+        const includePublicRound = canWritePublicRound && isPublicRoundEligible(publicRoundData);
 
         const roundId = push(ref(db, `users/${uid}/rounds`)).key;
         if (!roundId) {
@@ -1019,6 +1082,8 @@ window.saveRoundDataToFirebase = async function(word, timeTaken, mode, language,
             charCount: score.charCount,
             totalPoints: score.totalPoints,
             secondsPerWord: score.secondsPerWord,
+            mode,
+            wpm: roundWpm,
             timestamp: now
         });
 
@@ -1078,6 +1143,7 @@ window.saveRoundDataToFirebase = async function(word, timeTaken, mode, language,
                     speedTier: score.speedTier,
                     speedMultiplier: score.speedMultiplier,
                     deviceType,
+                    wpm: Number(computeWpmFromText(word, timeTaken).toFixed(2)),
                     typingSettings,
                     ...persistedExtra
                 };

@@ -811,7 +811,7 @@
     <script type="module">
         import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getDatabase, ref, get, update, push, query, orderByChild, equalTo, limitToFirst } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getDatabase, ref, get, update, push, query, orderByChild, equalTo, limitToFirst, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
         import { readTypingGameState } from "../scripts/app-state.js";
         import { resolveWordmarkSrc, setupConnectivityBanner } from "../scripts/ui-utils.js";
 
@@ -1315,7 +1315,7 @@
             const mode = String(value || "").toLowerCase();
             if (mode === "g1" || mode === "single" || mode.includes("single")) return "single";
             if (mode === "g2" || mode === "triple" || mode.includes("triple")) return "triple";
-            if (mode === "g3" || mode === "sequential" || mode.includes("sequential")) return "sequential";
+            if (mode === "g3" || mode === "seq" || mode === "sequential" || mode.includes("sequential")) return "sequential";
             if (mode === "g4" || mode === "paragraph" || mode.includes("paragraph")) return "paragraph";
             return "single";
         }
@@ -1542,7 +1542,7 @@
             }
 
             try {
-                const roundsSnapshot = await get(ref(db, `users/${uid}/rounds`));
+                const roundsSnapshot = await get(query(ref(db, `users/${uid}/rounds`), limitToLast(600)));
                 if (!roundsSnapshot.exists()) {
                     return {
                         totalWords: 0,
@@ -2013,7 +2013,7 @@
             let totalWords = Number(stats.totalWords || 0);
             let totalCharacters = Number(stats.totalCharacters || 0);
             let totalRounds = Number(stats.totalRounds || 0);
-            let averageWpm = 0;
+            let averageWpm = Number(stats.averageWpm || 0);
             let bestSecondsPerWord = Number(stats.bestSecondsPerWord || 0);
             const displayName = normalizeDisplayName(profile.nickname || profile.displayName || userNode.nickname || userNode.displayName, currentLanguage === "en" ? "Player" : "لاعب");
             const shortId = ensureShortId(profile.shortId || userNode.shortId || uid, uid);
@@ -2027,7 +2027,30 @@
                 ? preferences.language
                 : currentLanguage;
 
-            const roundAggregates = await computeRoundAggregates(uid);
+            const existingPublic = publicSnapshot.exists() ? (publicSnapshot.val() || {}) : {};
+            const statsModeCounts = (stats.modeCounts && typeof stats.modeCounts === "object") ? stats.modeCounts : {};
+            const hasStatsModeCounts = Object.keys(statsModeCounts).length > 0;
+            const hasPublicModeCounts = Boolean(existingPublic.modeCounts && typeof existingPublic.modeCounts === "object");
+            const shouldComputeRoundAggregates = (
+                totalWords <= 0
+                || totalCharacters <= 0
+                || totalRounds <= 0
+                || averageWpm <= 0
+                || bestSecondsPerWord <= 0
+                || (!hasStatsModeCounts && !hasPublicModeCounts)
+            );
+
+            const roundAggregates = shouldComputeRoundAggregates
+                ? await computeRoundAggregates(uid)
+                : {
+                    totalWords: 0,
+                    totalCharacters: 0,
+                    totalRounds: 0,
+                    averageWpm: 0,
+                    bestSecondsPerWord: 0,
+                    modeCounts: { single: 0, triple: 0, sequential: 0, paragraph: 0 }
+                };
+
             const [friendsCount, followerCount, friendsPreview, followersPreview] = await Promise.all([
                 countFriends(uid),
                 countFollowers(uid),
@@ -2049,12 +2072,11 @@
             }
 
             totalRounds = Math.max(totalRounds, Number(roundAggregates.totalRounds || 0));
-            averageWpm = Number(roundAggregates.averageWpm || 0);
+            averageWpm = Number(stats.averageWpm || roundAggregates.averageWpm || 0);
             bestSecondsPerWord = bestSecondsPerWord > 0
                 ? bestSecondsPerWord
-                : Number(roundAggregates.bestSecondsPerWord || 0);
+                : Number(stats.bestSecondsPerWord || roundAggregates.bestSecondsPerWord || 0);
 
-            const existingPublic = publicSnapshot.exists() ? (publicSnapshot.val() || {}) : {};
             const isPrivate = typeof existingPublic.isPrivate === "boolean"
                 ? existingPublic.isPrivate
                 : (typeof privacy.isPrivate === "boolean" ? privacy.isPrivate : true);
@@ -2074,10 +2096,10 @@
             const bio = normalizeBio(existingPublic.bio || profile.bio || userNode.bio || "");
             const topBadge = String(existingPublic.topBadge || badges[badges.length - 1] || "").trim();
             const modeCounts = {
-                single: Number(existingPublic.modeCounts?.single || roundAggregates.modeCounts.single || 0),
-                triple: Number(existingPublic.modeCounts?.triple || roundAggregates.modeCounts.triple || 0),
-                sequential: Number(existingPublic.modeCounts?.sequential || roundAggregates.modeCounts.sequential || 0),
-                paragraph: Number(existingPublic.modeCounts?.paragraph || roundAggregates.modeCounts.paragraph || 0)
+                single: Number(existingPublic.modeCounts?.single || statsModeCounts.single || roundAggregates.modeCounts.single || 0),
+                triple: Number(existingPublic.modeCounts?.triple || statsModeCounts.triple || roundAggregates.modeCounts.triple || 0),
+                sequential: Number(existingPublic.modeCounts?.sequential || statsModeCounts.sequential || roundAggregates.modeCounts.sequential || 0),
+                paragraph: Number(existingPublic.modeCounts?.paragraph || statsModeCounts.paragraph || roundAggregates.modeCounts.paragraph || 0)
             };
 
             const publicProfile = {
@@ -2230,18 +2252,6 @@
                     return uid ? { uid, ...(rows[uid] || {}) } : null;
                 }
 
-                const publicProfilesSnapshot = await get(ref(db, "publicProfiles"));
-                if (publicProfilesSnapshot.exists()) {
-                    const profilesRows = publicProfilesSnapshot.val() || {};
-                    const matchedUid = Object.keys(profilesRows).find((uid) => {
-                        const node = profilesRows[uid] || {};
-                        return normalizeShortId(node.shortId || "") === normalizedShortId;
-                    }) || "";
-                    if (matchedUid) {
-                        return { uid: matchedUid, ...(profilesRows[matchedUid] || {}) };
-                    }
-                }
-
                 const usersByShortIdQuery = query(
                     ref(db, "users"),
                     orderByChild("profile/shortId"),
@@ -2288,7 +2298,6 @@
             if (!uid) return source;
 
             const monthKey = getMonthKey(Date.now());
-            const roundAggregates = await computeRoundAggregates(uid);
             let profileNode = {};
             let statsNode = {};
             let preferencesNode = {};
@@ -2303,6 +2312,29 @@
                 statsNode = {};
                 preferencesNode = {};
             }
+
+            const statsModeCounts = (statsNode.modeCounts && typeof statsNode.modeCounts === "object") ? statsNode.modeCounts : {};
+            const hasStatsModeCounts = Object.keys(statsModeCounts).length > 0;
+            const hasSourceModeCounts = Boolean(source.modeCounts && typeof source.modeCounts === "object");
+            const shouldComputeRoundAggregates = (
+                Number(source.totalWords || statsNode.totalWords || 0) <= 0
+                || Number(source.totalCharacters || statsNode.totalCharacters || 0) <= 0
+                || Number(source.totalRounds || statsNode.totalRounds || 0) <= 0
+                || Number(source.averageWpm || statsNode.averageWpm || 0) <= 0
+                || Number(source.bestSecondsPerWord || statsNode.bestSecondsPerWord || 0) <= 0
+                || (!hasSourceModeCounts && !hasStatsModeCounts)
+            );
+
+            const roundAggregates = shouldComputeRoundAggregates
+                ? await computeRoundAggregates(uid)
+                : {
+                    totalWords: 0,
+                    totalCharacters: 0,
+                    totalRounds: 0,
+                    averageWpm: 0,
+                    bestSecondsPerWord: 0,
+                    modeCounts: { single: 0, triple: 0, sequential: 0, paragraph: 0 }
+                };
 
             const badges = Array.isArray(statsNode.badges) ? statsNode.badges : [];
             const showCountry = Boolean(source.showCountry);
@@ -2331,7 +2363,7 @@
                 totalWords: Number(source.totalWords || statsNode.totalWords || roundAggregates.totalWords || 0),
                 totalCharacters: Number(source.totalCharacters || statsNode.totalCharacters || roundAggregates.totalCharacters || 0),
                 totalRounds: Number(source.totalRounds || statsNode.totalRounds || roundAggregates.totalRounds || 0),
-                averageWpm: Number(source.averageWpm || roundAggregates.averageWpm || 0),
+                averageWpm: Number(source.averageWpm || statsNode.averageWpm || roundAggregates.averageWpm || 0),
                 bestSecondsPerWord: Number(source.bestSecondsPerWord || statsNode.bestSecondsPerWord || roundAggregates.bestSecondsPerWord || 0),
                 joinedAt: Number(source.joinedAt || profileNode.joinedAt || 0),
                 monthlyPoints: Number(source.monthlyPoints || (statsNode.monthlyPoints && Number(statsNode.monthlyPoints[monthKey] || 0)) || 0),
@@ -2351,10 +2383,10 @@
                 followerCount: Number(followerCount || 0),
                 bio: normalizeBio(source.bio || profileNode.bio || ""),
                 modeCounts: {
-                    single: Number(source.modeCounts?.single || roundAggregates.modeCounts.single || 0),
-                    triple: Number(source.modeCounts?.triple || roundAggregates.modeCounts.triple || 0),
-                    sequential: Number(source.modeCounts?.sequential || roundAggregates.modeCounts.sequential || 0),
-                    paragraph: Number(source.modeCounts?.paragraph || roundAggregates.modeCounts.paragraph || 0)
+                    single: Number(source.modeCounts?.single || statsModeCounts.single || roundAggregates.modeCounts.single || 0),
+                    triple: Number(source.modeCounts?.triple || statsModeCounts.triple || roundAggregates.modeCounts.triple || 0),
+                    sequential: Number(source.modeCounts?.sequential || statsModeCounts.sequential || roundAggregates.modeCounts.sequential || 0),
+                    paragraph: Number(source.modeCounts?.paragraph || statsModeCounts.paragraph || roundAggregates.modeCounts.paragraph || 0)
                 }
             };
         }

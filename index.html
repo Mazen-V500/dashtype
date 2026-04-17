@@ -1531,62 +1531,11 @@
             [`${PUBLIC_PROFILES_PATH}/${uid}/updatedAt`]: now
         };
 
-        try {
-            const usersSnapshot = await get(ref(db, "users"));
-            if (usersSnapshot.exists()) {
-                const usersData = usersSnapshot.val() || {};
-
-                Object.keys(usersData).forEach((otherUid) => {
-                    const node = usersData[otherUid] || {};
-                    const friendsNode = (node.friends && typeof node.friends === "object") ? node.friends : {};
-                    if (friendsNode[uid]) {
-                        usersPatch[`users/${otherUid}/friends/${uid}/name`] = safeName;
-                        usersPatch[`users/${otherUid}/friends/${uid}/shortId`] = safeShortId;
-                    }
-
-                    const requestsNode = (node.friendRequests && typeof node.friendRequests === "object") ? node.friendRequests : {};
-                    const incomingNode = (requestsNode.incoming && typeof requestsNode.incoming === "object") ? requestsNode.incoming : {};
-                    if (incomingNode[uid]) {
-                        usersPatch[`users/${otherUid}/friendRequests/incoming/${uid}/fromName`] = safeName;
-                        usersPatch[`users/${otherUid}/friendRequests/incoming/${uid}/fromShortId`] = safeShortId;
-                    }
-
-                    const outgoingNode = (requestsNode.outgoing && typeof requestsNode.outgoing === "object") ? requestsNode.outgoing : {};
-                    if (outgoingNode[uid]) {
-                        usersPatch[`users/${otherUid}/friendRequests/outgoing/${uid}/toName`] = safeName;
-                        usersPatch[`users/${otherUid}/friendRequests/outgoing/${uid}/toShortId`] = safeShortId;
-                    }
-
-                    const followingNode = (node.following && typeof node.following === "object") ? node.following : {};
-                    if (followingNode[uid]) {
-                        usersPatch[`users/${otherUid}/following/${uid}/name`] = safeName;
-                        usersPatch[`users/${otherUid}/following/${uid}/shortId`] = safeShortId;
-                    }
-
-                    const followersNode = (node.followers && typeof node.followers === "object") ? node.followers : {};
-                    if (followersNode[uid]) {
-                        usersPatch[`users/${otherUid}/followers/${uid}/name`] = safeName;
-                        usersPatch[`users/${otherUid}/followers/${uid}/shortId`] = safeShortId;
-                    }
-
-                    const notificationsNode = (node.notifications && typeof node.notifications === "object") ? node.notifications : {};
-                    Object.keys(notificationsNode).forEach((notificationId) => {
-                        const notification = notificationsNode[notificationId] || {};
-                        if (String(notification.fromUid || "") === uid) {
-                            usersPatch[`users/${otherUid}/notifications/${notificationId}/fromName`] = safeName;
-                            usersPatch[`users/${otherUid}/notifications/${notificationId}/fromShortId`] = safeShortId;
-                        }
-                    });
-                });
-            }
-        } catch (_error) {
-            // Continue with best-effort patching.
-        }
-
         await update(ref(db), usersPatch);
 
         try {
-            const publicRoundsSnapshot = await get(ref(db, "publicRounds"));
+            // Keep this lightweight to avoid UI lag on login/update.
+            const publicRoundsSnapshot = await get(query(ref(db, "publicRounds"), limitToLast(240)));
             if (!publicRoundsSnapshot.exists()) {
                 return;
             }
@@ -1689,11 +1638,9 @@
                 });
 
                 if (needsIdentityRefresh) {
-                    try {
-                        await propagateIdentityReferences(user.uid, nickname, shortId);
-                    } catch (_error) {
+                    void propagateIdentityReferences(user.uid, nickname, shortId).catch(() => {
                         // Identity propagation is best-effort.
-                    }
+                    });
                 }
 
                 if (profile.preferences && typeof window.applyPreferenceState === "function") {
@@ -1730,7 +1677,9 @@
                 });
 
                 try {
-                    await propagateIdentityReferences(user.uid, nickname, shortId);
+                    void propagateIdentityReferences(user.uid, nickname, shortId).catch(() => {
+                        // Identity propagation is best-effort.
+                    });
                 } catch (_error) {
                     // Identity propagation is best-effort.
                 }
@@ -2274,12 +2223,14 @@
                     await handleUserLogin(user);
                 }
 
-                await startNotificationsFeed();
-                await applyUserPreferences(user.uid);
-                await loadProfileStats(user.uid);
+                await Promise.all([
+                    startNotificationsFeed(),
+                    applyUserPreferences(user.uid),
+                    loadProfileStats(user.uid)
+                ]);
                 try {
                     await ensureCurrentUserPublicProfile(user.uid);
-                    await syncDetectedCountryForCurrentUser(user.uid);
+                    void syncDetectedCountryForCurrentUser(user.uid);
                     if (currentPublicProfile && Number(currentPublicProfile.level || 0) !== Number(currentUserLevel || 0)) {
                         await syncPublicProfile(user.uid, { level: Number(currentUserLevel || 0) }, { syncPrivacy: false });
                     }

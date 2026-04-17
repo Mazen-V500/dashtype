@@ -358,6 +358,7 @@ let countdownTimer = null;
 let lastParagraphMistakeAt = 0;
 let roundRejected = false;
 let rejectionReason = "";
+let isRoundSavePending = false;
 let lastInputTimestamp = 0;
 let previousTypedValue = "";
 let keystrokeIntervals = [];
@@ -1157,6 +1158,11 @@ function setStartButtonPlaying(isPlaying) {
 }
 
 function stopRoundManually() {
+    if (isRoundSavePending) {
+        setResultMessage(currentLanguage === "en" ? "Saving round... please wait." : "جارٍ حفظ الجولة... انتظر لحظة.", "result warning");
+        return;
+    }
+
     if (!timerStarted) {
         return;
     }
@@ -1211,11 +1217,24 @@ async function finishRound() {
     setStartButtonPlaying(false);
 
     if (window.saveRoundDataToFirebase) {
-        window.saveRoundDataToFirebase(currentParagraph, finalTime, "paragraph", currentLanguage, {
-            paragraphId: currentParagraphId || null,
-            paragraphOwnerUid: currentParagraphOwnerUid || null,
-            raceId: raceState.raceId || null
-        });
+        isRoundSavePending = true;
+        startBtn.disabled = true;
+        gateStartBtn.disabled = true;
+        homeBtn.disabled = true;
+        nextBtn.disabled = true;
+        try {
+            await window.saveRoundDataToFirebase(currentParagraph, finalTime, "paragraph", currentLanguage, {
+                paragraphId: currentParagraphId || null,
+                paragraphOwnerUid: currentParagraphOwnerUid || null,
+                raceId: raceState.raceId || null
+            });
+        } finally {
+            isRoundSavePending = false;
+            startBtn.disabled = false;
+            gateStartBtn.disabled = false;
+            homeBtn.disabled = false;
+            nextBtn.disabled = false;
+        }
     }
 
     if (!raceState.raceId) {
@@ -1792,6 +1811,10 @@ function getHomeUrl() {
 }
 
 function goHome() {
+    if (isRoundSavePending) {
+        setResultMessage(currentLanguage === "en" ? "Saving round... please wait." : "جارٍ حفظ الجولة... انتظر لحظة.", "result warning");
+        return;
+    }
     saveState();
     window.location.href = getHomeUrl();
 }
@@ -1801,6 +1824,10 @@ function getHistoryUrl() {
 }
 
 function goHistory() {
+    if (isRoundSavePending) {
+        setResultMessage(currentLanguage === "en" ? "Saving round... please wait." : "جارٍ حفظ الجولة... انتظر لحظة.", "result warning");
+        return;
+    }
     saveState();
     window.location.href = getHistoryUrl();
 }
@@ -1862,6 +1889,11 @@ function ensureParagraphExists() {
 }
 
 function handleStartRequest() {
+    if (isRoundSavePending) {
+        setResultMessage(currentLanguage === "en" ? "Saving round... please wait." : "جارٍ حفظ الجولة... انتظر لحظة.", "result warning");
+        return;
+    }
+
     if (!ensureParagraphExists()) {
         return;
     }
